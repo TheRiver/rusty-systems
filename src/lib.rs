@@ -1,14 +1,12 @@
-use std::cell::RefCell;
-use std::collections::HashSet;
-
+#[derive(Debug)]
 pub enum Token {
-    Terminal,
+    Terminal(String),
     Production
 }
 
 #[derive(Debug)]
 pub struct System {
-    terminals: Vec<String>
+    terminals: Vec<Token>
 }
 
 #[derive(Debug)]
@@ -35,8 +33,8 @@ impl System {
         Builder { terminals: Vec::new() }
     }
 
-    pub fn terminal<T: ToString>(&mut self, name: T) -> &Self {
-        self.terminals.push(name.to_string());
+    pub fn add_terminal<T: ToTerminal>(&mut self, terminal: T) -> &Self {
+        self.terminals.push(terminal.to_terminal());
         self
     }
 }
@@ -44,8 +42,34 @@ impl System {
 
 impl From<Builder> for System {
     fn from(value: Builder) -> Self {
-        System { terminals: value.terminals }
+        System { terminals: value.terminals.into_iter().map(Token::Terminal).collect() }
     }
-    
-     
+}
+
+impl From<String> for Token {
+    fn from(value: String) -> Self {
+        Token::Terminal(value)
+    }
+}
+
+pub trait ToTerminal {
+    fn to_terminal(self) -> Token;
+}
+
+impl ToTerminal for String {
+    fn to_terminal(self) -> Token {
+        Token::from(self)
+    }
+}
+
+impl ToTerminal for &str {
+    fn to_terminal(self) -> Token {
+        Token::from(self.to_string())
+    }
+}
+
+impl ToTerminal for Token {
+    fn to_terminal(self) -> Token {
+        self
+    }
 }

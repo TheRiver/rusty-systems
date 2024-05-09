@@ -3,9 +3,12 @@ use rusty_grammar::System;
 fn main() {
     println!("Hello, world!");
 
-    let system = System::define()
+    let mut system = System::define()
         .terminal("surname")
         .build();
+    
+    system.add_terminal("bobb");
+    system.add_terminal(rusty_grammar::Token::Terminal("fner".to_string()));
     
     println!("{:?}", &system);
     
