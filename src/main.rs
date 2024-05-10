@@ -1,4 +1,4 @@
-use rusty_grammar::System;
+use rusty_grammar::{ProductionBuilder, System};
 
 fn main() {
     println!("Hello, world!");
@@ -10,10 +10,14 @@ fn main() {
     system.add_terminal("bobb");
     system.add_terminal(rusty_grammar::Token::Terminal("fner".to_string()));
     
-    println!("{:?}", &system);
     
     
+    system.production()
+        .named("SDF")
+        .build()
+        .expect("Unable to build production");
 
+    println!("{:?}", &system);
 
 
     // system.production("Name")
