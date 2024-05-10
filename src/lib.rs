@@ -73,3 +73,17 @@ impl ToTerminal for Token {
         self
     }
 }
+
+
+
+pub struct ProductionBuilder {
+    
+}
+
+pub struct Production {
+    name: String
+}
+
+pub struct ProductionBody {
+    tokens: Vec<Token>
+}
