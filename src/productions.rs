@@ -40,10 +40,7 @@ impl Chance {
 
     /// Returns true iff this is of kind [`ChanceKind::Derived`]
     pub fn is_derived(&self) -> bool {
-        match self.kind {
-            ChanceKind::Derived => true,
-            _ => false
-        }
+        matches!(self.kind, ChanceKind::Derived)
     }
 
     /// Returns true iff this is of kind [`ChanceKind::Set`]
@@ -224,7 +221,7 @@ mod tests {
     use crate::Token;
 
     #[test]
-    fn unchecked_chance() {
+    fn no_chance_specified() {
         let mut system = System::define().build();
         system.production()
             .named("test")
@@ -235,6 +232,20 @@ mod tests {
         let production = &system.productions[0];
         assert_eq!(production.bodies[0].chance.unwrap(), 0.5 - BUFFER_SIZE);
         assert_eq!(production.bodies[1].chance.unwrap(), 0.5 - BUFFER_SIZE);
+    }
+
+    #[test]
+    fn fills_missing_chance() {
+        let mut system = System::define().build();
+        system.production()
+            .named("test")
+            .to_chance(0.75, &[Token::Terminal("bob".to_string())])
+            .to(&[Token::Terminal("bobette".to_string())])
+            .build().unwrap();
+
+        let production = &system.productions[0];
+        assert_eq!(production.bodies[0].chance.unwrap(), 0.75);
+        assert_eq!(production.bodies[1].chance.unwrap(), 0.25 - BUFFER_SIZE);
     }
 
 }
