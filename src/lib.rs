@@ -1,9 +1,22 @@
-use std::fmt::{Display, Formatter};
+use productions::{ Production, ProductionBuilder};
+
+pub mod error;
+pub mod productions;
+
+pub mod prelude {
+    pub use super::System;
+    pub use super::error::Error;
+}
+
+
+/// A result type for functions that can return errors.
+pub type Result<T> = std::result::Result<T, error::Error>;
+
 
 #[derive(Debug, Clone)]
 pub enum Token {
     Terminal(String),
-    Production
+    Production(String)
 }
 
 #[derive(Debug, Clone)]
@@ -42,17 +55,17 @@ impl System {
     }
 
     /// Start defining a new production to add to the system.
-    /// 
+    ///
     /// See [`Production`]
     pub fn production(&mut self) -> ProductionBuilder {
-        ProductionBuilder { head: None, system: self }
+        ProductionBuilder::new(self)
     }
 }
 
 
 impl From<Builder> for System {
     fn from(value: Builder) -> Self {
-        System { 
+        System {
             terminals: value.terminals.into_iter().map(Token::Terminal).collect(),
             productions: Vec::new()
         }
@@ -62,6 +75,12 @@ impl From<Builder> for System {
 impl From<String> for Token {
     fn from(value: String) -> Self {
         Token::Terminal(value)
+    }
+}
+
+impl From<&str> for Token {
+    fn from(value: &str) -> Self {
+        Token::Terminal(value.to_string())
     }
 }
 
@@ -88,77 +107,4 @@ impl ToTerminal for Token {
 }
 
 
-#[derive(Debug)]
-pub struct ProductionBuilder<'a> {
-    head: Option<ProductionHead>,
-    system: &'a mut System
-}
 
-#[derive(Debug, Clone)]
-pub struct Production {
-    head: ProductionHead
-}
-
-#[derive(Debug, Clone)]
-pub struct ProductionHead {
-    name: String
-}
-
-#[derive(Debug, Clone)]
-pub struct ProductionBody {
-    tokens: Vec<Token>
-}
-
-impl<'a> ProductionBuilder<'a> {
-    /// Set the name of the production.
-    pub fn named<T: ToString>(mut self, name: T) -> Self {
-        self.head = Some(ProductionHead::from(name.to_string()));
-        self
-    }
-    
-    pub fn build(mut self) -> Result<&'a Production> {
-        if self.head.is_none() {
-            return Err(GrammarError::message("Production has no head"));
-        }
-        self.system.productions.push(Production { head: self.head.expect("No head") });
-        
-        return Ok(self.system.productions.last().unwrap());
-    }
-}
-
-impl From<String> for ProductionHead {
-    fn from(value: String) -> Self {
-        ProductionHead { name: value }
-    }
-}
-
-impl ProductionHead {
-
-    /// Returns what the production is called.
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-}
-
-#[derive(Debug, Clone)]
-pub enum GrammarError {
-    General(String)
-}
-
-impl Display for GrammarError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self { GrammarError::General(message) => write!(f, "{}", message) }
-    }
-}
-
-impl std::error::Error for GrammarError { }
-
-
-pub type Result<T> = std::result::Result<T, GrammarError>;
-
-impl GrammarError { 
-    fn message<T : ToString>(message: T) -> Self {
-        GrammarError::General(message.to_string())
-    }
-}

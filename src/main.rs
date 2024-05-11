@@ -1,4 +1,4 @@
-use rusty_grammar::{ProductionBuilder, System};
+use rusty_grammar::{System, Token};
 
 fn main() {
     println!("Hello, world!");
@@ -13,7 +13,9 @@ fn main() {
     
     
     system.production()
-        .named("SDF")
+        .named("Company")
+        .to(&[Token::from("surname"), Token::from("surname")])
+        .to(&[Token::from("surname"), Token::from("and"), Token::from("surname")])
         .build()
         .expect("Unable to build production");
 
