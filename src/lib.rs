@@ -22,7 +22,7 @@ pub enum Token {
 #[derive(Debug, Clone)]
 pub struct System {
     terminals: Vec<Token>,
-    productions: Vec<Production>
+    productions: Vec<Production>,
 }
 
 #[derive(Debug, Clone)]

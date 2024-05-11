@@ -1,21 +1,29 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
-pub enum Error {
-    General(String),
+pub enum ErrorKind {
+    General,
     /// Errors related to defining systems, production rules,
-    /// and so on. 
-    Definitions(String)
+    /// and so on.
+    Definitions
+}
+
+
+/// Errors that might be thrown when using this library.
+#[derive(Debug)]
+pub struct Error {
+    kind: ErrorKind,
+    message: String
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self { 
-            Error::General(message) => f.write_str(message),
-            Error::Definitions(message) => {
-                write!(f, "Definition problem: {message}")
-            }
+
+        if let ErrorKind::Definitions = self.kind {
+            f.write_str("Definition error: ")?;
         }
+
+        f.write_str(&self.message)
     }
 }
 
@@ -23,11 +31,18 @@ impl std::error::Error for Error { }
 
 
 impl Error {
-    pub fn general<T : ToString>(message: T) -> Self {
-        Error::General(message.to_string())
+    pub fn new<S : ToString>(kind: ErrorKind, message: S) -> Self {
+        Error {
+            kind,
+            message: message.to_string()
+        }
     }
-    
+
+    pub fn general<T : ToString>(message: T) -> Self {
+        Self::new(ErrorKind::General, message)
+    }
+
     pub fn definition<T : ToString>(message: T) -> Self {
-        Error::Definitions(message.to_string())
+        Self::new(ErrorKind::Definitions, message)
     }
 }
