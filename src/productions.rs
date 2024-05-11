@@ -1,8 +1,6 @@
 use crate::{System, Token};
 use crate::error::Error;
 
-const BUFFER_SIZE : f32 = 0.001;
-
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
     /// This chance value was set by the user
@@ -182,7 +180,7 @@ impl<'a> ProductionBuilder<'a> {
         // chance is distributed amongst them.
         if remaining_rules > 0 {
             let remaining_chance = 1.0 - chance_total;
-            let per_rule_chance = remaining_chance / (remaining_rules as f32) - BUFFER_SIZE;
+            let per_rule_chance = remaining_chance / (remaining_rules as f32);
 
             for body in self.bodies.iter_mut() {
                 if !body.chance.is_derived() { continue }
@@ -217,7 +215,6 @@ impl ProductionHead {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::productions::BUFFER_SIZE;
     use crate::Token;
 
     #[test]
@@ -230,8 +227,8 @@ mod tests {
             .build().unwrap();
 
         let production = &system.productions[0];
-        assert_eq!(production.bodies[0].chance.unwrap(), 0.5 - BUFFER_SIZE);
-        assert_eq!(production.bodies[1].chance.unwrap(), 0.5 - BUFFER_SIZE);
+        assert_eq!(production.bodies[0].chance.unwrap(), 0.5);
+        assert_eq!(production.bodies[1].chance.unwrap(), 0.5);
     }
 
     #[test]
@@ -245,7 +242,7 @@ mod tests {
 
         let production = &system.productions[0];
         assert_eq!(production.bodies[0].chance.unwrap(), 0.75);
-        assert_eq!(production.bodies[1].chance.unwrap(), 0.25 - BUFFER_SIZE);
+        assert_eq!(production.bodies[1].chance.unwrap(), 0.25);
     }
 
 }
