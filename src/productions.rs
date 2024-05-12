@@ -156,6 +156,10 @@ impl<'a> ProductionBuilder<'a> {
         self
     }
 
+    // pub fn bob(mut self, body: &[Rc<Token>]) -> Self {
+    //
+    // }
+
     pub fn build(mut self) -> crate::Result<&'a Production> {
         if self.head.is_none() {
             return Err(Error::definition("Production has no head"));
@@ -229,24 +233,35 @@ impl Production {
         if self.bodies.is_empty() {
             return Err(Error::new(ErrorKind::Execution, format!("production [{}] has no bodies", self.head.name)))
         }
-        
+
         let random : f32 = rand::thread_rng().gen_range(0.0..=1.0);
         let mut pos = 0.0_f32;
-        
+
         for body in &self.bodies {
             pos += body.chance.chance
-                .ok_or_else(|| 
-                    Error::new(ErrorKind::Execution, 
+                .ok_or_else(||
+                    Error::new(ErrorKind::Execution,
                                format!("production [{}] has no chance value", self.head.name)))?;
-            
+
             if pos >= random {
                 return Ok(ProductionString::from(body.tokens.clone()))
             }
         }
-        
+
         // We like have a rounding problem. Because of how we've set up our
         // chances, the selected production body will have been the last one.
         Ok(ProductionString::from(self.bodies.last().unwrap().tokens.clone()))
+    }
+}
+
+
+pub trait ToProduction {
+    fn to_production(&self) -> Token;
+}
+
+impl ToProduction for &str {
+    fn to_production(&self) -> Token {
+        Token::Production(self.to_string())
     }
 }
 
@@ -260,7 +275,7 @@ mod tests {
     #[test]
     fn no_chance_specified() {
         let mut system = System::define().build();
-        system.production()
+        system.add_production()
             .named("test")
             .to(&[Token::Terminal("bob".to_string())])
             .to(&[Token::Terminal("bobette".to_string())])
@@ -274,7 +289,7 @@ mod tests {
     #[test]
     fn fills_missing_chance() {
         let mut system = System::define().build();
-        system.production()
+        system.add_production()
             .named("test")
             .to_chance(0.75, &[Token::Terminal("bob".to_string())])
             .to(&[Token::Terminal("bobette".to_string())])
@@ -288,12 +303,3 @@ mod tests {
 }
 
 
-pub trait ToProduction {
-    fn to_production(&self) -> Token;
-}
-
-impl ToProduction for &str {
-    fn to_production(&self) -> Token {
-        Token::Production(self.to_string())
-    }
-}

@@ -2,11 +2,14 @@
 //!
 //! * [`System`]
 
+use std::collections::BTreeMap;
+use std::rc::Rc;
+
 use productions::{Production, ProductionBuilder};
+use tokens::{Token, ToTerminal};
 
 use crate::error::{Error, ErrorKind};
 use crate::strings::ProductionString;
-use tokens::{Token, ToTerminal};
 
 pub mod error;
 pub mod tokens;
@@ -15,10 +18,10 @@ pub mod strings;
 
 pub mod prelude {
     pub use super::error::Error;
-    pub use super::System;
-    pub use super::strings::ProductionString;
-    pub use super::tokens::{Token, ToTerminal};
     pub use super::RunSettings;
+    pub use super::strings::ProductionString;
+    pub use super::System;
+    pub use super::tokens::{Token, ToTerminal};
 }
 
 
@@ -27,7 +30,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone)]
 pub struct System {
-    terminals: Vec<Token>,
+    token_map: BTreeMap<String, Rc<Token>>,
     productions: Vec<Production>,
     axiom: Option<ProductionString>
 }
@@ -54,25 +57,43 @@ impl Builder {
 impl System {
     pub fn new() -> Self {
         System {
-            terminals: Vec::new(),
+            token_map: BTreeMap::new(),
             productions: Vec::new(),
             axiom: None
         }
     }
+
+    /// Get a reference to a terminal token. 
+    pub fn terminal<S: ToString>(&mut self, name: S) -> Result<Rc<Token>> {
+        let terminal = self.token_map.entry(name.to_string())
+            .or_insert_with(|| Rc::new(name.to_string().to_terminal()))
+            .clone();
+        
+        if !terminal.is_terminal() {
+            let message = format!("name [{}] is defined but is not a terminal", name.to_string());
+            return Err(Error::new(ErrorKind::Definitions, message));
+        }
+        Ok(terminal)
+    }
+
+    // pub fn production<S: ToString>(&mut self, name: S) -> Rc<Token> {
+    //
+    // }
 
     pub fn define() -> Builder {
         Builder { terminals: Vec::new() }
     }
 
     pub fn add_terminal<T: ToTerminal>(&mut self, terminal: T) -> &Self {
-        self.terminals.push(terminal.to_terminal());
+        let terminal = terminal.to_terminal();
+        self.token_map.insert(terminal.to_string(), Rc::new(terminal));
         self
     }
 
     /// Start defining a new production to add to the system.
     ///
     /// See [`Production`]
-    pub fn production(&mut self) -> ProductionBuilder {
+    pub fn add_production(&mut self) -> ProductionBuilder {
         ProductionBuilder::new(self)
     }
 
@@ -98,7 +119,7 @@ impl System {
     /// The simplest way of running (will panic because the system has not been set up).
     ///
     /// ```
-    /// use rusty_grammar::{RunSettings, System, Token, ToTerminal};
+    /// use rusty_grammar::prelude::*;
     /// let system = System::default();
     ///
     /// system.run(RunSettings::with(vec!["END".to_terminal()], 10)).unwrap();
@@ -109,7 +130,7 @@ impl System {
     /// since no starting axiom has been set):
     ///
     /// ```should_panic
-    /// use rusty_grammar::{RunSettings, System, Token, ToTerminal};
+    /// use rusty_grammar::prelude::*;
     /// let system = System::default();
     ///
     /// // Set the axiom here.
@@ -175,8 +196,14 @@ impl Default for System {
 
 impl From<Builder> for System {
     fn from(value: Builder) -> Self {
+        let mut terminals = BTreeMap::new();
+
+        for terminal in value.terminals {
+            let terminal = terminal.to_terminal();
+            terminals.insert(terminal.to_string(), Rc::new(terminal));
+        }
         System {
-            terminals: value.terminals.into_iter().map(Token::Terminal).collect(),
+            token_map: terminals,
             productions: Vec::new(),
             axiom: None
         }

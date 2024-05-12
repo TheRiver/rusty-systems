@@ -6,11 +6,23 @@ pub enum Token {
     Production(String)
 }
 
+impl Token {
+    #[inline]
+    pub fn is_terminal(&self) -> bool {
+        matches!(self, Token::Terminal(_))
+    }
+
+    #[inline]
+    pub fn is_production(&self) -> bool {
+        matches!(self, Token::Production(_))
+    }
+}
+
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Token::Terminal(name) => write!(f, "Terminal[{name}]"),
-            Token::Production(name) => write!(f, "Production[{name}]")
+            Token::Terminal(name) => f.write_str(name),
+            Token::Production(name) => f.write_str(name)
         }
     }
 }
