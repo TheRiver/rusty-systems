@@ -8,12 +8,26 @@ use crate::tokens::TokenKind;
 
 use super::Result;
 
+/// Represents an L-system. This is the base for running the
+/// production rules.
+///
+/// * Productions can be parsed via strings.
+/// * Productions can be programmatically created.
+///
+/// This is thread safe, and is [`Sync`] and [`Send`].
+///
+/// See [`Token`].
 pub struct System {
     tokens: RwLock<BTreeMap<String, Token>>,
     token_id: AtomicU32
 }
 
 impl System {
+
+    pub fn hello(&self) -> String {
+        String::from("hello world")
+    }
+
     pub fn new() -> Self {
         System {
             tokens: RwLock::new(BTreeMap::new()),
@@ -111,6 +125,7 @@ impl Default for System {
 
 #[cfg(test)]
 mod tests {
+    use std::thread;
     use super::*;
 
     #[test]
@@ -153,5 +168,34 @@ mod tests {
         let token2 = system.add_token("one", TokenKind::Terminal).unwrap();
 
         assert_eq!(token1.code(), token2.code());
+    }
+
+    #[test]
+    fn sync_and_send() {
+        let token1: RwLock<Option<Token>> = RwLock::new(None);
+        let token2: RwLock<Option<Token>> = RwLock::new(None);
+
+        let system = System::new();
+
+        thread::scope(|s| {
+            s.spawn(|| {
+                let lock = token1.write();
+                if let Ok(mut token1) = lock {
+                    *token1 = Some(system.add_token("one", TokenKind::Terminal).unwrap());
+                }
+            });
+
+            s.spawn(|| {
+                let lock = token2.write();
+                if let Ok(mut token2) = lock {
+                    *token2 = Some(system.add_token("two", TokenKind::Terminal).unwrap());
+                }
+            });
+        });
+
+        let token1 = token1.read().unwrap().unwrap();
+        let token2 = token2.read().unwrap().unwrap();
+
+        assert_ne!(token1.code(), token2.code());
     }
 }
