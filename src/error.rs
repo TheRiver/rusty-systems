@@ -5,7 +5,9 @@ pub enum ErrorKind {
     General,
     /// Errors related to defining systems, production rules,
     /// and so on.
-    Definitions
+    Definitions,
+    /// Errors related to running a system. See [`System::run`].
+    Execution
 }
 
 

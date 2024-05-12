@@ -20,6 +20,8 @@ fn main() {
         .expect("Unable to build production");
 
     println!("{:?}", &system);
+    
+    system.run(20).unwrap();
 
 
     // system.production("Name")
