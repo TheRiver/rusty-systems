@@ -1,5 +1,7 @@
+use rand::Rng;
 use crate::{System, Token};
-use crate::error::Error;
+use crate::error::{Error, ErrorKind};
+use crate::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
@@ -208,6 +210,44 @@ impl ProductionHead {
         &self.name
     }
 
+    pub fn matches(&self, token: &Token) -> bool {
+        if let Token::Production(name) = token {
+            return name == self.name();
+        }
+
+        false
+    }
+}
+
+impl Production {
+    #[inline]
+    pub fn matches(&self, token: &Token) -> bool {
+        self.head.matches(token)
+    }
+
+    pub fn run(&self) -> crate::Result<Axiom> {
+        if self.bodies.is_empty() {
+            return Err(Error::new(ErrorKind::Execution, format!("production [{}] has no bodies", self.head.name)))
+        }
+        
+        let random : f32 = rand::thread_rng().gen_range(0.0..=1.0);
+        let mut pos = 0.0_f32;
+        
+        for body in &self.bodies {
+            pos += body.chance.chance
+                .ok_or_else(|| 
+                    Error::new(ErrorKind::Execution, 
+                               format!("production [{}] has no chance value", self.head.name)))?;
+            
+            if pos >= random {
+                return Ok(Axiom::from(body.tokens.clone()))
+            }
+        }
+        
+        // We like have a rounding problem. Because of how we've set up our
+        // chances, the selected production body will have been the last one.
+        Ok(Axiom::from(self.bodies.last().unwrap().tokens.clone()))
+    }
 }
 
 
@@ -245,4 +285,15 @@ mod tests {
         assert_eq!(production.bodies[1].chance.unwrap(), 0.25);
     }
 
+}
+
+
+pub trait ToProduction {
+    fn to_production(&self) -> Token;
+}
+
+impl ToProduction for &str {
+    fn to_production(&self) -> Token {
+        Token::Production(self.to_string())
+    }
 }
