@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
     General,
+    Parse,
     /// Errors related to defining systems, production rules,
     /// and so on.
     Definitions,

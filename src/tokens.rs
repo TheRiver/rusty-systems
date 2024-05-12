@@ -1,63 +1,55 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Clone)]
-pub enum Token {
-    Terminal(String),
-    Production(String)
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
+pub enum TokenKind {
+    Terminal,
+    Production
+}
+
+impl Display for TokenKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TokenKind::Terminal => f.write_str("Termial"),
+            TokenKind::Production => f.write_str("Production")
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
+pub struct Token {
+    kind: TokenKind,
+    /// A unique identifier for the token.
+    code: u32
 }
 
 impl Token {
+    pub fn new(kind: TokenKind, code: u32) -> Self {
+        Token {
+            kind, code
+        }
+    }
+    
+    pub fn kind(&self) -> TokenKind {
+        self.kind
+    }
+    
+    pub fn code(&self) -> u32 {
+        self.code
+    }
+    
     #[inline]
     pub fn is_terminal(&self) -> bool {
-        matches!(self, Token::Terminal(_))
+        matches!(self.kind, TokenKind::Terminal)
     }
 
     #[inline]
     pub fn is_production(&self) -> bool {
-        matches!(self, Token::Production(_))
+        matches!(self.kind, TokenKind::Production)
     }
 }
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Token::Terminal(name) => f.write_str(name),
-            Token::Production(name) => f.write_str(name)
-        }
-    }
-}
-
-
-impl From<String> for Token {
-    fn from(value: String) -> Self {
-        Token::Terminal(value)
-    }
-}
-
-impl From<&str> for Token {
-    fn from(value: &str) -> Self {
-        Token::Terminal(value.to_string())
-    }
-}
-
-pub trait ToTerminal {
-    fn to_terminal(self) -> Token;
-}
-
-impl ToTerminal for String {
-    fn to_terminal(self) -> Token {
-        Token::from(self)
-    }
-}
-
-impl ToTerminal for &str {
-    fn to_terminal(self) -> Token {
-        Token::from(self.to_string())
-    }
-}
-
-impl ToTerminal for Token {
-    fn to_terminal(self) -> Token {
-        self
+        write!(f, "{}[{}]", self.kind, self.code)
     }
 }
