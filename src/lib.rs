@@ -1,10 +1,15 @@
-use std::fmt::{Display, Formatter};
+//! A crate for procedurally generating content using L-systems.
+//!
+//! * [`System`]
+
 use productions::{Production, ProductionBuilder};
 
 use crate::error::{Error, ErrorKind};
 use crate::strings::ProductionString;
+use tokens::{Token, ToTerminal};
 
 pub mod error;
+pub mod tokens;
 pub mod productions;
 pub mod strings;
 
@@ -12,27 +17,13 @@ pub mod prelude {
     pub use super::error::Error;
     pub use super::System;
     pub use super::strings::ProductionString;
+    pub use super::tokens::{Token, ToTerminal};
+    pub use super::RunSettings;
 }
 
 
 /// A result type for functions that can return errors.
-pub type Result<T> = std::result::Result<T, error::Error>;
-
-
-#[derive(Debug, Clone)]
-pub enum Token {
-    Terminal(String),
-    Production(String)
-}
-
-impl Display for Token {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Token::Terminal(name) => write!(f, "Terminal[{name}]"),
-            Token::Production(name) => write!(f, "Production[{name}]")
-        }
-    }
-}
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone)]
 pub struct System {
@@ -192,39 +183,6 @@ impl From<Builder> for System {
     }
 }
 
-impl From<String> for Token {
-    fn from(value: String) -> Self {
-        Token::Terminal(value)
-    }
-}
-
-impl From<&str> for Token {
-    fn from(value: &str) -> Self {
-        Token::Terminal(value.to_string())
-    }
-}
-
-pub trait ToTerminal {
-    fn to_terminal(self) -> Token;
-}
-
-impl ToTerminal for String {
-    fn to_terminal(self) -> Token {
-        Token::from(self)
-    }
-}
-
-impl ToTerminal for &str {
-    fn to_terminal(self) -> Token {
-        Token::from(self.to_string())
-    }
-}
-
-impl ToTerminal for Token {
-    fn to_terminal(self) -> Token {
-        self
-    }
-}
 
 
 const DEFAULT_ITERATIONS: usize = 10;
