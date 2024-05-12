@@ -225,7 +225,7 @@ impl Production {
         self.head.matches(token)
     }
 
-    pub fn run(&self) -> crate::Result<Axiom> {
+    pub fn run(&self) -> crate::Result<ProductionString> {
         if self.bodies.is_empty() {
             return Err(Error::new(ErrorKind::Execution, format!("production [{}] has no bodies", self.head.name)))
         }
@@ -240,13 +240,13 @@ impl Production {
                                format!("production [{}] has no chance value", self.head.name)))?;
             
             if pos >= random {
-                return Ok(Axiom::from(body.tokens.clone()))
+                return Ok(ProductionString::from(body.tokens.clone()))
             }
         }
         
         // We like have a rounding problem. Because of how we've set up our
         // chances, the selected production body will have been the last one.
-        Ok(Axiom::from(self.bodies.last().unwrap().tokens.clone()))
+        Ok(ProductionString::from(self.bodies.last().unwrap().tokens.clone()))
     }
 }
 

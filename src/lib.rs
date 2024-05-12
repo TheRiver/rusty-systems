@@ -2,14 +2,16 @@ use std::fmt::{Display, Formatter};
 use productions::{Production, ProductionBuilder};
 
 use crate::error::{Error, ErrorKind};
+use crate::strings::ProductionString;
 
 pub mod error;
 pub mod productions;
+pub mod strings;
 
 pub mod prelude {
     pub use super::error::Error;
     pub use super::System;
-    pub use super::Axiom;
+    pub use super::strings::ProductionString;
 }
 
 
@@ -36,7 +38,7 @@ impl Display for Token {
 pub struct System {
     terminals: Vec<Token>,
     productions: Vec<Production>,
-    axiom: Option<Axiom>
+    axiom: Option<ProductionString>
 }
 
 #[derive(Debug, Clone)]
@@ -126,7 +128,7 @@ impl System {
     /// ```
     ///
     /// // This example fails since no starting axiom has been set.
-    pub fn run<T>(&self, options: T) -> Result<Axiom>
+    pub fn run<T>(&self, options: T) -> Result<ProductionString>
         where T : Into<RunSettings>
     {
         let options = options.into();
@@ -144,7 +146,7 @@ impl System {
             return Ok(axiom.clone())
         }
 
-        let mut current = &axiom.tokens;
+        let mut current = axiom.tokens();
         let mut next = Vec::new();
 
         for token in current {
@@ -160,7 +162,7 @@ impl System {
                     let found = found.unwrap();
                     println!("Found is {:?}", found);
                     found.run()?
-                        .tokens
+                        .tokens()
                         .iter()
                         .for_each(|token| next.push(token.clone()));
                 }
@@ -169,7 +171,7 @@ impl System {
 
         }
 
-        Ok(Axiom::from(next))
+        Ok(ProductionString::from(next))
     }
 }
 
@@ -230,7 +232,7 @@ const DEFAULT_ITERATIONS: usize = 10;
 #[derive(Debug, Clone)]
 pub struct RunSettings {
     max_iterations: usize,
-    axiom: Option<Axiom>
+    axiom: Option<ProductionString>
 }
 
 impl RunSettings {
@@ -242,7 +244,7 @@ impl RunSettings {
     }
 
     pub fn with<A>(axiom: A, max_iterations: usize) -> RunSettings
-        where A: Into<Axiom>
+        where A: Into<ProductionString>
     {
         RunSettings {
             max_iterations,
@@ -264,39 +266,3 @@ impl From<usize> for RunSettings {
     }
 }
 
-/// Represents the starting axiom for a [`System`]
-#[derive(Debug, Clone)]
-pub struct Axiom {
-    tokens: Vec<Token>
-}
-
-impl Axiom {
-    pub fn new() -> Self {
-        Axiom {
-            tokens: Vec::new()
-        }
-    }
-}
-
-impl Default for Axiom {
-    fn default() -> Self {
-        Axiom::new()
-    }
-}
-
-impl From<Vec<Token>> for Axiom {
-    fn from(value: Vec<Token>) -> Self {
-        Axiom {
-            tokens: value
-        }
-    }
-}
-
-
-impl From<Token> for Axiom {
-    fn from(value: Token) -> Self {
-        Axiom {
-            tokens: vec![value]
-        }
-    }
-}
