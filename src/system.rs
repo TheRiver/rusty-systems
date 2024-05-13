@@ -171,29 +171,23 @@ mod tests {
 
     #[test]
     fn sync_and_send() {
-        let token1: RwLock<Option<Token>> = RwLock::new(None);
-        let token2: RwLock<Option<Token>> = RwLock::new(None);
+        let mut token1 : Option<Token> = None;
+        let mut token2 : Option<Token> = None;
 
         let system = System::new();
 
         thread::scope(|s| {
             s.spawn(|| {
-                let lock = token1.write();
-                if let Ok(mut token1) = lock {
-                    *token1 = Some(system.add_token("one", TokenKind::Terminal).unwrap());
-                }
+                token1 = Some(system.add_token("one", TokenKind::Terminal).unwrap());
             });
 
             s.spawn(|| {
-                let lock = token2.write();
-                if let Ok(mut token2) = lock {
-                    *token2 = Some(system.add_token("two", TokenKind::Terminal).unwrap());
-                }
+                token2 = Some(system.add_token("two", TokenKind::Terminal).unwrap());
             });
         });
 
-        let token1 = token1.read().unwrap().unwrap();
-        let token2 = token2.read().unwrap().unwrap();
+        let token1 = token1.unwrap();
+        let token2 = token2.unwrap();
 
         assert_ne!(token1.code(), token2.code());
     }
