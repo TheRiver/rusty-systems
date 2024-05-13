@@ -1,12 +1,12 @@
 //! Tools for handling the tokens that make up strings in the L-system ([`crate::strings::ProductionString`]).
-//! 
+//!
 //! Tokens can be of various kinds:
-//! 
+//!
 //! * [`TokenKind::Terminal`] are the strict endpoints of the L-System. No production rule can target them.
 //! * [`TokenKind::Production`] are those that can be handled by a production rule.
-//! 
-//! Production rules ([`crate::productions::Production`] will enforce that the target of a 
-//! production is a token of kind [`TokenKind::Production`].
+//!
+//! Production rules ([`crate::productions::Production`] will enforce that the target of a
+//! production is a token of kind [`crate::TokenKind::Production`].
 
 use std::fmt::{Display, Formatter};
 
@@ -41,7 +41,7 @@ pub struct Token {
 }
 
 impl Token {
-    
+
     pub fn new(kind: TokenKind, code: u32) -> Self {
         Token {
             kind, code
