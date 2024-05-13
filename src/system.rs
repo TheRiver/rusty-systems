@@ -86,16 +86,13 @@ impl System {
         }
 
         let body = ProductionBody::new(ProductionString::from(body_tokens));
-
-        println!("Head is {:?}", head);
-        println!("tail is {:?}", body);
         
         let lock = self.productions.get_mut();
         if let Ok(productions) = lock {
             productions.push(Production::new(head, body));
             return Ok(productions.last().unwrap())
         }
-        
+
         Err(Error::general("Poison error attempting to access productions lock"))
     }
 
