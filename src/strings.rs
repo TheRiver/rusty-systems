@@ -15,20 +15,20 @@ impl ProductionString {
         }
     }
 
-    /// Creates an / the _empty_ production string. This is a 
+    /// Creates an / the _empty_ production string. This is a
     /// synonym for [`ProductionString::new`].
-    #[inline] 
+    #[inline]
     pub fn empty() -> Self {
         ProductionString::new()
     }
-    
+
     /// Whether the production string is empty or not. i.e., whether this is
     /// the _empty_ string.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.tokens.is_empty()
     }
-    
+
     /// Returns the length of the production string.
     #[inline]
     pub fn len(&self) -> usize {
@@ -39,6 +39,12 @@ impl ProductionString {
     #[inline]
     pub fn tokens(&self) -> &Vec<Token> {
         &self.tokens
+    }
+
+    /// Add another token to the end of the string.
+    #[inline]
+    pub fn push_token(&mut self, token: Token) {
+        self.tokens.push(token);
     }
 }
 
@@ -68,11 +74,11 @@ impl From<Token> for ProductionString {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn empty_string_is_empty() {
         let empty = ProductionString::empty();
-        
+
         assert!(empty.is_empty());
         assert_eq!(empty.len(), 0);
     }

@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
 
@@ -86,7 +87,7 @@ impl System {
         }
 
         let body = ProductionBody::new(ProductionString::from(body_tokens));
-        
+
         let lock = self.productions.get_mut();
         if let Ok(productions) = lock {
             productions.push(Production::new(head, body));
@@ -94,6 +95,25 @@ impl System {
         }
 
         Err(Error::general("Poison error attempting to access productions lock"))
+    }
+
+    pub fn derive_once(&self, string: ProductionString) -> Option<ProductionString> {
+        if string.is_empty() {
+            return None
+        }
+
+        let mut result = ProductionString::default();
+
+        for token in string.tokens() {
+            if token.is_terminal() {
+                result.push_token(*token);
+            }
+        }
+
+        match result.len() {
+            0 => None,
+            _ => Some(result)
+        }
     }
 
 
@@ -121,6 +141,31 @@ impl System {
         let token = Token::new(kind, atomic);
         map.insert(name.to_string(), token);
         return Ok(map.get(name).copied().unwrap())
+    }
+
+    /// Return the token that represents the given term, if it exists.
+    ///
+    ///Note that this does not create any new tokens to the system.
+    pub fn get_token(&self, name: &str) -> Option<Token> {
+        if let Ok(tokens) = self.tokens.read() {
+            return tokens.get(name).copied();
+        }
+
+        panic!("Access to the token vector has been poisoned");
+    }
+    
+    pub fn create_string(&self, string: &str) -> crate::Result<ProductionString> {
+        let mut result = ProductionString::default();
+        
+        let items = string.trim().split_ascii_whitespace();
+        
+        for term in items {
+            let kind = determine_kind(term)
+                .ok_or_else(|| Error::new(ErrorKind::Parse, "Unable to determine token kind"))?;
+            result.push_token(self.add_token(term, kind)?);
+        }
+        
+        Ok(result)
     }
 }
 
