@@ -97,7 +97,7 @@ impl System {
         Err(Error::general("Poison error attempting to access productions lock"))
     }
 
-    pub fn to_string(&self, string: &ProductionString) -> crate::Result<String> {
+    pub fn to_string(&self, string: &ProductionString) -> Result<String> {
 
 
         let mut code_to_string = HashMap::new();
@@ -189,7 +189,7 @@ impl System {
         panic!("Access to the token vector has been poisoned");
     }
 
-    pub fn to_production_string(&self, string: &str) -> crate::Result<ProductionString> {
+    pub fn to_production_string(&self, string: &str) -> Result<ProductionString> {
         let mut result = ProductionString::default();
 
         let items = string.trim().split_ascii_whitespace();
