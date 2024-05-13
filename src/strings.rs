@@ -71,6 +71,16 @@ impl From<Token> for ProductionString {
     }
 }
 
+impl IntoIterator for ProductionString {
+    type Item = Token;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.tokens.into_iter()
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
