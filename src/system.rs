@@ -4,7 +4,8 @@ use std::sync::RwLock;
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::tokens::TokenKind;
+use crate::productions::ProductionHead;
+use crate::tokens::{determine_kind, TokenKind};
 
 use super::Result;
 
@@ -17,6 +18,7 @@ use super::Result;
 /// This is thread safe, and is [`Sync`] and [`Send`].
 ///
 /// See [`Token`].
+#[derive(Debug)]
 pub struct System {
     tokens: RwLock<BTreeMap<String, Token>>,
     token_id: AtomicU32
@@ -68,22 +70,19 @@ impl System {
         }
 
         let head = head[0];
-        if let Some(ch) = head.chars().next() {
-           if !ch.is_ascii_uppercase() {
-               return Err(Error::new(ErrorKind::Parse,
-                                     "production tokes should start with a capitalised letter"));
-           }
+        let is_production = determine_kind(head)
+            .map(|kind| kind.is_production())
+            .unwrap_or(false);
+
+        if !is_production {
+            return Err(Error::new(ErrorKind::Parse,
+                                  "production tokes should start with a capitalised letter"));
         }
 
-
         let head_token = self.add_token(head, TokenKind::Production)?;
-        // let mut bodies = Vec::new();
-        //
-        // for bod in body {
-        //     bodies.push(self.add_token(&bod, TokenKind::Terminal)?)
-        // }
+        let head = ProductionHead::new(head_token);
 
-        println!("Head is {:?} with token {head_token:?}", head);
+        println!("Head is {:?}", head);
         println!("tail is {:?}", body);
 
         Ok(())
@@ -110,7 +109,7 @@ impl System {
         }
 
         // Safely create a new token.
-        let atomic = self.token_id.fetch_add(1, Ordering::Relaxed);
+        let atomic = self.token_id.fetch_add(1, Ordering::SeqCst);
         let token = Token::new(kind, atomic);
         map.insert(name.to_string(), token);
         return Ok(map.get(name).copied().unwrap())

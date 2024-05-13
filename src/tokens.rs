@@ -6,10 +6,19 @@ pub enum TokenKind {
     Production
 }
 
+impl TokenKind {
+    pub fn is_terminal(&self) -> bool {
+        matches!(self, TokenKind::Terminal)
+    }
+    pub fn is_production(&self) -> bool {
+        matches!(self, TokenKind::Production)
+    }
+}
+
 impl Display for TokenKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            TokenKind::Terminal => f.write_str("Termial"),
+            TokenKind::Terminal => f.write_str("Terminal"),
             TokenKind::Production => f.write_str("Production")
         }
     }
@@ -52,4 +61,23 @@ impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}[{}]", self.kind, self.code)
     }
+}
+
+
+/// For the default string parser, this determines the kind 
+/// of [`Token`] it should be parsed as. 
+/// 
+/// Please note that the rules this function uses for 
+/// differentiating between terminals and productions 
+/// 
+pub fn determine_kind(string: &str) -> Option<TokenKind> {
+    let string = string.trim();
+    if string.is_empty() { return None }
+    
+    let first = string.chars().next()?;
+    if first.is_ascii_uppercase() {
+        return Some(TokenKind::Production)
+    }
+    
+    Some(TokenKind::Terminal)
 }

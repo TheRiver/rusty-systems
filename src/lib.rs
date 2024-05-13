@@ -3,7 +3,7 @@
 
 pub mod error;
 pub mod tokens;
-// pub mod productions;
+pub mod productions;
 pub mod strings;
 pub mod system;
 
