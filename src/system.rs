@@ -4,7 +4,7 @@ use std::sync::RwLock;
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::ProductionHead;
+use crate::productions::{ProductionBody, ProductionHead};
 use crate::tokens::{determine_kind, TokenKind};
 
 use super::Result;
@@ -25,15 +25,10 @@ pub struct System {
 }
 
 impl System {
-
-    pub fn hello(&self) -> String {
-        String::from("hello world")
-    }
-
     pub fn new() -> Self {
         System {
             tokens: RwLock::new(BTreeMap::new()),
-            token_id: AtomicU32::default()
+            token_id: AtomicU32::new(100)
         }
     }
 
@@ -81,6 +76,14 @@ impl System {
 
         let head_token = self.add_token(head, TokenKind::Production)?;
         let head = ProductionHead::build(head_token)?;
+
+        let mut body_tokens = Vec::new();
+        for term in body {
+            let kind = determine_kind(term).ok_or_else(|| Error::new(ErrorKind::Parse,"unable to determine token type"))?;
+            body_tokens.push(self.add_token(term, kind)?);
+        }
+
+        let body = ProductionBody::new(ProductionString::from(body_tokens));
 
         println!("Head is {:?}", head);
         println!("tail is {:?}", body);
