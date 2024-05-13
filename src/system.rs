@@ -97,25 +97,19 @@ impl System {
         Err(Error::general("Poison error attempting to access productions lock"))
     }
 
+    /// Run a single iteration of the productions on the given string.
+    /// Returns [`None`] if an empty string is produced.
     pub fn derive_once(&self, string: ProductionString) -> Option<ProductionString> {
         if string.is_empty() {
             return None
         }
 
-        let mut result = ProductionString::default();
-
-        for token in string.tokens() {
-            if token.is_terminal() {
-                result.push_token(*token);
-            }
+        if let Ok(productions) = self.productions.read() {
+            return derive_once(string, productions.deref());
         }
 
-        match result.len() {
-            0 => None,
-            _ => Some(result)
-        }
+        panic!("Poisoned lock on production list");
     }
-
 
     fn add_token(&self, name: &str, kind: TokenKind) -> Result<Token> {
         if name.is_empty() {
@@ -153,19 +147,31 @@ impl System {
 
         panic!("Access to the token vector has been poisoned");
     }
-    
+
     pub fn create_string(&self, string: &str) -> crate::Result<ProductionString> {
         let mut result = ProductionString::default();
-        
+
         let items = string.trim().split_ascii_whitespace();
-        
+
         for term in items {
             let kind = determine_kind(term)
                 .ok_or_else(|| Error::new(ErrorKind::Parse, "Unable to determine token kind"))?;
             result.push_token(self.add_token(term, kind)?);
         }
-        
+
         Ok(result)
+    }
+
+    /// Returns the index of the matching production.
+    fn find_matching_index(&self, string: &ProductionString, index: usize) -> Option<usize> {
+        if let Ok(productions) = self.productions.read() {
+            return productions.iter()
+                .enumerate()
+                .find(|(_, production)| production.matches(string, index) )
+                .map(|(i, _)| i);
+        }
+
+        panic!("Poisoned lock for accessing productions");
     }
 }
 
@@ -173,6 +179,54 @@ impl Default for System {
     fn default() -> Self {
         System::new()
     }
+}
+
+/// Given a vector of productions, this returns a reference to a
+/// production that matches the string at the given location.
+pub fn find_matching<'a>(productions: &'a [Production],
+                     string: &ProductionString, index: usize) -> Option<&'a Production> {
+    for production in productions {
+        if production.matches(string, index) {
+            return Some(production)
+        }
+    }
+
+    None
+}
+
+/// Runs one step of an iteration, using the given production rules.
+///
+/// Most of the time you will want to make use of [`System::derive_once`]
+/// instead of trying to call this function directly.  
+pub fn derive_once(string: ProductionString, productions: &[Production]) -> Option<ProductionString> {
+    if string.is_empty() {
+        return None
+    }
+
+    let mut result = ProductionString::default();
+
+    for (index, token) in string.tokens().iter().enumerate() {
+        if token.is_terminal() {
+            result.push_token(*token);
+            continue;
+        }
+
+        if let Some(production) = find_matching(productions.deref(), &string, index) {
+            production.body()
+                .string()
+                .tokens()
+                .iter()
+                .copied()
+                .for_each(|token| result.push_token(token));
+            continue;
+        }
+    }
+
+    match result.len() {
+        0 => None,
+        _ => Some(result)
+    }
+
 }
 
 #[cfg(test)]

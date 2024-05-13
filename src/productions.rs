@@ -105,23 +105,38 @@ impl ProductionHead {
     }
 
     /// Returns the token that this production is a target of.
+    #[inline]
     pub fn target(&self) -> Token {
         self.target
+    }
+
+    /// Returns true iff this matches the given
+    /// string's index position of the string.
+    pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
+        string.tokens()
+            .get(index)
+            .map(|token| self.target == *token)
+            .unwrap_or(false)
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct ProductionBody {
-    body: ProductionString
+    string: ProductionString
 }
 
 impl ProductionBody {
     /// Creates a new production body from the given
     /// [`ProductionString`].
-    pub fn new(body: ProductionString) -> Self {
+    pub fn new(string: ProductionString) -> Self {
         ProductionBody {
-            body
+            string
         }
+    }
+    
+    #[inline]
+    pub fn string(&self) -> &ProductionString {
+        &self.string
     }
 }
 
@@ -138,13 +153,22 @@ impl Production {
             body
         }
     }
-    
+
+    #[inline]
     pub fn head(&self) -> &ProductionHead {
         &self.head
     }
 
+    #[inline]
     pub fn body(&self) -> &ProductionBody {
         &self.body
+    }
+
+    /// Returns true iff this production's [`Production::head`] matches the given
+    /// string's index position of the string.
+    #[inline]
+    pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
+        self.head().matches(string, index)
     }
 }
 
