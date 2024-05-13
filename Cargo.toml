@@ -2,6 +2,10 @@
 name = "rusty-grammar"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/TheRiver/rusty-grammar/"
+keywords = ["grammar", "l-systems", "procedural", "generation"]
 
 [dependencies]
 rand = "0.8"
