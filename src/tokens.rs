@@ -6,7 +6,7 @@
 //! * [`TokenKind::Production`] are those that can be handled by a production rule.
 //!
 //! Production rules ([`crate::productions::Production`] will enforce that the target of a
-//! production is a token of kind [`crate::TokenKind::Production`].
+//! production is a token of kind [`TokenKind::Production`].
 
 use std::fmt::{Display, Formatter};
 

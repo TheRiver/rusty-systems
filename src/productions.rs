@@ -1,7 +1,6 @@
-use rand::Rng;
-use crate::{System, Token};
-use crate::error::{Error, ErrorKind};
+use crate::error::Error;
 use crate::prelude::*;
+use crate::Token;
 
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
@@ -92,9 +91,9 @@ pub struct ProductionHead {
 }
 
 impl ProductionHead {
-    /// Create a new production head. 
-    /// 
-    /// This will return [`Err`] if the given token is not a [`TokenKind::Production`]
+    /// Create a new production head.
+    ///
+    /// This will return [`Err`] if the given token is not a [`crate::tokens::TokenKind::Production`]
     pub fn build(target: Token) -> crate::Result<Self> {
         if !target.is_production() {
             return Err(Error::general("token should be a Production"));

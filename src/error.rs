@@ -7,7 +7,7 @@ pub enum ErrorKind {
     /// Errors related to defining systems, production rules,
     /// and so on.
     Definitions,
-    /// Errors related to running a system. See [`System::run`].
+    /// Errors related to running a system. See [`crate::system::System`].
     Execution
 }
 
