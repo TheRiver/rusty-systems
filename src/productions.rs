@@ -92,15 +92,37 @@ pub struct ProductionHead {
 }
 
 impl ProductionHead {
-    pub fn new(target: Token) -> Self {
-        ProductionHead {
-            target
+    /// Create a new production head. 
+    /// 
+    /// This will return [`Err`] if the given token is not a [`TokenKind::Production`]
+    pub fn build(target: Token) -> crate::Result<Self> {
+        if !target.is_production() {
+            return Err(Error::general("token should be a Production"));
         }
+
+        Ok(ProductionHead {
+            target
+        })
     }
 
     /// Returns the token that this production is a target of.
     pub fn target(&self) -> Token {
         self.target
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ProductionBody {
+    body: ProductionString
+}
+
+impl ProductionBody {
+    /// Creates a new production body from the given
+    /// [`ProductionString`].
+    pub fn new(body: ProductionString) -> Self {
+        ProductionBody {
+            body
+        }
     }
 }
 

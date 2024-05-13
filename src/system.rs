@@ -80,7 +80,7 @@ impl System {
         }
 
         let head_token = self.add_token(head, TokenKind::Production)?;
-        let head = ProductionHead::new(head_token);
+        let head = ProductionHead::build(head_token)?;
 
         println!("Head is {:?}", head);
         println!("tail is {:?}", body);

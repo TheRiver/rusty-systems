@@ -48,12 +48,12 @@ impl Token {
     
     #[inline]
     pub fn is_terminal(&self) -> bool {
-        matches!(self.kind, TokenKind::Terminal)
+        self.kind.is_terminal()
     }
 
     #[inline]
     pub fn is_production(&self) -> bool {
-        matches!(self.kind, TokenKind::Production)
+        self.kind.is_production()
     }
 }
 
