@@ -189,7 +189,7 @@ impl System {
         panic!("Access to the token vector has been poisoned");
     }
 
-    pub fn create_string(&self, string: &str) -> crate::Result<ProductionString> {
+    pub fn to_production_string(&self, string: &str) -> crate::Result<ProductionString> {
         let mut result = ProductionString::default();
 
         let items = string.trim().split_ascii_whitespace();
@@ -201,18 +201,6 @@ impl System {
         }
 
         Ok(result)
-    }
-
-    /// Returns the index of the matching production.
-    fn find_matching_index(&self, string: &ProductionString, index: usize) -> Option<usize> {
-        if let Ok(productions) = self.productions.read() {
-            return productions.iter()
-                .enumerate()
-                .find(|(_, production)| production.matches(string, index) )
-                .map(|(i, _)| i);
-        }
-
-        panic!("Poisoned lock for accessing productions");
     }
 }
 
@@ -287,7 +275,7 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
             continue;
         }
 
-        if let Some(production) = find_matching(productions.deref(), &string, index) {
+        if let Some(production) = find_matching(productions, &string, index) {
             production.body()
                 .string()
                 .tokens()
@@ -373,5 +361,15 @@ mod tests {
         let token2 = token2.unwrap();
 
         assert_ne!(token1.code(), token2.code());
+    }
+
+    #[test]
+    fn can_derive_once() {
+        let mut system = System::new();
+        system.parse_production("Company -> surname Company").expect("Unable to add production");
+        let string = system.to_production_string("Company").expect("Unable to create string");
+        let result = system.derive_once(string).expect("Unable to derive");
+
+        assert_eq!(result.len(), 2);
     }
 }

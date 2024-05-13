@@ -13,7 +13,7 @@ fn main() {
 
     println!("output {output:?}");
 
-    let string = system.create_string("bob Company snot trot").expect("Unable to parse");
+    let string = system.to_production_string("bob Company snot trot").expect("Unable to parse");
     println!("string+0: {string:?}");
     let string = system.derive_once(string).expect("No result");
     println!("string+1: {string:?}");
@@ -21,7 +21,7 @@ fn main() {
 
     let mut system = System::new();
     system.parse_production("Company -> surname Company").expect("Unable to add production");
-    let string = system.create_string("Company").expect("Unable to create string");
+    let string = system.to_production_string("Company").expect("Unable to create string");
     let result = system.derive(string, Default::default()).expect("Umable to derive");
     
     println!("After derivation: {}", system.to_string(&result).unwrap());
