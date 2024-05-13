@@ -5,7 +5,7 @@ fn main() {
 
     let mut system = System::new();
 
-    let production = system.add_production("Company -> Surname Surname").unwrap();
+    let production = system.parse_production("Company -> Surname Surname").unwrap();
 
     println!("The final production: {production:?}");
 }

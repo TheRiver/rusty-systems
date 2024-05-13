@@ -38,7 +38,7 @@ impl System {
     ///
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
-    pub fn add_production(&mut self, production: &str) -> Result<&Production> {
+    pub fn parse_production(&mut self, production: &str) -> Result<&Production> {
         let terms: Vec<&str> = production
             .trim()
             .split_ascii_whitespace()
@@ -141,25 +141,25 @@ mod tests {
     #[test]
     fn handles_empty_production() {
         let mut system = System::new();
-        assert!(system.add_production("").is_err());
+        assert!(system.parse_production("").is_err());
     }
 
     #[test]
     fn handles_no_head() {
         let mut system = System::new();
-        assert!(system.add_production("-> surname surname").is_err());
+        assert!(system.parse_production("-> surname surname").is_err());
     }
 
     #[test]
     fn handles_no_body() {
         let mut system = System::new();
-        assert!(system.add_production("Company ->").is_ok());
+        assert!(system.parse_production("Company ->").is_ok());
     }
 
     #[test]
     fn handles_correct() {
         let mut system = System::new();
-        assert!(system.add_production("Company -> surname surname").is_ok());
+        assert!(system.parse_production("Company -> surname surname").is_ok());
     }
 
     #[test]
