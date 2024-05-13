@@ -127,7 +127,25 @@ impl ProductionBody {
 
 #[derive(Debug, Clone)]
 pub struct Production {
-    head: ProductionHead
+    head: ProductionHead,
+    body: ProductionBody
+}
+
+impl Production {
+    pub fn new(head: ProductionHead, body: ProductionBody) -> Self {
+        Production {
+            head,
+            body
+        }
+    }
+    
+    pub fn head(&self) -> &ProductionHead {
+        &self.head
+    }
+
+    pub fn body(&self) -> &ProductionBody {
+        &self.body
+    }
 }
 
 

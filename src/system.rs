@@ -4,7 +4,7 @@ use std::sync::RwLock;
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::{ProductionBody, ProductionHead};
+use crate::productions::{Production, ProductionBody, ProductionHead};
 use crate::tokens::{determine_kind, TokenKind};
 
 use super::Result;
@@ -36,7 +36,7 @@ impl System {
     ///
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
-    pub fn add_production(&mut self, production: &str) -> Result<()> {
+    pub fn add_production(&mut self, production: &str) -> Result<Production> {
         let terms: Vec<&str> = production
             .trim()
             .split_ascii_whitespace()
@@ -88,7 +88,7 @@ impl System {
         println!("Head is {:?}", head);
         println!("tail is {:?}", body);
 
-        Ok(())
+        Ok(Production::new(head, body))
     }
 
 
