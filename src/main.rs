@@ -5,7 +5,9 @@ fn main() {
 
     let mut system = System::new();
 
-    system.add_production("Company -> Surname Surname").unwrap();
+    let production = system.add_production("Company -> Surname Surname").unwrap();
+    
+    println!("The final production: {production:?}");
 
     // let mut system = System::define()
     //     .terminal("surname")

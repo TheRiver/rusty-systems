@@ -21,6 +21,7 @@ use super::Result;
 #[derive(Debug)]
 pub struct System {
     tokens: RwLock<BTreeMap<String, Token>>,
+    productions: RwLock<Vec<Production>>,
     token_id: AtomicU32
 }
 
@@ -28,6 +29,7 @@ impl System {
     pub fn new() -> Self {
         System {
             tokens: RwLock::new(BTreeMap::new()),
+            productions: RwLock::new(Vec::new()),
             token_id: AtomicU32::new(100)
         }
     }
@@ -36,7 +38,7 @@ impl System {
     ///
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
-    pub fn add_production(&mut self, production: &str) -> Result<Production> {
+    pub fn add_production(&mut self, production: &str) -> Result<&Production> {
         let terms: Vec<&str> = production
             .trim()
             .split_ascii_whitespace()
@@ -87,8 +89,14 @@ impl System {
 
         println!("Head is {:?}", head);
         println!("tail is {:?}", body);
-
-        Ok(Production::new(head, body))
+        
+        let lock = self.productions.get_mut();
+        if let Ok(productions) = lock {
+            productions.push(Production::new(head, body));
+            return Ok(productions.last().unwrap())
+        }
+        
+        Err(Error::general("Poison error attempting to access productions lock"))
     }
 
 
