@@ -2,8 +2,11 @@
 //! 
 //! Tokens can be of various kinds:
 //! 
-//! * [`Token::Terminal`] are the strict endpoints of the L-System. No production rule can target them.
-//! * [`Token::Production`] 
+//! * [`TokenKind::Terminal`] are the strict endpoints of the L-System. No production rule can target them.
+//! * [`TokenKind::Production`] are those that can be handled by a production rule.
+//! 
+//! Production rules ([`crate::productions::Production`] will enforce that the target of a 
+//! production is a token of kind [`TokenKind::Production`].
 
 use std::fmt::{Display, Formatter};
 
