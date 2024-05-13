@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
@@ -97,6 +97,30 @@ impl System {
         Err(Error::general("Poison error attempting to access productions lock"))
     }
 
+    pub fn to_string(&self, string: &ProductionString) -> crate::Result<String> {
+
+
+        let mut code_to_string = HashMap::new();
+        if let Ok(tokens) = self.tokens.read() {
+            tokens.iter()
+                .for_each(|(i, val)| {
+                    code_to_string.insert(val.code(), i.clone());
+                });
+        } else {
+            return Err(Error::general("Poisoned lock when accessing tokens"));
+        }
+
+        let mut result : Vec<String> = Vec::new();
+        for token in string.tokens() {
+            let name = code_to_string.get(&token.code())
+                .cloned()
+                .ok_or_else(|| Error::general(format!("Unable to find term for token [{}]", token.code())))?;
+            result.push(name);
+        }
+
+        Ok(result.join(" "))
+    }
+
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
     pub fn derive_once(&self, string: ProductionString) -> Option<ProductionString> {
@@ -106,6 +130,23 @@ impl System {
 
         if let Ok(productions) = self.productions.read() {
             return derive_once(string, productions.deref());
+        }
+
+        panic!("Poisoned lock on production list");
+    }
+
+    pub fn derive(&self, string: ProductionString, settings: RunSettings) -> Option<ProductionString> {
+        if string.is_empty() {
+            return None
+        }
+
+        if let Ok(productions) = self.productions.read() {
+            let productions = productions.deref();
+            let mut current = string;
+            for _ in 0..settings.max_iterations() {
+                current = derive_once(current, productions)?;
+            }
+            return Some(current);
         }
 
         panic!("Poisoned lock on production list");
@@ -180,6 +221,41 @@ impl Default for System {
         System::new()
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct RunSettings {
+    max_iterations: usize
+}
+
+impl RunSettings {
+    pub fn for_max_iterations(max_iterations: usize) -> Self {
+        RunSettings { max_iterations }
+    }
+
+    /// The maximum number of iterations allowed for a derivation.
+    pub fn max_iterations(&self) -> usize {
+        self.max_iterations
+    }
+}
+
+
+impl From<usize> for RunSettings {
+    fn from(value: usize) -> Self {
+        RunSettings::for_max_iterations(value)
+    }
+}
+
+const DEFAULT_MAX_ITERATIONS : usize = 10;
+
+impl Default for RunSettings {
+    fn default() -> Self {
+        RunSettings {
+            max_iterations: DEFAULT_MAX_ITERATIONS
+        }
+    }
+}
+
+
 
 /// Given a vector of productions, this returns a reference to a
 /// production that matches the string at the given location.
