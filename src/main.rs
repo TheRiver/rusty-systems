@@ -21,6 +21,7 @@ fn main() {
 
     let mut system = System::new();
     system.parse_production("Company -> surname Company").expect("Unable to add production");
+    system.parse_production("Company -> bob bob").expect("Unable to add production");
     let string = system.to_production_string("Company").expect("Unable to create string");
     let result = system.derive(string, Default::default()).expect("Umable to derive");
     

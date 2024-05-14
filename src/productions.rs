@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use crate::error::Error;
 use crate::prelude::*;
 use crate::Token;
@@ -85,7 +86,7 @@ impl Chance {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionHead {
     target: Token
 }
@@ -172,7 +173,19 @@ impl Production {
     }
 }
 
+impl PartialEq for Production {
+    fn eq(&self, other: &Self) -> bool {
+        self.head().eq(other.head())
+    }
+}
 
+impl Eq for Production { }
+
+impl Hash for Production {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.head.hash(state);
+    }
+}
 
 // #[derive(Debug)]
 // pub struct ProductionBuilder<'a> {
