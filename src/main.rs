@@ -24,6 +24,6 @@ fn main() {
     let string = system.to_production_string("Company").expect("Unable to create string");
     let result = system.derive(string, Default::default()).expect("Umable to derive");
     
-    println!("After derivation: {}", system.to_string(&result).unwrap());
+    println!("\nAfter derivation: \n\t[{}]", system.to_string(&result).unwrap());
     
 }
