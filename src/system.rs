@@ -141,12 +141,7 @@ impl System {
         }
 
         if let Ok(productions) = self.productions.read() {
-            let productions = productions.deref();
-            let mut current = string;
-            for _ in 0..settings.max_iterations() {
-                current = derive_once(current, productions)?;
-            }
-            return Some(current);
+            return derive(string, productions.deref(), settings);
         }
 
         panic!("Poisoned lock on production list");
@@ -293,6 +288,19 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
 
 }
 
+pub fn derive(string: ProductionString, productions: &[Production], settings: RunSettings) -> Option<ProductionString> {
+    if string.is_empty() {
+        return None
+    }
+
+    let mut current = string;
+    for _ in 0..settings.max_iterations() {
+        current = derive_once(current, productions)?;
+    }
+
+    Some(current)
+}
+
 #[cfg(test)]
 mod tests {
     use std::thread;
@@ -371,5 +379,15 @@ mod tests {
         let result = system.derive_once(string).expect("Unable to derive");
 
         assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn can_derive_multiple_times() {
+        let mut system = System::new();
+        system.parse_production("Company -> surname Company").expect("Unable to add production");
+        let string = system.to_production_string("Company").expect("Unable to create string");
+        let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
+
+        assert_eq!(result.len(), 3);
     }
 }
