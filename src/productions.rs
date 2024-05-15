@@ -1,5 +1,5 @@
 use std::hash::{Hash, Hasher};
-use crate::error::Error;
+use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Token;
 
@@ -44,6 +44,7 @@ impl Chance {
     }
 
     /// Returns true iff this is of kind [`ChanceKind::Derived`]
+    #[inline]
     pub fn is_derived(&self) -> bool {
         matches!(self.kind, ChanceKind::Derived)
     }
@@ -51,7 +52,7 @@ impl Chance {
     /// Returns true iff this is of kind [`ChanceKind::Set`]
     #[inline]
     pub fn is_user_set(&self) -> bool {
-        !self.is_derived()
+        matches!(self.kind, ChanceKind::Set)
     }
 
     /// Update the chance value that is stored here.
@@ -141,7 +142,20 @@ impl ProductionBody {
             chance: Chance::empty()
         }
     }
-    
+
+    /// Creates a new production body from the given
+    /// [`ProductionString`] that can occur with the given chance.  
+    pub fn try_with_chance(chance: f32, string: ProductionString) -> crate::Result<Self> {
+        if !(0.0..=1.0).contains(&chance) {
+            return Err(Error::new(ErrorKind::Parse, "chance should be between 0.0 and 1.0 inclusive"));
+        }
+        
+        Ok(ProductionBody {
+            string,
+            chance: Chance::new(chance),
+        })
+    }
+
     /// Create a production body that is just the empty string
     pub fn empty() -> Self {
         ProductionBody {
@@ -149,7 +163,7 @@ impl ProductionBody {
             chance: Chance::empty()
         }
     }
-    
+
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.string.is_empty()
@@ -163,6 +177,11 @@ impl ProductionBody {
     #[inline]
     pub fn string(&self) -> &ProductionString {
         &self.string
+    }
+
+    #[inline]
+    pub fn chance(&self) -> &Chance {
+        &self.chance
     }
 }
 
@@ -200,12 +219,12 @@ impl Production {
     pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
         self.head().matches(string, index)
     }
-    
+
     pub fn add_body(&mut self, body: ProductionBody) {
         self.body.push(body);
     }
-    
-    /// Adds all of the body elements from `other` into `self`. 
+
+    /// Adds all of the body elements from `other` into `self`.
     pub fn merge(&mut self, other: Self) {
         other.body.into_iter().for_each(|b| self.add_body(b));
     }

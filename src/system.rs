@@ -7,7 +7,7 @@ use parser::determine_kind;
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
+use crate::productions::{Production, ProductionStore};
 use crate::tokens::{TokenKind, TokenStore};
 
 use super::Result;
@@ -156,7 +156,7 @@ impl ProductionStore for System {
         let lock = self.productions.get_mut();
         if let Ok(productions) = lock {
             let head = production.head().clone();
-            
+
             match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
                 None => productions.push(production),
                 Some(found) => {
@@ -166,7 +166,7 @@ impl ProductionStore for System {
 
             return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap())
         }
-        
+
         Err(Error::general("production lock is poisoned"))
     }
 }

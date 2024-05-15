@@ -19,12 +19,24 @@ pub fn parse_production_body<S>(store: &mut S, body: &str) -> Result<ProductionB
     let body = body.split_ascii_whitespace();
 
     let mut body_tokens = Vec::new();
-    for term in body {
+    let mut chance : Option<f32> = None;
+
+    for (index, term) in body.enumerate() {
+        if index == 0 {
+            if let Ok(val) = term.parse() {
+                chance = Some(val);
+                continue;
+            }
+        }
+
         let kind = determine_kind(term).ok_or_else(|| Error::new(ErrorKind::Parse,"unable to determine token type"))?;
         body_tokens.push(store.add_token(term, kind)?);
     }
 
-    Ok(ProductionBody::new(ProductionString::from(body_tokens)))
+    match chance {
+        None => Ok(ProductionBody::new(ProductionString::from(body_tokens))),
+        Some(chance) => ProductionBody::try_with_chance(chance, ProductionString::from(body_tokens))
+    }
 }
 
 pub fn parse_production_head<S>(store: &mut S, head: &str) -> Result<ProductionHead>
@@ -85,6 +97,10 @@ pub fn determine_kind(string: &str) -> Option<TokenKind> {
         return None;
     }
 
+    if string.parse::<f32>().is_ok() {
+        return None;
+    }
+
     let first = string.chars().next()?;
     if first.is_ascii_uppercase() {
         return Some(TokenKind::Production)
@@ -112,9 +128,20 @@ mod test {
     #[test]
     fn can_parse_body_without_chance() {
         let mut store = System::default();
-        let body = parse_production_body(&mut store, "A B");
+        let body = parse_production_body(&mut store, "A B").unwrap();
 
-        assert_eq!(body.unwrap().len(), 2);
+        assert_eq!(body.len(), 2);
+        assert!(body.chance().is_derived());
+    }
+
+    #[test]
+    fn can_parse_body_with_chance() {
+        let mut store = System::default();
+        let body = parse_production_body(&mut store, "0.3 A B").unwrap();
+
+        assert_eq!(body.len(), 2);
+        assert!(body.chance().is_user_set());
+        assert_eq!(body.chance().unwrap(), 0.3);
     }
 
     #[test]
