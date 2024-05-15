@@ -78,21 +78,6 @@ impl Display for Token {
     }
 }
 
-
-/// For the default string parser, this determines the kind
-/// of [`Token`] it should be parsed as.
-///
-/// Please note that the rules this function uses for
-/// differentiating between terminals and productions
-///
-pub fn determine_kind(string: &str) -> Option<TokenKind> {
-    let string = string.trim();
-    if string.is_empty() { return None }
-
-    let first = string.chars().next()?;
-    if first.is_ascii_uppercase() {
-        return Some(TokenKind::Production)
-    }
-
-    Some(TokenKind::Terminal)
+pub trait TokenStore {
+    fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token>;
 }

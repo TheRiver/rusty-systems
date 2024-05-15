@@ -3,12 +3,16 @@ use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
 
+use parser::determine_kind;
+
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::{Production, ProductionBody, ProductionHead};
-use crate::tokens::{determine_kind, TokenKind};
+use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
+use crate::tokens::{TokenKind, TokenStore};
 
 use super::Result;
+
+pub mod parser;
 
 /// Represents an L-system. This is the base for running the
 /// production rules.
@@ -40,68 +44,7 @@ impl System {
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
     pub fn parse_production(&mut self, production: &str) -> Result<&Production> {
-        let terms: Vec<&str> = production
-            .trim()
-            .split_ascii_whitespace()
-            .filter(|s| !s.is_empty())
-            .collect();
-
-        if terms.is_empty() {
-            return Err(Error::new(ErrorKind::Parse, "no terms in production string"));
-        }
-
-        let index = terms.iter()
-            .enumerate()
-            .find(|t| *t.1 == "->")
-            .map(|(i, _)| i)
-            .ok_or_else(|| Error::new(ErrorKind::Parse, "Unable to find \"->\" term"))?;
-
-        let head = &terms[0..index];
-        let body = &terms[index+1..];
-
-        if head.is_empty() {
-            return Err(Error::new(ErrorKind::Parse, "no head in production string"));
-        }
-
-        if head.len() != 1 {
-            return Err(Error::new(ErrorKind::Parse, "productions should be context free"));
-        }
-
-        let head = head[0];
-        let is_production = determine_kind(head)
-            .map(|kind| kind.is_production())
-            .unwrap_or(false);
-
-        if !is_production {
-            return Err(Error::new(ErrorKind::Parse,
-                                  "production tokes should start with a capitalised letter"));
-        }
-
-        let head_token = self.add_token(head, TokenKind::Production)?;
-        let head = ProductionHead::build(head_token)?;
-
-        let mut body_tokens = Vec::new();
-        for term in body {
-            let kind = determine_kind(term).ok_or_else(|| Error::new(ErrorKind::Parse,"unable to determine token type"))?;
-            body_tokens.push(self.add_token(term, kind)?);
-        }
-
-        let body = ProductionBody::new(ProductionString::from(body_tokens));
-
-        let lock = self.productions.get_mut();
-        if let Ok(productions) = lock {
-            // let production = Production::new(head, body);
-            match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
-                None => productions.push(Production::new(head.clone(), body)),
-                Some(found) => {
-                    found.add_body(body);
-                }
-            }
-
-            return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap())
-        }
-
-        Err(Error::general("Poison error attempting to access productions lock"))
+        parser::parse_production(self, production)
     }
 
     pub fn to_string(&self, string: &ProductionString) -> Result<String> {
@@ -154,32 +97,6 @@ impl System {
         Some(Err(Error::general("Poisoned lock on production list")))
     }
 
-    fn add_token(&self, name: &str, kind: TokenKind) -> Result<Token> {
-        if name.is_empty() {
-            return Err(Error::general("name should not be an empty string"));
-        }
-
-        let map = self.tokens.write();
-        if let Err(e) = map {
-            let message = format!("Error accessing token cache: {}", e);
-            return Err(Error::general(message));
-        }
-
-
-        let mut map = map.unwrap();
-
-        // If it already exists, return it.
-        if let Some(value) = map.get(name) {
-            return Ok(*value);
-        }
-
-        // Safely create a new token.
-        let atomic = self.token_id.fetch_add(1, Ordering::SeqCst);
-        let token = Token::new(kind, atomic);
-        map.insert(name.to_string(), token);
-        return Ok(map.get(name).copied().unwrap())
-    }
-
     /// Return the token that represents the given term, if it exists.
     ///
     ///Note that this does not create any new tokens to the system.
@@ -205,6 +122,55 @@ impl System {
         Ok(result)
     }
 }
+
+impl TokenStore for System {
+    fn add_token(&self, name: &str, kind: TokenKind) -> Result<Token> {
+        if name.is_empty() {
+            return Err(Error::general("name should not be an empty string"));
+        }
+
+        let map = self.tokens.write();
+        if let Err(e) = map {
+            let message = format!("Error accessing token cache: {}", e);
+            return Err(Error::general(message));
+        }
+
+
+        let mut map = map.unwrap();
+
+        // If it already exists, return it.
+        if let Some(value) = map.get(name) {
+            return Ok(*value);
+        }
+
+        // Safely create a new token.
+        let atomic = self.token_id.fetch_add(1, Ordering::SeqCst);
+        let token = Token::new(kind, atomic);
+        map.insert(name.to_string(), token);
+        return Ok(map.get(name).copied().unwrap())
+    }
+}
+
+impl ProductionStore for System {
+    fn add_production(&mut self, production: Production) -> Result<&Production> {
+        let lock = self.productions.get_mut();
+        if let Ok(productions) = lock {
+            let head = production.head().clone();
+            
+            match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
+                None => productions.push(production),
+                Some(found) => {
+                    found.merge(production);
+                }
+            }
+
+            return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap())
+        }
+        
+        Err(Error::general("production lock is poisoned"))
+    }
+}
+
 
 impl Default for System {
     fn default() -> Self {
@@ -311,9 +277,11 @@ pub fn derive(string: ProductionString, productions: &[Production], settings: Ru
     Some(Ok(current))
 }
 
+
 #[cfg(test)]
 mod tests {
     use std::thread;
+
     use super::*;
 
     #[test]
