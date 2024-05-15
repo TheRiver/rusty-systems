@@ -90,8 +90,15 @@ impl System {
 
         let lock = self.productions.get_mut();
         if let Ok(productions) = lock {
-            productions.push(Production::new(head, body));
-            return Ok(productions.last().unwrap())
+            // let production = Production::new(head, body);
+            match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
+                None => productions.push(Production::new(head.clone(), body)),
+                Some(found) => {
+                    found.add_body(body);
+                }
+            }
+
+            return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap())
         }
 
         Err(Error::general("Poison error attempting to access productions lock"))
@@ -123,7 +130,7 @@ impl System {
 
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
-    pub fn derive_once(&self, string: ProductionString) -> Option<ProductionString> {
+    pub fn derive_once(&self, string: ProductionString) -> Option<Result<ProductionString>> {
         if string.is_empty() {
             return None
         }
@@ -132,10 +139,10 @@ impl System {
             return derive_once(string, productions.deref());
         }
 
-        panic!("Poisoned lock on production list");
+        Some(Err(Error::general("Poisoned lock on production list")))
     }
 
-    pub fn derive(&self, string: ProductionString, settings: RunSettings) -> Option<ProductionString> {
+    pub fn derive(&self, string: ProductionString, settings: RunSettings) -> Option<Result<ProductionString>> {
         if string.is_empty() {
             return None
         }
@@ -144,7 +151,7 @@ impl System {
             return derive(string, productions.deref(), settings);
         }
 
-        panic!("Poisoned lock on production list");
+        Some(Err(Error::general("Poisoned lock on production list")))
     }
 
     fn add_token(&self, name: &str, kind: TokenKind) -> Result<Token> {
@@ -257,7 +264,7 @@ pub fn find_matching<'a>(productions: &'a [Production],
 ///
 /// Most of the time you will want to make use of [`System::derive_once`]
 /// instead of trying to call this function directly.  
-pub fn derive_once(string: ProductionString, productions: &[Production]) -> Option<ProductionString> {
+pub fn derive_once(string: ProductionString, productions: &[Production]) -> Option<Result<ProductionString>> {
     if string.is_empty() {
         return None
     }
@@ -271,7 +278,7 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
         }
 
         if let Some(production) = find_matching(productions, &string, index) {
-            production.body()
+            production.body()?
                 .string()
                 .tokens()
                 .iter()
@@ -283,22 +290,25 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
 
     match result.len() {
         0 => None,
-        _ => Some(result)
+        _ => Some(Ok(result))
     }
 
 }
 
-pub fn derive(string: ProductionString, productions: &[Production], settings: RunSettings) -> Option<ProductionString> {
+pub fn derive(string: ProductionString, productions: &[Production], settings: RunSettings) -> Option<Result<ProductionString>> {
     if string.is_empty() {
         return None
     }
 
     let mut current = string;
     for _ in 0..settings.max_iterations() {
-        current = derive_once(current, productions)?;
+        match derive_once(current, productions)? {
+            Err(e) => return Some(Err(e)),
+            Ok(val) => current = val
+        }
     }
 
-    Some(current)
+    Some(Ok(current))
 }
 
 #[cfg(test)]
@@ -376,9 +386,9 @@ mod tests {
         let mut system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
         let string = system.to_production_string("Company").expect("Unable to create string");
-        let result = system.derive_once(string).expect("Unable to derive");
+        let result = system.derive_once(string).unwrap().unwrap();
 
-        assert_eq!(result.len(), 2);
+        assert_eq!(result. len(), 2);
     }
 
     #[test]
@@ -388,6 +398,6 @@ mod tests {
         let string = system.to_production_string("Company").expect("Unable to create string");
         let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
 
-        assert_eq!(result.len(), 3);
+        assert_eq!(result.unwrap().len(), 3);
     }
 }

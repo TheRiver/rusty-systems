@@ -21,10 +21,11 @@ fn main() {
 
     let mut system = System::new();
     system.parse_production("Company -> surname Company").expect("Unable to add production");
-    system.parse_production("Company -> bob bob").expect("Unable to add production");
+    let bob = system.parse_production("Company -> bob Company bob").expect("Unable to add production").clone();
     let string = system.to_production_string("Company").expect("Unable to create string");
-    let result = system.derive(string, Default::default()).expect("Umable to derive");
+    let result = system.derive(string, Default::default()).expect("Umable to derive").unwrap();
     
+    println!("bob is: {}", system.to_string(bob.body().unwrap().string()).expect("Can't string"));
     println!("\nAfter derivation: \n\t[{}]", system.to_string(&result).unwrap());
     
 }

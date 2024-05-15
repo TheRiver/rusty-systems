@@ -3,6 +3,9 @@ use crate::error::Error;
 use crate::prelude::*;
 use crate::Token;
 
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
     /// This chance value was set by the user
@@ -30,6 +33,8 @@ impl Chance {
         }
     }
 
+    /// Returns an unset chance object that is meant to be automatically
+    /// determined by the system.
     #[inline]
     pub fn empty() -> Self {
         Chance {
@@ -123,7 +128,8 @@ impl ProductionHead {
 
 #[derive(Debug, Clone)]
 pub struct ProductionBody {
-    string: ProductionString
+    string: ProductionString,
+    chance: Chance
 }
 
 impl ProductionBody {
@@ -131,7 +137,8 @@ impl ProductionBody {
     /// [`ProductionString`].
     pub fn new(string: ProductionString) -> Self {
         ProductionBody {
-            string
+            string,
+            chance: Chance::empty()
         }
     }
     
@@ -144,14 +151,14 @@ impl ProductionBody {
 #[derive(Debug, Clone)]
 pub struct Production {
     head: ProductionHead,
-    body: ProductionBody
+    body: Vec<ProductionBody>
 }
 
 impl Production {
     pub fn new(head: ProductionHead, body: ProductionBody) -> Self {
         Production {
             head,
-            body
+            body: vec![body]
         }
     }
 
@@ -161,8 +168,12 @@ impl Production {
     }
 
     #[inline]
-    pub fn body(&self) -> &ProductionBody {
-        &self.body
+    pub fn body(&self) -> Option<&ProductionBody> {
+        if self.body.is_empty() {
+            return None
+        }
+
+        return self.body.choose(&mut thread_rng())
     }
 
     /// Returns true iff this production's [`Production::head`] matches the given
@@ -170,6 +181,10 @@ impl Production {
     #[inline]
     pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
         self.head().matches(string, index)
+    }
+    
+    pub fn add_body(&mut self, body: ProductionBody) {
+        self.body.push(body);
     }
 }
 
