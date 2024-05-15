@@ -1,8 +1,14 @@
+//! Tools for parsing simple L-Systems
+//!
+//! These are the functions that [`crate::prelude::System`] itself uses, but they
+//! are generic enough that you can make use of them yourself and if you wish to
+//! avoid using [`crate::prelude::System`].
+
 use crate::error::{Error, ErrorKind};
 use crate::prelude::{ProductionString};
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
 use crate::tokens::{TokenKind, TokenStore};
-use crate::Result;
+use crate::{Result};
 
 
 /// Parse the body of a production rule.
@@ -84,7 +90,7 @@ pub fn parse_production<'a, S>(store: &'a mut S, production: &str) -> Result<&'a
 
 
 /// For the default string parser, this determines the kind
-/// of [`Token`] it should be parsed as.
+/// of [`crate::prelude::Token`] it should be parsed as.
 ///
 /// Please note that the rules this function uses for
 /// differentiating between terminals and productions
