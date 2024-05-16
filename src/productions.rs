@@ -185,6 +185,19 @@ impl ProductionBody {
     }
 }
 
+/// Represents production rules in an L-System. 
+/// 
+/// These are rules
+/// that may be represented in the form `A -> B`, where 
+/// A (called here the [`ProductionHead`] is the token 
+/// that will be matched again, and the tokens after
+/// the arrow (in this case the `B`, called here the [`ProductionBody`] is what
+/// the tokens matching the head in the input string / axiom will be replaced with. 
+/// 
+/// See:
+/// * [`Production::head`]
+/// * [`Production::body`]
+/// * [`System::parse_production`]
 #[derive(Debug, Clone)]
 pub struct Production {
     head: ProductionHead,
