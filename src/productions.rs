@@ -55,27 +55,7 @@ impl Chance {
     pub fn is_user_set(&self) -> bool {
         matches!(self.kind, ChanceKind::Set)
     }
-
-    /// Update the chance value that is stored here.
-    ///
-    /// Chance values of kind [`ChanceKind::Set`] cannot be updated.
-    pub fn update(&mut self, chance: f32) -> crate::Result<()> {
-        if self.is_user_set() {
-            return Err(Error::definition("user set chance values should not be updated"));
-        }
-
-        if chance < 0.0 {
-            return Err(Error::definition("chance should be positive"));
-        }
-
-        if chance > 1.0 {
-            return Err(Error::definition("chance should be less than 1.0"));
-        }
-
-        self.chance = Some(chance);
-        Ok(())
-    }
-
+    
     #[inline]
     pub fn expect(&self, message: &str) -> f32 {
         self.chance.expect(message)
@@ -223,8 +203,8 @@ impl Production {
         if self.body.is_empty() {
             return Err(Error::execution("Production has no bodies set"))
         }
-        
-        // Return the only instance. Chance does not matter here. 
+
+        // Return the only instance. Chance does not matter here.
         if self.body.len() == 1 {
             return Ok(self.body.last().unwrap());
         }
