@@ -55,7 +55,7 @@ impl Chance {
     pub fn is_user_set(&self) -> bool {
         matches!(self.kind, ChanceKind::Set)
     }
-    
+
     #[inline]
     pub fn expect(&self, message: &str) -> f32 {
         self.chance.expect(message)
@@ -82,7 +82,7 @@ impl ProductionHead {
     /// Create a new production head.
     ///
     /// This will return [`Err`] if the given token is not a [`crate::tokens::TokenKind::Production`]
-    pub fn build(target: Token) -> crate::Result<Self> {
+    pub fn build(target: Token) -> Result<Self> {
         if !target.is_production() {
             return Err(Error::general("token should be a Production"));
         }
@@ -126,7 +126,7 @@ impl ProductionBody {
 
     /// Creates a new production body from the given
     /// [`ProductionString`] that can occur with the given chance.
-    pub fn try_with_chance(chance: f32, string: ProductionString) -> crate::Result<Self> {
+    pub fn try_with_chance(chance: f32, string: ProductionString) -> Result<Self> {
         if !(0.0..=1.0).contains(&chance) {
             return Err(Error::new(ErrorKind::Parse, "chance should be between 0.0 and 1.0 inclusive"));
         }
@@ -170,7 +170,7 @@ impl ProductionBody {
 ///
 /// These are rules
 /// that may be represented in the form `A -> B`, where
-/// A (called here the [`ProductionHead`] is the token
+/// A (called here the [`ProductionHead`]) is the token
 /// that will be matched again, and the tokens after
 /// the arrow (in this case the `B`, called here the [`ProductionBody`] is what
 /// the tokens matching the head in the input string / axiom will be replaced with.
@@ -274,6 +274,6 @@ impl Hash for Production {
 }
 
 pub trait ProductionStore {
-    fn add_production(&mut self, production: Production) -> crate::Result<&Production>;
+    fn add_production(&mut self, production: Production) -> Result<&Production>;
 }
 
