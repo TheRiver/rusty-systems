@@ -244,7 +244,12 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
         }
 
         if let Some(production) = find_matching(productions, &string, index) {
-            production.body()?
+            let body = production.body();
+            if body.is_err() {
+                return body.err().map(Err);
+            }
+            
+            body.unwrap()
                 .string()
                 .tokens()
                 .iter()

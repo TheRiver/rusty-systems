@@ -48,4 +48,8 @@ impl Error {
     pub fn definition<T : ToString>(message: T) -> Self {
         Self::new(ErrorKind::Definitions, message)
     }
+
+    pub fn execution<T : ToString>(message: T) -> Self {
+        Self::new(ErrorKind::Execution, message)
+    }
 }

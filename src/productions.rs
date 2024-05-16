@@ -1,10 +1,11 @@
 use std::hash::{Hash, Hasher};
+
+use rand::{Rng, thread_rng};
+
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
+use crate::Result;
 use crate::Token;
-
-use rand::seq::SliceRandom;
-use rand::thread_rng;
 
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
@@ -144,12 +145,12 @@ impl ProductionBody {
     }
 
     /// Creates a new production body from the given
-    /// [`ProductionString`] that can occur with the given chance.  
+    /// [`ProductionString`] that can occur with the given chance.
     pub fn try_with_chance(chance: f32, string: ProductionString) -> crate::Result<Self> {
         if !(0.0..=1.0).contains(&chance) {
             return Err(Error::new(ErrorKind::Parse, "chance should be between 0.0 and 1.0 inclusive"));
         }
-        
+
         Ok(ProductionBody {
             string,
             chance: Chance::new(chance),
@@ -185,15 +186,15 @@ impl ProductionBody {
     }
 }
 
-/// Represents production rules in an L-System. 
-/// 
+/// Represents production rules in an L-System.
+///
 /// These are rules
-/// that may be represented in the form `A -> B`, where 
-/// A (called here the [`ProductionHead`] is the token 
+/// that may be represented in the form `A -> B`, where
+/// A (called here the [`ProductionHead`] is the token
 /// that will be matched again, and the tokens after
 /// the arrow (in this case the `B`, called here the [`ProductionBody`] is what
-/// the tokens matching the head in the input string / axiom will be replaced with. 
-/// 
+/// the tokens matching the head in the input string / axiom will be replaced with.
+///
 /// See:
 /// * [`Production::head`]
 /// * [`Production::body`]
@@ -218,12 +219,47 @@ impl Production {
     }
 
     #[inline]
-    pub fn body(&self) -> Option<&ProductionBody> {
+    pub fn body(&self) -> Result<&ProductionBody> {
         if self.body.is_empty() {
-            return None
+            return Err(Error::execution("Production has no bodies set"))
+        }
+        
+        // Return the only instance. Chance does not matter here. 
+        if self.body.len() == 1 {
+            return Ok(self.body.last().unwrap());
         }
 
-        return self.body.choose(&mut thread_rng())
+        let total_chance : f32 = self.body.iter()
+            .map(|b| b.chance.unwrap_or(0.0))
+            .sum();
+
+        if total_chance < 0.0 {
+            return Err(Error::execution("chance should never be negative"));
+        }
+
+        if total_chance > 1.0 {
+            return Err(Error::execution("total chance of production bodies should not be greater than 1.0"));
+        }
+
+        let remaining = self.body.iter().filter(|b| b.chance.is_derived()).count();
+        let default_chance = if remaining == 0 {
+            0_f32
+        } else {
+            (1.0_f32 - total_chance) / (remaining as f32)
+        };
+
+        let mut current = 0_f32;
+        let random : f32 = thread_rng().gen_range(0.0..=1.0);
+
+        for body in &self.body {
+            current += body.chance.unwrap_or(default_chance);
+            if random < current {
+                return Ok(body);
+            }
+        }
+
+        // All remaining chance given to last body.
+        return Ok(self.body.last().unwrap());
     }
 
     /// Returns true iff this production's [`Production::head`] matches the given
