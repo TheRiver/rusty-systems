@@ -10,9 +10,12 @@
 
 use std::fmt::{Display, Formatter};
 
+/// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
 pub enum TokenKind {
+    /// Terminals are never transformed by production rules. 
     Terminal,
+    /// Production tokens may be targets for [`crate::productions::Production`] rules.
     Production
 }
 
