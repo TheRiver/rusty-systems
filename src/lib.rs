@@ -26,6 +26,20 @@
 //! 
 //! See [`system::parser`] for more information.
 //! 
+//! # Examples
+//! 
+//! The crate's example directory has various examples:
+//! 
+//! * [Vector graphics plant][skia-plant]
+//! 
+//!   This example uses two rules to produce a small plant. The tokens
+//!   are interpreted using a classic [logo turtle][logo-turtle] interpretation
+//!   to produce vector graphics. While the example uses [tiny skia][tiny-skia],
+//!   this can be replaced with any vector graphic library.
+//! 
+//!   If you clone the code repository, you can run this using:
+//! 
+//!   ```cargo run --example skia-plant ```
 //!
 //! # Learn more
 //!
@@ -34,6 +48,9 @@
 //! 
 //! [wiki]: https://en.wikipedia.org/wiki/L-system
 //! [abop]: http://algorithmicbotany.org/papers/#abop
+//! [skia-plant]: https://github.com/TheRiver/rusty-grammar/blob/main/examples/skia-plant/main.rs
+//! [logo-turtle]: https://en.wikipedia.org/wiki/Logo_(programming_language)
+//! [tiny-skia]: https://github.com/RazrFalcon/tiny-skia
 
 pub mod error;
 pub mod tokens;
