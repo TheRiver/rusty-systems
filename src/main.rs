@@ -26,6 +26,8 @@ fn main() {
     let result = system.derive(string, Default::default()).expect("Umable to derive").unwrap();
     
     println!("bob is: \n{}", system.format(&bob).unwrap());
-    println!("\nAfter derivation: \n\t[{}]", system.to_string(&result).unwrap());
+    println!("\nAfter derivation: \n\t[{}]", system.format(&result).unwrap());
+    
+    
     
 }

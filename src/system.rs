@@ -66,27 +66,6 @@ impl System {
         item.format(&code_to_string)
     }
 
-    pub fn to_string(&self, string: &ProductionString) -> Result<String> {
-        let mut code_to_string = HashMap::new();
-        if let Ok(tokens) = self.tokens.read() {
-            tokens.iter()
-                .for_each(|(i, val)| {
-                    code_to_string.insert(val.code(), i.clone());
-                });
-        } else {
-            return Err(Error::general("Poisoned lock when accessing tokens"));
-        }
-
-        let mut result : Vec<String> = Vec::new();
-        for token in string.tokens() {
-            let name = code_to_string.get(&token.code())
-                .cloned()
-                .ok_or_else(|| Error::general(format!("Unable to find term for token [{}]", token.code())))?;
-            result.push(name);
-        }
-
-        Ok(result.join(" "))
-    }
 
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
