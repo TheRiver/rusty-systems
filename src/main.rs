@@ -3,7 +3,7 @@ use rusty_grammar::prelude::*;
 fn main() {
     println!("Hello, world!");
 
-    let mut system = System::new();
+    let system = System::new();
 
     let production = system.parse_production("Company -> surname surname").unwrap();
     println!("The final production: {production:?}");
@@ -13,19 +13,19 @@ fn main() {
 
     println!("output {output:?}");
 
-    let string = system.to_production_string("bob Company snot trot").expect("Unable to parse");
+    let string = system.parse_prod_string("bob Company snot trot").expect("Unable to parse");
     println!("string+0: {string:?}");
     let string = system.derive_once(string).expect("No result");
     println!("string+1: {string:?}");
 
 
-    let mut system = System::new();
+    let system = System::new();
     system.parse_production("Company -> surname Company").expect("Unable to add production");
     let bob = system.parse_production("Company -> bob Company bob").expect("Unable to add production").clone();
-    let string = system.to_production_string("Company").expect("Unable to create string");
+    let string = system.parse_prod_string("Company").expect("Unable to create string");
     let result = system.derive(string, Default::default()).expect("Umable to derive").unwrap();
     
-    println!("bob is: {}", system.to_string(bob.body().unwrap().string()).expect("Can't string"));
+    println!("bob is: \n{}", system.format(&bob).unwrap());
     println!("\nAfter derivation: \n\t[{}]", system.to_string(&result).unwrap());
     
 }

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use crate::DisplaySystem;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
@@ -77,6 +79,25 @@ impl IntoIterator for ProductionString {
 
     fn into_iter(self) -> Self::IntoIter {
         self.tokens.into_iter()
+    }
+}
+
+impl DisplaySystem for ProductionString {
+    fn format(&self, names: &HashMap<Token, String>) -> crate::Result<String> {
+        let mut error = false;
+        let string : Vec<String> = self.tokens()
+            .iter()
+            .map(|t| names.get(t))
+            .map(|o| o.ok_or_else(|| Error::general("Some tokens have no name")))
+            .filter_map(|r| r.map_err(|_| error = true).ok())
+            .cloned()
+            .collect();
+
+        if error {
+            return Err(Error::general("Unable to find names for all tokens"));
+        }
+
+        Ok(string.join(" "))
     }
 }
 

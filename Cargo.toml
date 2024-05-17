@@ -9,3 +9,6 @@ keywords = ["grammar", "l-systems", "procedural", "generation"]
 
 [dependencies]
 rand = "0.8"
+
+[dev-dependencies]
+tiny-skia = "0.11"

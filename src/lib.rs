@@ -35,9 +35,13 @@ pub mod prelude {
     pub use super::system::System;
 }
 
+use std::collections::HashMap;
 use prelude::*;
 
 /// A result type for functions that can return errors.
 pub type Result<T> = std::result::Result<T, Error>;
 
 
+pub trait DisplaySystem {
+    fn format(&self, names: &HashMap<Token, String>) -> Result<String>;
+}

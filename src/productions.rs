@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use rand::{Rng, thread_rng};
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::Result;
+use crate::{DisplaySystem, Result};
 use crate::Token;
 
 #[derive(Debug, Copy, Clone)]
@@ -108,6 +109,15 @@ impl ProductionHead {
     }
 }
 
+impl DisplaySystem for ProductionHead {
+    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
+        names.get(&self.target)
+            .cloned()
+            .ok_or_else(|| Error::general(format!("No name for token {}", self.target)))
+    }
+}
+
+
 #[derive(Debug, Clone)]
 pub struct ProductionBody {
     string: ProductionString,
@@ -165,6 +175,19 @@ impl ProductionBody {
         &self.chance
     }
 }
+
+impl DisplaySystem for ProductionBody {
+    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
+        let body = self.string.format(names)?;
+        if self.chance.is_user_set() {
+            return Ok(format!("{} {body}", self.chance.unwrap()));
+        }
+        
+        Ok(body)
+    }
+}
+
+
 
 /// Represents production rules in an L-System.
 ///
@@ -273,7 +296,38 @@ impl Hash for Production {
     }
 }
 
+impl DisplaySystem for Production {
+    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
+        let head = self.head.format(names)?;
+        let align_size = head.len() + 4;
+        
+        let mut output = String::new();
+        output.push_str(&head);
+        output.push_str(" -> ");
+        
+        let mut first = true;
+        for body in &self.body {
+            let tmp = body.format(names)?;
+            
+            if first {
+                output.push_str(&tmp);
+                first = false;
+            } else {
+                output.push('\n');
+                output.push_str(" ".repeat(align_size).as_str());
+                output.push_str(&tmp);
+            }
+        }
+        
+        Ok(output)
+    }
+}
+
+
+
+
+
 pub trait ProductionStore {
-    fn add_production(&mut self, production: Production) -> Result<&Production>;
+    fn add_production(&self, production: Production) -> Result<Production>;
 }
 

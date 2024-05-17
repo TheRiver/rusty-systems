@@ -15,7 +15,7 @@ use crate::{Result};
 ///
 /// For example, in the string `A -> B C`, the `B C` after the arrow
 /// is the rule's body.
-pub fn parse_production_body<S>(store: &mut S, body: &str) -> Result<ProductionBody>
+pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
     where S: TokenStore {
     let body = body.trim();
     if body.is_empty() {
@@ -45,7 +45,7 @@ pub fn parse_production_body<S>(store: &mut S, body: &str) -> Result<ProductionB
     }
 }
 
-pub fn parse_production_head<S>(store: &mut S, head: &str) -> Result<ProductionHead>
+pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     where S: TokenStore
 {
     let head = head.trim();
@@ -67,7 +67,7 @@ pub fn parse_production_head<S>(store: &mut S, head: &str) -> Result<ProductionH
     ProductionHead::build(head_token)
 }
 
-pub fn parse_production<'a, S>(store: &'a mut S, production: &str) -> Result<&'a Production>
+pub fn parse_production<S>(store: &S, production: &str) -> Result<Production>
     where S: TokenStore + ProductionStore
 {
     let production = production.trim();

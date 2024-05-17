@@ -8,7 +8,10 @@
 //! Production rules ([`crate::productions::Production`]) will enforce that the target of a
 //! production is a token of kind [`TokenKind::Production`].
 
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use crate::DisplaySystem;
+use crate::error::Error;
 
 /// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
@@ -83,4 +86,13 @@ impl Display for Token {
 
 pub trait TokenStore {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token>;
+}
+
+impl DisplaySystem for Token {
+    fn format(&self, names: &HashMap<Token, String>) -> crate::Result<String> {
+        let name = names.get(self)
+            .ok_or_else(|| Error::general(format!("No name supplied for token {self:?}")))?;
+        
+        Ok(name.clone())
+    }
 }

@@ -10,7 +10,7 @@ use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::tokens::{TokenKind, TokenStore};
 
-use super::Result;
+use super::{DisplaySystem, Result};
 
 pub mod parser;
 
@@ -43,13 +43,30 @@ impl System {
     ///
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
-    pub fn parse_production(&mut self, production: &str) -> Result<&Production> {
+    pub fn parse_production(&self, production: &str) -> Result<Production> {
         parser::parse_production(self, production)
     }
 
+    pub fn format<T: DisplaySystem>(&self, item: &T) -> Result<String> {
+        let code_to_string = {
+            let mut map = HashMap::new();
+
+            if let Ok(tokens) = self.tokens.read() {
+                tokens.iter()
+                    .for_each(|(i, val)| {
+                        map.insert(*val, i.clone());
+                    });
+            } else {
+                return Err(Error::general("Poisoned lock when accessing tokens"));
+            }
+
+            map
+        };
+
+        item.format(&code_to_string)
+    }
+
     pub fn to_string(&self, string: &ProductionString) -> Result<String> {
-
-
         let mut code_to_string = HashMap::new();
         if let Ok(tokens) = self.tokens.read() {
             tokens.iter()
@@ -108,7 +125,7 @@ impl System {
         panic!("Access to the token vector has been poisoned");
     }
 
-    pub fn to_production_string(&self, string: &str) -> Result<ProductionString> {
+    pub fn parse_prod_string(&self, string: &str) -> Result<ProductionString> {
         let mut result = ProductionString::default();
 
         let items = string.trim().split_ascii_whitespace();
@@ -152,9 +169,9 @@ impl TokenStore for System {
 }
 
 impl ProductionStore for System {
-    fn add_production(&mut self, production: Production) -> Result<&Production> {
-        let lock = self.productions.get_mut();
-        if let Ok(productions) = lock {
+    fn add_production(&self, production: Production) -> Result<Production> {
+        let lock = self.productions.write();
+        if let Ok(mut productions) = lock {
             let head = production.head().clone();
 
             match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
@@ -164,7 +181,7 @@ impl ProductionStore for System {
                 }
             }
 
-            return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap())
+            return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap().clone())
         }
 
         Err(Error::general("production lock is poisoned"))
@@ -248,7 +265,7 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
             if body.is_err() {
                 return body.err().map(Err);
             }
-            
+
             body.unwrap()
                 .string()
                 .tokens()
@@ -283,6 +300,9 @@ pub fn derive(string: ProductionString, productions: &[Production], settings: Ru
 }
 
 
+
+
+
 #[cfg(test)]
 mod tests {
     use std::thread;
@@ -291,25 +311,25 @@ mod tests {
 
     #[test]
     fn handles_empty_production() {
-        let mut system = System::new();
+        let system = System::new();
         assert!(system.parse_production("").is_err());
     }
 
     #[test]
     fn handles_no_head() {
-        let mut system = System::new();
+        let system = System::new();
         assert!(system.parse_production("-> surname surname").is_err());
     }
 
     #[test]
     fn handles_no_body() {
-        let mut system = System::new();
+        let system = System::new();
         assert!(system.parse_production("Company ->").is_ok());
     }
 
     #[test]
     fn handles_correct() {
-        let mut system = System::new();
+        let system = System::new();
         assert!(system.parse_production("Company -> surname surname").is_ok());
     }
 
@@ -356,9 +376,9 @@ mod tests {
 
     #[test]
     fn can_derive_once() {
-        let mut system = System::new();
+        let system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
-        let string = system.to_production_string("Company").expect("Unable to create string");
+        let string = system.parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive_once(string).unwrap().unwrap();
 
         assert_eq!(result. len(), 2);
@@ -366,11 +386,22 @@ mod tests {
 
     #[test]
     fn can_derive_multiple_times() {
-        let mut system = System::new();
+        let system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
-        let string = system.to_production_string("Company").expect("Unable to create string");
+        let string = system.parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
 
         assert_eq!(result.unwrap().len(), 3);
+    }
+
+    #[test]
+    fn test_format() {
+        let system = System::default();
+
+        let token = system.add_token("a", TokenKind::Terminal).unwrap();
+        assert_eq!(system.format(&token).unwrap(), "a");
+
+        let string = system.parse_prod_string("a b c").unwrap();
+        assert_eq!(system.format(&string).unwrap(), "a b c");
     }
 }
