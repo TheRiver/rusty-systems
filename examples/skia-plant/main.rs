@@ -5,7 +5,6 @@ use rusty_grammar::system::{RunSettings, System};
 use rusty_grammar::tokens::{TokenKind, TokenStore};
 
 fn main() {
-
     // Here we set up some tokens so that we can use them
     // later.
     let plant = System::default();
