@@ -40,6 +40,7 @@ pub mod tokens;
 pub mod productions;
 pub mod strings;
 pub mod system;
+pub mod geometry;
 
 pub mod prelude {
     pub use super::error::Error;

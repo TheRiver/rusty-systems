@@ -252,7 +252,11 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
                 .copied()
                 .for_each(|token| result.push_token(token));
             continue;
+        } else {
+            result.push_token(*token);
         }
+
+
     }
 
     match result.len() {

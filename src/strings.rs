@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::slice::Iter;
 use crate::DisplaySystem;
 use crate::prelude::*;
 
@@ -47,6 +48,12 @@ impl ProductionString {
     #[inline]
     pub fn push_token(&mut self, token: Token) {
         self.tokens.push(token);
+    }
+
+    /// Iterate over the tokens.
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, Token> {
+        self.tokens.iter()
     }
 }
 

@@ -182,7 +182,7 @@ impl DisplaySystem for ProductionBody {
         if self.chance.is_user_set() {
             return Ok(format!("{} {body}", self.chance.unwrap()));
         }
-        
+
         Ok(body)
     }
 }
@@ -300,15 +300,15 @@ impl DisplaySystem for Production {
     fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
         let head = self.head.format(names)?;
         let align_size = head.len() + 4;
-        
+
         let mut output = String::new();
         output.push_str(&head);
         output.push_str(" -> ");
-        
+
         let mut first = true;
         for body in &self.body {
             let tmp = body.format(names)?;
-            
+
             if first {
                 output.push_str(&tmp);
                 first = false;
@@ -318,12 +318,10 @@ impl DisplaySystem for Production {
                 output.push_str(&tmp);
             }
         }
-        
+
         Ok(output)
     }
 }
-
-
 
 
 
