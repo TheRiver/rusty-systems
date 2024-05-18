@@ -36,7 +36,8 @@
 //!
 //! * [`system::parser::parse_production`] to parse individual productions.
 //! 
-//! See [`system::parser`] for more information.
+//! See [`system::parser`] for more information, and for generic parsing
+//! functions that do not need you to use [`System`]. 
 //!
 //! # Examples
 //!
