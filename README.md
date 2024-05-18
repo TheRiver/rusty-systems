@@ -1,10 +1,18 @@
-# Build things with a grammar
+# Build things with L-Systems
 ![Testings](https://github.com/TheRiver/rusty-systems/actions/workflows/rust.yml/badge.svg)
+
+`rusty-systems` is a crate for procedurally generating content using L-Systems. It can be installed
+from https://crates.io/crates/rusty-systems:
+
+```shell
+cargo add rusty-systems
+```
 
 This project is still in its early days and might undergo rapid changes. See the 
 [crate docs][docs] for more information on how to use this library.
 
-Here is a brief example 
+
+Here is a brief (and trivial) example of using the library
 
 ```rust
 use rusty_systems::prelude::*;
@@ -17,14 +25,6 @@ let result = system.derive(starting_axiom, RunSettings::default()).unwrap().unwr
 
 println!("The resulting string is:\n{}", system.format(&result).unwrap());
 
-```
-
-## Examples
-
-Skia plant:
-
-```shell
-cargo run --example skia-plant
 ```
 
 ## Documentation
