@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated README to include links to docs.rs, and some example code. 
 - Documentation has generally been updated.
+- System now uses a HashMap instead of a BTreeMap.
 
 ### Removed
 

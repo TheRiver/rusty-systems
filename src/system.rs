@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{HashMap};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
@@ -25,7 +25,7 @@ pub mod parser;
 /// See [`Token`].
 #[derive(Debug)]
 pub struct System {
-    tokens: RwLock<BTreeMap<String, Token>>,
+    tokens: RwLock<HashMap<String, Token>>,
     productions: RwLock<Vec<Production>>,
     token_id: AtomicU32
 }
@@ -33,7 +33,7 @@ pub struct System {
 impl System {
     pub fn new() -> Self {
         System {
-            tokens: RwLock::new(BTreeMap::new()),
+            tokens: RwLock::new(HashMap::new()),
             productions: RwLock::new(Vec::new()),
             token_id: AtomicU32::new(100)
         }
