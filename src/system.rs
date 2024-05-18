@@ -47,6 +47,7 @@ impl System {
         parser::parse_production(self, production)
     }
 
+    /// Format [`Token`], [`ProductionString`], [`Production`] as strings.
     pub fn format<T: DisplaySystem>(&self, item: &T) -> Result<String> {
         let code_to_string = {
             let mut map = HashMap::new();
@@ -174,19 +175,16 @@ impl Default for System {
     }
 }
 
+/// Defines constraints on deriving strings from an [`System`].
 #[derive(Debug, Clone)]
 pub struct RunSettings {
-    max_iterations: usize
+    /// The maximum number of iterations allowed for a derivation.
+    pub max_iterations: usize
 }
 
 impl RunSettings {
     pub fn for_max_iterations(max_iterations: usize) -> Self {
         RunSettings { max_iterations }
-    }
-
-    /// The maximum number of iterations allowed for a derivation.
-    pub fn max_iterations(&self) -> usize {
-        self.max_iterations
     }
 }
 
@@ -272,7 +270,7 @@ pub fn derive(string: ProductionString, productions: &[Production], settings: Ru
     }
 
     let mut current = string;
-    for _ in 0..settings.max_iterations() {
+    for _ in 0..settings.max_iterations {
         match derive_once(current, productions)? {
             Err(e) => return Some(Err(e)),
             Ok(val) => current = val

@@ -1,20 +1,27 @@
 //! A crate for procedurally generating content using L-systems.
 //!
 //! **NOTE:** this crate is still under early development, and might change rapidly.
+//! The next released version will likely have breaking changes.
 //!
 //! # Introduction
 //!
-//! The supported [L-Systems][wiki] are _context-free_ and _stochastic_.
+//! This crate currently supports producing strings using *context-free* and
+//! *stochastic* [L-Systems][wiki].
 //!
-//! # Parsing
+//! # Parsing and Derivation
 //!
-//! The easiest way to parse
+//! The easiest way to parse:
 //!
 //! ```
-//! use rusty_grammar::system::System;
+//! use rusty_grammar::prelude::ProductionString;
+//! use rusty_grammar::system::{RunSettings, System};
 //! let mut system = System::new();
 //!
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();
+//! let starting_axiom = system.parse_prod_string("CompanyName").unwrap();
+//! let result = system.derive(starting_axiom, RunSettings::default()).unwrap().unwrap();
+//!
+//! println!("The resulting string is:\n{}", system.format(&result).unwrap());
 //!
 //! ```
 //!
@@ -40,21 +47,24 @@
 //!
 //!   ```cargo run --example skia-plant ```
 //!
-//! # Learn more
+//! # Learn more about L-Systems
 //!
 //! If you would like to learn more about L-Systems, the original *Algorithmic Beauty of Plants*
 //! book, by Prusinkiewicz and Lindenmayer, is [available for free, online][abop].
 //!
-//! # License
+//! # Code repository, license, and versioning.
 //!
 //! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-grammar/) and
 //! is distributed under an [MIT license](https://github.com/TheRiver/rusty-grammar/blob/main/LICENSE).
+//!
+//! This crate versioning uses [semantic versioning][semver].
 //!
 //! [wiki]: https://en.wikipedia.org/wiki/L-system
 //! [abop]: http://algorithmicbotany.org/papers/#abop
 //! [skia-plant]: https://github.com/TheRiver/rusty-grammar/blob/main/examples/skia-plant/main.rs
 //! [logo-turtle]: https://en.wikipedia.org/wiki/Logo_(programming_language)
 //! [tiny-skia]: https://github.com/RazrFalcon/tiny-skia
+//! [semver]: https://semver.org/
 
 pub mod error;
 pub mod tokens;

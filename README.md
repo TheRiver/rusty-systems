@@ -1,6 +1,9 @@
 # Build things with a grammar
 ![Testings](https://github.com/TheRiver/rusty-grammar/actions/workflows/rust.yml/badge.svg)
 
+This project is still in its early days and might undergo rapid changes. See the crate 
+docs for more information on how to use this library.
+
 ## Examples
 
 Skia plant:
