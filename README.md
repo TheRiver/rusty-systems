@@ -1,5 +1,6 @@
 # Build things with L-Systems
 ![Testings](https://github.com/TheRiver/rusty-systems/actions/workflows/rust.yml/badge.svg)
+![Docs](https://img.shields.io/docsrs/rusty-systems)
 
 `rusty-systems` is a crate for procedurally generating content using L-Systems. It can be installed
 from https://crates.io/crates/rusty-systems:
