@@ -82,7 +82,6 @@ fn main() {
 
     // Save all of this to an image.
     let stroke = Stroke { width: 1.0, line_cap: LineCap::Round, .. Stroke::default()};
-
     let mut pixmap = Pixmap::new(WIDTH, WIDTH).unwrap();
     pixmap.fill(Color::from_rgba8(255, 255, 255, 255));
     for path in &paths {
