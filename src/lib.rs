@@ -3,9 +3,6 @@
 //! # Introduction
 //! 
 //! The supported [L-Systems][wiki] are _context-free_ and _stochastic_.  
-//! 
-//! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-grammar/) and
-//! is distributed under an [MIT license](https://github.com/TheRiver/rusty-grammar/blob/main/LICENSE).
 //!
 //! # Parsing
 //!
@@ -45,6 +42,11 @@
 //!
 //! If you would like to learn more about L-Systems, the original *Algorithmic Beauty of Plants*
 //! book, by Prusinkiewicz and Lindenmayer, is [available for free, online][abop].
+//! 
+//! # License
+//! 
+//! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-grammar/) and
+//! is distributed under an [MIT license](https://github.com/TheRiver/rusty-grammar/blob/main/LICENSE).
 //! 
 //! [wiki]: https://en.wikipedia.org/wiki/L-system
 //! [abop]: http://algorithmicbotany.org/papers/#abop
