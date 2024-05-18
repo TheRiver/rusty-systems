@@ -54,14 +54,14 @@
 //!
 //! # Code repository, license, and versioning.
 //!
-//! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-grammar/) and
-//! is distributed under an [MIT license](https://github.com/TheRiver/rusty-grammar/blob/main/LICENSE).
+//! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-systems/) and
+//! is distributed under an [MIT license](https://github.com/TheRiver/rusty-systems/blob/main/LICENSE).
 //!
 //! This crate versioning uses [semantic versioning][semver].
 //!
 //! [wiki]: https://en.wikipedia.org/wiki/L-system
 //! [abop]: http://algorithmicbotany.org/papers/#abop
-//! [skia-plant]: https://github.com/TheRiver/rusty-grammar/blob/main/examples/skia-plant/main.rs
+//! [skia-plant]: https://github.com/TheRiver/rusty-systems/blob/main/examples/skia-plant/main.rs
 //! [logo-turtle]: https://en.wikipedia.org/wiki/Logo_(programming_language)
 //! [tiny-skia]: https://github.com/RazrFalcon/tiny-skia
 //! [semver]: https://semver.org/

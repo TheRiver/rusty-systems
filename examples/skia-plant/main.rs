@@ -39,7 +39,7 @@ fn main() {
     let angle : f64 = -25.0; // degrees
 
     // Here we are using skia-tiny to draw, but we could use any appropriate library.
-    // rusty-grammar has no dependencies on skia-tiny
+    // rusty-systems has no dependencies on skia-tiny
     let mut paint = Paint::default();
     paint.set_color_rgba8(0, 0, 0, 255);
     paint.anti_alias = true;

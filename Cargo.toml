@@ -5,7 +5,7 @@ version = "0.3.0"
 edition = "2021"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/TheRiver/rusty-grammar/"
+repository = "https://github.com/TheRiver/rusty-systems/"
 keywords = ["grammar", "l-systems", "procedural", "generation"]
 
 [lib]
