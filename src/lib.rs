@@ -14,10 +14,10 @@
 //!
 //! ```
 //! use rusty_systems::prelude::*;
-//! 
+//!
 //! let system = System::new();
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();
-//! 
+//!
 //! let starting_axiom = system.parse_prod_string("CompanyName").unwrap();
 //! let result = system.derive(starting_axiom, RunSettings::default()).unwrap().unwrap();
 //!
@@ -55,7 +55,7 @@
 //! # Code repository, license, and versioning.
 //!
 //! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-systems/) and
-//! is distributed under an [MIT license](https://github.com/TheRiver/rusty-systems/blob/main/LICENSE).
+//! is distributed under an [MIT license][license]. A [changelog][changelog] is also available.
 //!
 //! This crate versioning uses [semantic versioning][semver].
 //!
@@ -65,6 +65,9 @@
 //! [logo-turtle]: https://en.wikipedia.org/wiki/Logo_(programming_language)
 //! [tiny-skia]: https://github.com/RazrFalcon/tiny-skia
 //! [semver]: https://semver.org/
+//! [docs]: https://docs.rs/rusty-systems/latest/rusty_systems/
+//! [license]: https://github.com/TheRiver/rusty-systems/blob/main/LICENSE
+//! [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
 
 pub mod error;
 pub mod tokens;
