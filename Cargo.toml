@@ -7,6 +7,9 @@ readme = "README.md"
 repository = "https://github.com/TheRiver/rusty-grammar/"
 keywords = ["grammar", "l-systems", "procedural", "generation"]
 
+[lib]
+crate-type = ["rlib", "dylib"]
+
 [dependencies]
 rand = "0.8"
 
