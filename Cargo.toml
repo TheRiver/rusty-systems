@@ -1,5 +1,5 @@
 [package]
-name = "rusty-grammar"
+name = "rusty-systems"
 description = "A library for procedurally generating content using L-Systems"
 version = "0.3.0"
 edition = "2021"

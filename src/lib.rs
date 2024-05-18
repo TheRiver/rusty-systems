@@ -13,7 +13,7 @@
 //! The easiest way to parse:
 //!
 //! ```
-//! use rusty_grammar::prelude::*;
+//! use rusty_systems::prelude::*;
 //! 
 //! let system = System::new();
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();

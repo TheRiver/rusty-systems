@@ -1,8 +1,8 @@
 use tiny_skia::*;
 
-use rusty_grammar::geometry::{Point, Vector};
-use rusty_grammar::system::{RunSettings, System};
-use rusty_grammar::tokens::{TokenKind, TokenStore};
+use rusty_systems::geometry::{Point, Vector};
+use rusty_systems::system::{RunSettings, System};
+use rusty_systems::tokens::{TokenKind, TokenStore};
 
 fn main() {
     // Here we set up some tokens so that we can use them

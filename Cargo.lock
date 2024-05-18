@@ -149,7 +149,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rusty-grammar"
+name = "rusty-systems"
 version = "0.3.0"
 dependencies = [
  "rand",
