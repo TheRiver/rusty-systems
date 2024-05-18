@@ -3,6 +3,17 @@
 //! Since there is a large body of 2D l-system examples, this
 //! module makes it much easier to implement interpretations
 //! for these examples and see your output.
+//!
+//! Note that this is not meant to be a *complete* or *performant* implementation
+//! of 2D geometry and transformations. It does not even have an implementation of
+//! a transformation matrix — if you need transformation matrices, your needs have moved
+//! beyond the ability of this crate, and you should look elsewhere. More full-featured
+//! alternatives include [nalgebra][nalgebra], and if you specifically want
+//! a computer graphics related package focusing on 2D and 3D operations using
+//! homogenous coordinates, consider their [nalgebra-glm][nalgebra-glm] crate.
+//!
+//! [nalgebra]: https://nalgebra.org/
+//! [nalgebra-glm]: https://nalgebra.org/docs/user_guide/nalgebra_glm
 
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Neg, Sub};
@@ -78,7 +89,6 @@ impl Vector {
             sin * self.x() + cos * self.y()
         )
     }
-
 }
 
 impl Default for Vector {
@@ -119,6 +129,46 @@ impl AddAssign<Vector> for Point {
     fn add_assign(&mut self, rhs: Vector) {
         self.x += rhs.x();
         self.y += rhs.y();
+    }
+}
+
+impl Add<Vector> for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Vector) -> Self::Output {
+        Point::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Point::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Sub<Vector> for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Vector) -> Self::Output {
+        Point::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
+impl Sub for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Point::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
+impl Neg for Point {
+    type Output = Point;
+
+    fn neg(self) -> Self::Output {
+        Point::new(-self.x, -self.y)
     }
 }
 

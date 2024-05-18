@@ -1,3 +1,5 @@
+//! General error handling tools and utilities
+
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
@@ -12,7 +14,8 @@ pub enum ErrorKind {
 }
 
 
-/// Errors that might be thrown when using this library.
+/// Errors that might be thrown when using this library. They will be
+/// of kind [`ErrorKind`].
 #[derive(Debug)]
 pub struct Error {
     kind: ErrorKind,
