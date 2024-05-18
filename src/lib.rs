@@ -13,11 +13,11 @@
 //! The easiest way to parse:
 //!
 //! ```
-//! use rusty_grammar::prelude::ProductionString;
-//! use rusty_grammar::system::{RunSettings, System};
-//! let mut system = System::new();
-//!
+//! use rusty_grammar::prelude::*;
+//! 
+//! let system = System::new();
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();
+//! 
 //! let starting_axiom = system.parse_prod_string("CompanyName").unwrap();
 //! let result = system.derive(starting_axiom, RunSettings::default()).unwrap().unwrap();
 //!
@@ -78,6 +78,7 @@ pub mod prelude {
     pub use super::strings::ProductionString;
     pub use super::tokens::Token;
     pub use super::system::System;
+    pub use super::system::RunSettings;
 }
 
 use std::collections::HashMap;
