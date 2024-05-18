@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed the implementation of *AddAssign* for point. Point should be immutable.
+- Removed the single argument version of parse_production.
 
 ## [0.3.0] - 2024-05-18
 
