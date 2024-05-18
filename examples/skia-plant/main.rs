@@ -52,7 +52,7 @@ fn main() {
 
     for token in result {
         if token == forward {                   // interpret forward tokens.
-            pos += dir;
+            pos = pos + dir;
             pb.line_to(pos.x() as f32, pos.y() as f32);
         } else if token == push {               // interpret push tokens. This starts "a branch" of the plant.
             pos_stack.push((pos, dir));

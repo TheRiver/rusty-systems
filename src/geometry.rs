@@ -16,9 +16,9 @@
 //! [nalgebra-glm]: https://nalgebra.org/docs/user_guide/nalgebra_glm
 
 use std::fmt::{Display, Formatter};
-use std::ops::{Add, AddAssign, Neg, Sub};
+use std::ops::{Add, Neg, Sub};
 
-/// Represents a point in a 2D Euclidean space.
+/// Represents an immutable point in 2-space. 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Point {
     x: f64,
@@ -43,7 +43,8 @@ impl Point {
 }
 
 
-/// A vector in 2-space. This represents a size and direction.
+/// An immutable vector in 2-space. This represents *size* and *direction*.
+/// See [`Point`]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vector {
     x: f64,
@@ -80,6 +81,20 @@ impl Vector {
         self.y
     }
 
+    /// Returns a vector rotated by the given degrees.
+    ///
+    /// Here is an example of how to make use of rotations. Note
+    /// that rust has built in support for converting between degrees and radians.
+    /// See [`f64::to_radians`] and [`f64::to_degrees`].
+    ///
+    /// ```
+    /// use rusty_systems::geometry::Vector;
+    /// let up = Vector::up();
+    /// let left = up.rotate(90.0);
+    ///
+    /// assert!((up - Vector::new(0.0, 1.0)).norm() < 0.001);   // The up vector is (0, 1)
+    /// assert!((left - Vector::new(-1.0, 0.0)).norm() < 0.001) // rotated by 90º, it points (-1, 0)
+    /// ```
     pub fn rotate(&self, degrees: f64) -> Self {
         let cos = degrees.to_radians().cos();
         let sin = degrees.to_radians().sin();
@@ -121,14 +136,6 @@ impl Neg for Vector {
 
     fn neg(self) -> Self::Output {
         Vector::new(-self.x(), -self.y())
-    }
-}
-
-
-impl AddAssign<Vector> for Point {
-    fn add_assign(&mut self, rhs: Vector) {
-        self.x += rhs.x();
-        self.y += rhs.y();
     }
 }
 
