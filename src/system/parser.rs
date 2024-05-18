@@ -5,11 +5,10 @@
 //! avoid using [`crate::prelude::System`].
 
 use crate::error::{Error, ErrorKind};
-use crate::prelude::{ProductionString};
+use crate::prelude::*;
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
 use crate::tokens::{TokenKind, TokenStore};
-use crate::{Result};
-
+use crate::Result;
 
 /// Parse the body of a production rule.
 ///
@@ -67,8 +66,57 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     ProductionHead::build(head_token)
 }
 
-pub fn parse_production<S>(store: &S, production: &str) -> Result<Production>
-    where S: TokenStore + ProductionStore
+/// Parse a production string.
+///
+/// Most of the time you likely want to do this using [`System::parse_production`],
+/// which is also thread safe. If you want to use this (note that this is not thread safe),
+/// you can do so using your own implementations of:
+///
+/// * [`ProductionStore`], which stores productions.
+/// * [`TokenStore`], which stores and generates unique tokens.
+///
+/// Default implementations exist for
+///
+/// * [`std::cell::RefCell<Vec<Production>>`] implements [`ProductionStore`].
+/// * [`std::cell::RefCell<std::collections::HashMap<String, prelude::Token>>`] implements [`TokenStore`].
+///
+/// These are easy to use by just wrapping your collections in RefCell. Please note that doing this
+/// is not thread safe:
+///
+/// ```
+/// use std::cell::RefCell;
+/// use std::collections::HashMap;
+/// use rusty_systems::productions::Production;
+/// use rusty_systems::system::parser::parse_production;
+/// use rusty_systems::tokens::Token;
+///
+/// // Create your token and production collections at some point
+/// // in your code.
+/// let tokens : HashMap<String, Token> = HashMap::new();
+/// let productions : Vec<Production> = Vec::new();
+///
+/// // ... Do a lot of other stuff. Call functions. Have fun!
+///
+/// // Borrow your collections.
+/// let token_cell = RefCell::new(tokens);
+/// let production_cell = RefCell::new(productions);
+///
+/// // Now we can parse a production. Note that because of the underlying
+/// // stores, this is not thread safe.
+/// let result = parse_production(&token_cell, &production_cell, "Name -> first surname");
+/// // Check for errors, etc: result.is_err(), and so on.
+///
+/// // Get your collections back from the cells.
+/// // You can now look at the added tokens and productions in these collections.
+/// let tokens = token_cell.take();
+/// let productions = production_cell.take();
+///
+/// ```
+pub fn parse_production<T, P>(token_store: &T,
+                              prod_store: &P,
+                              production: &str) -> Result<Production>
+    where   T: TokenStore,
+            P: ProductionStore
 {
     let production = production.trim();
     if production.is_empty() {
@@ -82,15 +130,15 @@ pub fn parse_production<S>(store: &S, production: &str) -> Result<Production>
     let head_str = &production[0..index];
     let body_str = &production[index + 2..];
 
-    let head = parse_production_head(store, head_str)?;
-    let body = parse_production_body(store, body_str)?;
+    let head = parse_production_head(token_store, head_str)?;
+    let body = parse_production_body(token_store, body_str)?;
 
-    store.add_production(Production::new(head, body))
+    prod_store.add_production(Production::new(head, body))
 }
 
 
 /// For the default string parser, this determines the kind
-/// of [`crate::prelude::Token`] it should be parsed as.
+/// of [`Token`] it should be parsed as.
 ///
 /// Please note that the rules this function uses for
 /// differentiating between terminals and productions

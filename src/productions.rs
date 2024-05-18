@@ -1,11 +1,12 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use rand::{Rng, thread_rng};
 
+use crate::{DisplaySystem, Result};
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::{DisplaySystem, Result};
 use crate::Token;
 
 #[derive(Debug, Copy, Clone)]
@@ -324,8 +325,19 @@ impl DisplaySystem for Production {
 }
 
 
-
+/// An trait for things that accept and store productions.
+///
+/// Design note: this does not use `&mut self` to allow greater
+/// flexibility with sharing [`System`] and other implementers of this
+/// trait across threads.
 pub trait ProductionStore {
     fn add_production(&self, production: Production) -> Result<Production>;
 }
 
+impl ProductionStore for RefCell<Vec<Production>> {
+    fn add_production(&self, production: Production) -> Result<Production> {
+        let mut vec = self.borrow_mut();
+        vec.push(production);
+        vec.last().cloned().ok_or_else(|| Error::general("Unable to add production"))
+    }
+}

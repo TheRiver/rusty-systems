@@ -9,13 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- More implementation of std::ops in the geometry points and vectors. 
+- More implementation of std::ops in the geometry points and vectors.
+- Added ProductionStore and TokenStore implementations for RefCell wrappers of collections.
 
 ### Changed
 
 - Updated README to include links to docs.rs, and some example code. 
 - Documentation has generally been updated.
 - System now uses a HashMap instead of a BTreeMap.
+- parse_production now takes two arguments.
 
 ### Removed
 

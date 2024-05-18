@@ -8,8 +8,10 @@
 //! Production rules ([`crate::productions::Production`]) will enforce that the target of a
 //! production is a token of kind [`TokenKind::Production`].
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+
 use crate::DisplaySystem;
 use crate::error::Error;
 
@@ -86,6 +88,17 @@ impl Display for Token {
 
 pub trait TokenStore {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token>;
+}
+
+impl TokenStore for RefCell<HashMap<String, Token>> {
+    fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token> {
+        let mut map = self.borrow_mut();
+        let max = map.values().map(|t| t.code).max().unwrap_or(0);
+        let token = Token::new(kind, max + 1);
+        
+        map.insert(name.to_string(), token);
+        Ok(token)
+    }
 }
 
 impl DisplaySystem for Token {

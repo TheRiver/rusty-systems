@@ -44,7 +44,7 @@ impl System {
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
     pub fn parse_production(&self, production: &str) -> Result<Production> {
-        parser::parse_production(self, production)
+        parser::parse_production(self, self, production)
     }
 
     /// Format [`Token`], [`ProductionString`], [`Production`] as strings.
