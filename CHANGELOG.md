@@ -14,11 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated README to include links to docs.rs, and some example code. 
+- Documentation has generally been updated.
 
 ### Removed
 
-- Trademark sign previously shown after the project description in version
-  0.3.0
+- 
 
 ## [0.3.0] - 2024-05018
 
