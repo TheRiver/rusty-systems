@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm exec eleventy",
+    "serve": "pnpm clean && pnpm exec eleventy --serve",
+    "build": "pnpm clean && pnpm exec eleventy",
     "clean": "rm -rf _site"
   },
   "keywords": [],
