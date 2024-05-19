@@ -96,7 +96,7 @@ impl System {
 
     /// Return the token that represents the given term, if it exists.
     ///
-    ///Note that this does not create any new tokens to the system.
+    /// Note that this does not create any new tokens to the system.
     pub fn get_token(&self, name: &str) -> Option<Token> {
         if let Ok(tokens) = self.tokens.read() {
             return tokens.get(name).copied();
@@ -131,7 +131,6 @@ impl TokenStore for System {
             let message = format!("Error accessing token cache: {}", e);
             return Err(Error::general(message));
         }
-
 
         let mut map = map.unwrap();
 

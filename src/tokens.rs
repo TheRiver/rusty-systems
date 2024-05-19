@@ -95,7 +95,7 @@ impl TokenStore for RefCell<HashMap<String, Token>> {
         let mut map = self.borrow_mut();
         let max = map.values().map(|t| t.code).max().unwrap_or(0);
         let token = Token::new(kind, max + 1);
-        
+
         map.insert(name.to_string(), token);
         Ok(token)
     }

@@ -1,0 +1,72 @@
+@import "reset.css";
+@import "darcula.css";
+
+:root {
+    --page-padding: 1rem;
+
+    /* from https://modernfontstacks.com/ */
+    --transitional-font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+    --industrial-font-family: Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed, sans-serif;
+}
+
+html {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--transitional-font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--industrial-font-family);
+}
+
+header {
+    padding: 2rem var(--page-padding);
+    background-image: url("/images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
+    background-size: cover;
+    color: white;
+
+    h1 {
+        font-variant: small-caps;
+    }
+}
+
+footer {
+    padding: 2rem var(--page-padding) 1rem;
+}
+
+main {
+    h1, h2, h3, p {
+        padding-inline: var(--page-padding);
+    }
+
+    pre.language-shell {
+        margin: var(--page-padding) 1rem;
+    }
+
+    h2 {
+        margin-block: 1rem 0.5rem;
+    }
+
+    figure {
+        margin-block: 1rem;
+    }
+
+    p {
+        margin-block: 0.5rem;
+    }
+}
+
+/* This is for the syntax highlighted code */
+pre.language-shell {
+    border-radius: 3px;
+    box-shadow: 5px 5px 10px rgb(50 50 50);
+    font-size: 0.8em;
+}
+
+em.name {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--industrial-font-family);
+    font-style: normal;
+    font-size: calc(1em + 1px);
+    font-variant: all-small-caps;
+}

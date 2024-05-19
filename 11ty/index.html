@@ -5,20 +5,44 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="./css/main.css">
+
     <title>Rusty-Systems</title>
 </head>
 <body>
 
 <header>
-    <h1>So rusty</h1>
+    <h1>Rusty-Systems</h1>
+    <p>
+        A rust library for procedurally generating
+        content using L-System grammars.
+    </p>
 </header>
 
 <main>
     <section>
-        <h2>rusty-systems</h2>
+        <h2>What's this about</h2>
         <p>
-            A rust crate for creating content using L-Systems
+            This crate currently supports producing strings using <em>context-free</em> and
+            <em>stochastic</em> <a href="https://en.wikipedia.org/wiki/L-system" target="_blank">L-Systems</a>.
+            L-Systems are a grammar-based method that can be used for procedurally generating content.
         </p>
+        <p>
+            <em class="name">rusty-systems</em> is written in rust and is thread safe.
+        </p>
+    </section>
+
+    <section>
+        <h2>Installing</h2>
+        <p>
+            The library is available via
+            <a href="https://crates.io/crates/rusty_systems" title="The crates website for rusty-systems" target="_blank">crates.io</a>.
+            You can install it via cargo using
+        </p>
+        {% highlight shell %}
+        cargo add rusty-systems
+        {% endhighlight %}
     </section>
 
     <section>
@@ -27,15 +51,31 @@
         <figure>
             <img src="./images/examples/skia-plant.png"
                  loading="lazy"
+                 decoding="async"
                  alt="A black-and-white generated line-image of a plant">
         </figure>
+
+        <div>
+            <p>
+                If you have the source code, you can build the above example using:
+            </p>
+            {% highlight shell %}
+            cargo run --example skia-plant
+            {% endhighlight %}
+            <p>
+                The command will create a file named <em>skia_plant.png</em> in your working directly.
+            </p>
+        </div>
     </section>
 
 
     <section>
         <h2>Find out more</h2>
         <p>ABOP is free and available here</p>
-        <p>Documentation is available here:</p>
+        <p>
+            The crate documentation is available on
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">docs.rs</a>
+        </p>
         <p>Source code is available here:</p>
         <p>License is and available here:</p>
     </section>
@@ -45,6 +85,9 @@
 <footer>
     FOOTER.
     Wee, github links and stuff
+
+    Cover photo by <a href="https://unsplash.com/@nahilnaseer">Nahil Naseer</a> on <a href="https://unsplash.com/photos/green-leaf-plants-xljtGZ2-P3Y">Unsplash</a>
+
 </footer>
 
 </body>
