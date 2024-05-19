@@ -2,17 +2,9 @@ use tiny_skia::*;
 
 use rusty_systems::geometry::{Point, Vector};
 use rusty_systems::system::{RunSettings, System};
-use rusty_systems::tokens::{TokenKind, TokenStore};
 
 fn main() {
-    // Here we set up some tokens so that we can use them
-    // later.
     let plant = System::default();
-    let forward = plant.add_token("Forward", TokenKind::Production).unwrap();
-    let right = plant.add_token("+", TokenKind::Terminal).unwrap();
-    let left = plant.add_token("-", TokenKind::Terminal).unwrap();
-    let push = plant.add_token("[", TokenKind::Terminal).unwrap();
-    let pop = plant.add_token("]", TokenKind::Terminal).unwrap();
 
     // For a "forward" production, every iteration we just extend it.
     plant.parse_production("Forward -> Forward Forward").expect("Unable to parse production");
@@ -29,6 +21,13 @@ fn main() {
     let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap().unwrap();
 
     const WIDTH : u32 = 500;
+
+    // We need token values to interpret the strings.
+    let forward = plant.get_token("Forward").unwrap();
+    let right = plant.get_token("+").unwrap();
+    let left = plant.get_token("-").unwrap();
+    let push = plant.get_token("[").unwrap();
+    let pop = plant.get_token("]").unwrap();
 
     // We will interpret the tokens as instructions to a LOGO turtle. The following
     // variables keep track of the position that we're at and the direction we're facing.
