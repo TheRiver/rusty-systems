@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - More implementation of std::ops in the geometry points and vectors.
 - Added ProductionStore and TokenStore implementations for RefCell wrappers of collections.
+- Edge and Path types to Geometry
+- zero function to Point
+- From implementations to convert between Point and Vector and vice versa. 
 
 ### Changed
 

@@ -30,6 +30,11 @@ impl Point {
     pub fn new(x: f64, y: f64) -> Self {
         Point { x, y }
     }
+    
+    #[inline]
+    pub fn zero() -> Self {
+        Point { x: 0.0, y: 0.0 }
+    }
 
     #[inline]
     pub fn x(&self) -> f64 {
@@ -113,6 +118,26 @@ impl Default for Vector {
     }
 }
 
+impl Default for Point {
+    #[inline]
+    fn default() -> Self {
+        Point::zero()
+    }
+}
+
+impl From<Point> for Vector {
+    #[inline]
+    fn from(value: Point) -> Self {
+        Vector::new(value.x, value.y)
+    }
+}
+
+impl From<Vector> for Point {
+    #[inline]
+    fn from(value: Vector) -> Self {
+        Point::new(value.x, value.y)
+    }
+}
 
 
 impl Add for Vector {
@@ -182,6 +207,56 @@ impl Neg for Point {
 impl Display for Point {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+
+pub struct Edge {
+    pub from: Point,
+    pub to: Point
+}
+
+impl Edge {
+    #[inline]
+    pub fn new(from: Point, to: Point) -> Self {
+        Edge { from, to }
+    }
+    
+    #[inline]
+    pub fn zero() -> Self {
+        Edge::new(Point::zero(), Point::zero())
+    }
+}
+
+pub struct Path {
+    points: Vec<Point>
+}
+
+impl Path {
+    #[inline]
+    pub fn new() -> Self {
+        Path { points: Vec::new() }
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.points.len()
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.points.is_empty()
+    }
+
+    #[inline]
+    pub fn push<T: Into<Point>>(&mut self, point: T) {
+        self.points.push(point.into())
+    }
+}
+
+impl Default for Path {
+    fn default() -> Self {
+        Path::new()
     }
 }
 
