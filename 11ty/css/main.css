@@ -12,21 +12,26 @@
 html {
     /*noinspection CssNoGenericFontName*/
     font-family: var(--transitional-font-family);
+    color: rgb(50 60 50);
 }
 
 h1, h2, h3, h4, h5, h6 {
     /*noinspection CssNoGenericFontName*/
     font-family: var(--industrial-font-family);
+    color: black;
 }
 
 header {
     padding: 2rem var(--page-padding);
     background-image: url("/images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
     background-size: cover;
+
     color: white;
+    text-shadow: 0 0 10px rgb(200 100 100);
 
     h1 {
         font-variant: small-caps;
+        color: inherit;
     }
 }
 
@@ -35,12 +40,21 @@ footer {
 }
 
 main {
-    h1, h2, h3, p {
-        padding-inline: var(--page-padding);
+    display: grid;
+    grid-template-columns: var(--page-padding) 1fr var(--page-padding);
+
+    & > * {
+        grid-column: 2;
     }
 
-    pre.language-shell {
-        margin: var(--page-padding) 1rem;
+    & > section {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+
+        & > * {
+            grid-column: 2;
+        }
     }
 
     h2 {
@@ -49,17 +63,19 @@ main {
 
     figure {
         margin-block: 1rem;
+        grid-column: 1 / -1;
     }
 
     p {
         margin-block: 0.5rem;
     }
+
 }
 
 /* This is for the syntax highlighted code */
 pre.language-shell {
     border-radius: 3px;
-    box-shadow: 5px 5px 10px rgb(50 50 50);
+    box-shadow: 5px 5px 10px rgb(50 60 50);
     font-size: 0.8em;
 }
 
