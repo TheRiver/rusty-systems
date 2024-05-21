@@ -23,7 +23,13 @@ h1, h2, h3, h4, h5, h6 {
 
 header {
     padding: 2rem var(--page-padding);
+    /*noinspection CssOverwrittenProperties*/
     background-image: url("../images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
+    /*noinspection CssOverwrittenProperties*/
+    background-image: image-set(
+        url("../images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp") 1x,
+        url("../images/nahil-naseer-xljtGZ2-P3Y-unsplash-big.webp") 2x
+    );
     background-size: cover;
 
     color: white;
@@ -35,6 +41,7 @@ header {
     }
 
     @media (width > 100ch) {
+        background-image: url("../images/nahil-naseer-xljtGZ2-P3Y-unsplash-big.webp");
         display: grid;
         align-content: center;
         grid-template-columns: auto 80ch auto;
