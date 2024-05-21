@@ -23,7 +23,7 @@ defaults:
     working-directory: 11ty
 
 jobs:
-  build_deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
