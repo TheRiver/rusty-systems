@@ -142,7 +142,22 @@ main {
 
     @media (width > 100ch) {
         & {
-            grid-template-columns: auto 80ch auto;
+            grid-template-columns: 1fr 5ch 35ch 45ch 5ch 1fr;
+        }
+
+        & section {
+            & > * {
+                grid-column: 3 / 5;
+            }
+
+            & > figure:has(+ div) {
+                grid-column: 2 / 4;
+            }
+
+            & > figure + div {
+                grid-column: 4 / 5;
+                align-self: center;
+            }
         }
     }
 }
