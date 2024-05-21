@@ -1,0 +1,156 @@
+@import "reset.css";
+@import "darcula.css";
+
+:root {
+    --page-padding: 1rem;
+
+    /* from https://modernfontstacks.com/ */
+    --transitional-font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+    --industrial-font-family: Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed, sans-serif;
+}
+
+html {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--transitional-font-family);
+    color: rgb(50 70 50);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--industrial-font-family);
+    color: black;
+}
+
+header {
+    padding: 2rem var(--page-padding);
+    background-image: url("/images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
+    background-size: cover;
+
+    color: white;
+    text-shadow: 0 0 10px rgb(200 100 100);
+
+    h1 {
+        font-variant: small-caps;
+        color: inherit;
+    }
+
+    @media (width > 100ch) {
+        display: grid;
+        align-content: center;
+        grid-template-columns: auto 80ch auto;
+
+        & > * {
+            grid-column: 2;
+        }
+    }
+
+    @media (width > 600px) {
+        min-height: 30vh;
+        display: grid;
+        align-content: center;
+    }
+
+    @media (width > 1000px) {
+        min-height: 66vh;
+
+        h1 {
+            font-size: 4em;
+        }
+    }
+}
+
+footer {
+    padding: 2rem var(--page-padding) 1rem;
+    font-size: 0.8em;
+    color: #2b2b2b;
+
+    & a:any-link:not(:hover) {
+        color: inherit;
+    }
+
+    & ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+
+        & li {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    p {
+        text-align: center;
+    }
+}
+
+main {
+    display: grid;
+    grid-template-columns: var(--page-padding) 1fr var(--page-padding);
+
+    & > * {
+        grid-column: 2;
+    }
+
+    & > section {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+
+        & > * {
+            grid-column: 2;
+        }
+    }
+
+    h2 {
+        margin-block: 1rem 0.5rem;
+    }
+
+    figure {
+        margin-block: 1rem;
+        grid-column: 1 / -1;
+
+        figcaption {
+            text-align: center;
+            font-style: italic;
+        }
+
+        img {
+            margin-inline: auto;
+        }
+
+
+        @media (width > 100ch) {
+            grid-column: 2;
+        }
+    }
+
+    p {
+        margin-block: 0.5rem;
+    }
+
+    @media (width > 100ch) {
+        & {
+            grid-template-columns: auto 80ch auto;
+        }
+    }
+}
+
+/* This is for the syntax highlighted code */
+pre[class*=language] {
+    border-radius: 3px;
+    box-shadow: 5px 5px 10px rgb(50 60 50);
+    font-size: 0.8em;
+}
+
+em.name {
+    /*noinspection CssNoGenericFontName*/
+    font-family: var(--industrial-font-family);
+    font-style: normal;
+    font-size: calc(1em + 1px);
+    font-variant: all-small-caps;
+}

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="./css/main.css">
+
+    <title>Rusty-Systems</title>
+</head>
+<body>
+
+<header>
+    <h1>Rusty-Systems</h1>
+    <p>
+        A rust library for procedurally generating
+        content using L-System grammars.
+    </p>
+</header>
+
+<main>
+    <section>
+        <h2>What's this about?</h2>
+        <p>
+            This crate currently supports producing strings using <em>context-free</em> and
+            <em>stochastic</em> <a href="https://en.wikipedia.org/wiki/L-system" target="_blank">L-Systems</a>.
+            L-Systems are a grammar-based method that can be used for procedurally generating content.
+        </p>
+        <p>
+            <em class="name">rusty-systems</em> is written in rust and is thread safe.
+        </p>
+    </section>
+
+    <section>
+        <h2>Installing</h2>
+        <p>
+            The library is available via
+            <a href="https://crates.io/crates/rusty_systems" title="The crates website for rusty-systems" target="_blank">crates.io</a>.
+            You can install it via cargo using
+        </p>
+        <pre class="language-shell"><code class="language-shell"><span class="token function">cargo</span> <span class="token function">add</span> rusty-systems</code></pre>
+    </section>
+
+    <section>
+        <h2>Examples</h2>
+
+        <p>
+            This little plant was generated using the following two rules:
+        </p>
+
+        <pre class="language-grammar"><code class="language-grammar">start: X
+
+F → F F
+X → F + [ [ X ] - X ] - F [ - F X ] + X</code></pre>
+
+        <p>
+            <em class="name">X</em> is the token from which we
+            grow our plant. You may think of it as being short for <em>apex</em>.
+        </p>
+        <p>
+            <em class="name">F</em> represents <em>forward</em>
+            movement or growth. The first rule, then says that every
+            iteration of the L-System grammars
+        </p>
+        <p>
+            The second rule, which matches the token <em class="name">X</em>,
+            gives a scaffolding for the shape of the plant. the <em class="name">+</em>
+            and <em class="name">-</em> tokens effect the angle of growth of a branch,
+            while the <em class="name">[</em> and <em class="name">]</em> tokens
+            define branches.
+        </p>
+
+        <figure>
+            <img src="./images/examples/skia-plant.png"
+                 loading="lazy"
+                 decoding="async"
+                 alt="A black-and-white generated line-image of a plant">
+            <figcaption>6 iterations of the plant rules</figcaption>
+        </figure>
+
+        <div>
+            <p>
+                If you have the source code, you can build the above example using:
+            </p>
+            <pre class="language-shell"><code class="language-shell"><span class="token function">cargo</span> run <span class="token parameter variable">--example</span> skia-plant</code></pre>
+            <p>
+                The command will create a file named <em>skia_plant.png</em> in your working directly.
+            </p>
+            <p>
+                If you would like to know more about the <em>turtle interpretation</em>,
+                see §1.3 (pg 6) of
+                <a href="http://algorithmicbotany.org/papers/#abop" target="_blank">
+                    the Algorithmic Beauty of Plants</a>.
+                The rules are taken from the plant presented in figure 1.24f, from the same book.
+            </p>
+        </div>
+    </section>
+
+
+    <section>
+        <h2>Find out more</h2>
+        <p>
+            An important book which developed L-Systems is
+            <em>The Algorithmic Beauty of Plants</em>, by
+            Prusinkiewicz and Lindenmayer,
+            <a href="http://algorithmicbotany.org/papers/#abop">
+                and is available for free online</a>.
+            This is a good place to read more about L-Systems and
+            see many examples on how to use them.
+        </p>
+        <p>
+            The <em class="name">rusty-systems</em> crate has documentation
+            and examples showing how to use it. See
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">docs.rs</a>.
+        </p>
+        <p>
+            The source code is available on <a href="https://github.com/TheRiver/rusty-grammar/">GitHub</a>,
+            and is <a href="https://github.com/TheRiver/rusty-systems/blob/main/LICENSE">licensed</a> under the MIT license.
+        </p>
+    </section>
+
+</main>
+
+<footer>
+    <ul>
+        <li>
+            <a href="https://github.com/TheRiver/rusty-grammar/" target="_blank">GitHub</a>
+        </li>
+        <li>
+            <a href="https://crates.io/crates/rusty_systems" title="The crates website for rusty-systems" target="_blank">Crates.io</a>
+        </li>
+        <li>
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">Docs.rs</a>
+        </li>
+    </ul>
+    <p>
+        Header photo by <a href="https://unsplash.com/@nahilnaseer">Nahil Naseer</a> on <a href="https://unsplash.com/photos/green-leaf-plants-xljtGZ2-P3Y">Unsplash</a>
+    </p>
+</footer>
+
+</body>
+</html>
