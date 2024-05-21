@@ -60,8 +60,11 @@
 //! book, by Prusinkiewicz and Lindenmayer, is [available for free, online][abop].
 //!
 //! # Code repository, license, and versioning.
+//! 
+//! This crate has a website available at 
+//! [https://theriver.github.io/rusty-systems/](https://theriver.github.io/rusty-systems/).
 //!
-//! The code repository is available on [GitHub](https://github.com/TheRiver/rusty-systems/) and
+//! The code repository is hosted on [GitHub](https://github.com/TheRiver/rusty-systems/) and
 //! is distributed under an [MIT license][license]. A [changelog][changelog] is also available.
 //!
 //! This crate versioning uses [semantic versioning][semver].
