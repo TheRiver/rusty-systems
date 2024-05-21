@@ -35,7 +35,7 @@ fn main() {
     let mut pos_stack : Vec<(Point, Vector)> = Vec::new();
     let mut pos = Point::new(WIDTH as f64 / 2.0, WIDTH as f64);
     let mut dir = Vector::new(0.0, -3.0);
-    let angle : f64 = -25.0; // degrees
+    let angle : f64 = 22.5; // degrees
 
     // Here we are using skia-tiny to draw, but we could use any appropriate library.
     // rusty-systems has no dependencies on skia-tiny

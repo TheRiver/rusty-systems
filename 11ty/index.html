@@ -22,7 +22,7 @@
 
 <main>
     <section>
-        <h2>What's this about</h2>
+        <h2>What's this about?</h2>
         <p>
             This crate currently supports producing strings using <em>context-free</em> and
             <em>stochastic</em> <a href="https://en.wikipedia.org/wiki/L-system" target="_blank">L-Systems</a>.
@@ -48,11 +48,40 @@
     <section>
         <h2>Examples</h2>
 
+        <p>
+            This little plant was generated using the following two rules:
+        </p>
+
+        {% highlight grammar %}
+start: X
+
+F → F F
+X → F + [ [ X ] - X ] - F [ - F X ] + X
+        {% endhighlight %}
+
+        <p>
+            <em class="name">X</em> is the token from which we
+            grow our plant. You may think of it as being short for <em>apex</em>.
+        </p>
+        <p>
+            <em class="name">F</em> represents <em>forward</em>
+            movement or growth. The first rule, then says that every
+            iteration of the L-System grammars
+        </p>
+        <p>
+            The second rule, which matches the token <em class="name">X</em>,
+            gives a scaffolding for the shape of the plant. the <em class="name">+</em>
+            and <em class="name">-</em> tokens effect the angle of growth of a branch,
+            while the <em class="name">[</em> and <em class="name">]</em> tokens
+            define branches.
+        </p>
+
         <figure>
             <img src="./images/examples/skia-plant.png"
                  loading="lazy"
                  decoding="async"
                  alt="A black-and-white generated line-image of a plant">
+            <figcaption>6 iterations of the plant rules</figcaption>
         </figure>
 
         <div>
@@ -65,19 +94,37 @@
             <p>
                 The command will create a file named <em>skia_plant.png</em> in your working directly.
             </p>
+            <p>
+                If you would like to know more about the <em>turtle interpretation</em>,
+                see §1.3 (pg 6) of
+                <a href="http://algorithmicbotany.org/papers/#abop" target="_blank">
+                    the Algorithmic Beauty of Plants</a>.
+                The rules are taken from the plant presented in figure 1.24f, from the same book.
+            </p>
         </div>
     </section>
 
 
     <section>
         <h2>Find out more</h2>
-        <p>ABOP is free and available here</p>
         <p>
-            The crate documentation is available on
-            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">docs.rs</a>
+            An important book which developed L-Systems is
+            <em>The Algorithmic Beauty of Plants</em>, by
+            Prusinkiewicz and Lindenmayer,
+            <a href="http://algorithmicbotany.org/papers/#abop">
+                and is available for free online</a>.
+            This is a good place to read more about L-Systems and
+            see many examples on how to use them.
         </p>
-        <p>Source code is available here:</p>
-        <p>License is and available here:</p>
+        <p>
+            The <em class="name">rusty-systems</em> crate has documentation
+            and examples showing how to use it. See
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">docs.rs</a>.
+        </p>
+        <p>
+            The source code is available on <a href="https://github.com/TheRiver/rusty-grammar/">GitHub</a>,
+            and is <a href="https://github.com/TheRiver/rusty-systems/blob/main/LICENSE">licensed</a> under the MIT license.
+        </p>
     </section>
 
 </main>
@@ -85,18 +132,18 @@
 <footer>
     <ul>
         <li>
-            Github
+            <a href="https://github.com/TheRiver/rusty-grammar/" target="_blank">GitHub</a>
         </li>
         <li>
-            Crate
+            <a href="https://crates.io/crates/rusty_systems" title="The crates website for rusty-systems" target="_blank">Crates.io</a>
         </li>
         <li>
-            docs.rs
-        </li>
-        <li>
-            Header cover photo by <a href="https://unsplash.com/@nahilnaseer">Nahil Naseer</a> on <a href="https://unsplash.com/photos/green-leaf-plants-xljtGZ2-P3Y">Unsplash</a>
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">Docs.rs</a>
         </li>
     </ul>
+    <p>
+        Header photo by <a href="https://unsplash.com/@nahilnaseer">Nahil Naseer</a> on <a href="https://unsplash.com/photos/green-leaf-plants-xljtGZ2-P3Y">Unsplash</a>
+    </p>
 </footer>
 
 </body>

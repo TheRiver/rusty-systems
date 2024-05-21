@@ -12,7 +12,7 @@
 html {
     /*noinspection CssNoGenericFontName*/
     font-family: var(--transitional-font-family);
-    color: rgb(50 60 50);
+    color: rgb(50 70 50);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -33,6 +33,30 @@ header {
         font-variant: small-caps;
         color: inherit;
     }
+
+    @media (width > 100ch) {
+        display: grid;
+        align-content: center;
+        grid-template-columns: auto 80ch auto;
+
+        & > * {
+            grid-column: 2;
+        }
+    }
+
+    @media (width > 600px) {
+        min-height: 30vh;
+        display: grid;
+        align-content: center;
+    }
+
+    @media (width > 1000px) {
+        min-height: 66vh;
+
+        h1 {
+            font-size: 4em;
+        }
+    }
 }
 
 footer {
@@ -49,10 +73,18 @@ footer {
         margin: 0;
         padding: 0;
 
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+
         & li {
             margin: 0;
             padding: 0;
         }
+    }
+
+    p {
+        text-align: center;
     }
 }
 
@@ -81,16 +113,35 @@ main {
     figure {
         margin-block: 1rem;
         grid-column: 1 / -1;
+
+        figcaption {
+            text-align: center;
+            font-style: italic;
+        }
+
+        img {
+            margin-inline: auto;
+        }
+
+
+        @media (width > 100ch) {
+            grid-column: 2;
+        }
     }
 
     p {
         margin-block: 0.5rem;
     }
 
+    @media (width > 100ch) {
+        & {
+            grid-template-columns: auto 80ch auto;
+        }
+    }
 }
 
 /* This is for the syntax highlighted code */
-pre.language-shell {
+pre[class*=language] {
     border-radius: 3px;
     box-shadow: 5px 5px 10px rgb(50 60 50);
     font-size: 0.8em;
