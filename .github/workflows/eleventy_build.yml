@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   pages: write
+  id-token: write
 
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
@@ -35,7 +36,7 @@ jobs:
           node-version: '20.x'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 8
           run_install: false
