@@ -1,4 +1,4 @@
 /target
 .idea
-*.png
+/*.png
 .DS_Store
