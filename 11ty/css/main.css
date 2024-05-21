@@ -23,7 +23,7 @@ h1, h2, h3, h4, h5, h6 {
 
 header {
     padding: 2rem var(--page-padding);
-    background-image: url("/images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
+    background-image: url("../images/nahil-naseer-xljtGZ2-P3Y-unsplash-small.webp");
     background-size: cover;
 
     color: white;
