@@ -1,7 +1,9 @@
 use tiny_skia::*;
 
 use rusty_systems::geometry::{Point, Vector};
+use rusty_systems::strings::ProductionString;
 use rusty_systems::system::{RunSettings, System};
+use rusty_systems::tokens::TokenStore;
 
 fn main() {
     let plant = System::default();
@@ -19,15 +21,20 @@ fn main() {
     // We start off with just a single apex token, and iterate for only 6 times.
     let start = plant.parse_prod_string("X").unwrap();
     let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap().unwrap();
+    
+    let pixmap = interpret(&plant, &result);
+    pixmap.save_png("skia-plant.png").unwrap();
+}
 
+fn interpret<T: TokenStore>(system: &T, string: &ProductionString) -> Pixmap {
     const WIDTH : u32 = 500;
 
     // We need token values to interpret the strings.
-    let forward = plant.get_token("Forward").unwrap();
-    let right = plant.get_token("+").unwrap();
-    let left = plant.get_token("-").unwrap();
-    let push = plant.get_token("[").unwrap();
-    let pop = plant.get_token("]").unwrap();
+    let forward = system.get_token("Forward").unwrap();
+    let right = system.get_token("+").unwrap();
+    let left = system.get_token("-").unwrap();
+    let push = system.get_token("[").unwrap();
+    let pop = system.get_token("]").unwrap();
 
     // We will interpret the tokens as instructions to a LOGO turtle. The following
     // variables keep track of the position that we're at and the direction we're facing.
@@ -49,7 +56,7 @@ fn main() {
     let mut pb = PathBuilder::new();
     pb.move_to(pos.x() as f32, pos.y() as f32);
 
-    for token in result {
+    for token in string {
         if token == forward {                   // interpret forward tokens.
             pos = pos + dir;
             pb.line_to(pos.x() as f32, pos.y() as f32);
@@ -87,5 +94,5 @@ fn main() {
         pixmap.stroke_path(path, &paint, &stroke, Transform::identity(), None);
     }
 
-    pixmap.save_png("skia-plant.png").unwrap();
+    pixmap
 }

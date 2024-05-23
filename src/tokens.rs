@@ -88,6 +88,7 @@ impl Display for Token {
 
 pub trait TokenStore {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token>;
+    fn get_token(&self, name: &str) -> Option<Token>;
 }
 
 impl TokenStore for RefCell<HashMap<String, Token>> {
@@ -98,6 +99,11 @@ impl TokenStore for RefCell<HashMap<String, Token>> {
 
         map.insert(name.to_string(), token);
         Ok(token)
+    }
+
+    fn get_token(&self, name: &str) -> Option<Token> {
+        let map = self.borrow();
+        map.get(name).cloned()
     }
 }
 

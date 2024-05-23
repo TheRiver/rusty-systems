@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::iter::Cloned;
 use std::slice::Iter;
 use crate::DisplaySystem;
 use crate::prelude::*;
@@ -86,6 +87,15 @@ impl IntoIterator for ProductionString {
 
     fn into_iter(self) -> Self::IntoIter {
         self.tokens.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a ProductionString {
+    type Item = Token;
+    type IntoIter = Cloned<Iter<'a, Self::Item>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.tokens.iter().cloned()
     }
 }
 

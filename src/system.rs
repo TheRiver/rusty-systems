@@ -94,17 +94,6 @@ impl System {
         Some(Err(Error::general("Poisoned lock on production list")))
     }
 
-    /// Return the token that represents the given term, if it exists.
-    ///
-    /// Note that this does not create any new tokens to the system.
-    pub fn get_token(&self, name: &str) -> Option<Token> {
-        if let Ok(tokens) = self.tokens.read() {
-            return tokens.get(name).copied();
-        }
-
-        panic!("Access to the token vector has been poisoned");
-    }
-
     pub fn parse_prod_string(&self, string: &str) -> Result<ProductionString> {
         let mut result = ProductionString::default();
 
@@ -144,6 +133,17 @@ impl TokenStore for System {
         let token = Token::new(kind, atomic);
         map.insert(name.to_string(), token);
         return Ok(map.get(name).copied().unwrap())
+    }
+    
+    /// Return the token that represents the given term, if it exists.
+    ///
+    /// Note that this does not create any new tokens to the system.
+    fn get_token(&self, name: &str) -> Option<Token> {
+        if let Ok(tokens) = self.tokens.read() {
+            return tokens.get(name).copied();
+        }
+
+        panic!("Access to the token vector has been poisoned");
     }
 }
 
