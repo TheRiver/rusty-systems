@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation has generally been updated.
 - System now uses a HashMap instead of a BTreeMap.
 - parse_production now takes two arguments.
+- skia-plant example has been tidied to show how to build
+  an interpretation.
 
 ### Removed
 
