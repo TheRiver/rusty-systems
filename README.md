@@ -34,6 +34,22 @@ println!("The resulting string is:\n{}", system.format(&result).unwrap());
 * A [changelog][changelog] is also available. 
 * The website for this project is available at https://theriver.github.io/rusty-systems/
 
+## Installation
+
+The most recent released version of the crate can be installed by adding it to your projects `crate.toml` file:
+
+```shell
+cargo add rusty-systems
+```
+
+You can also install any of the tagged development versions using git: 
+
+```toml
+[dependencies]
+rusty-systems = {git = "https://github.com/TheRiver/rusty-systems.git", tag = "0.3.0"}
+
+```
+
 ## License
 
 This code is licensed under the MIT license. See the [LICENSE][license]
