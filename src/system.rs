@@ -119,13 +119,7 @@ impl TokenStore for System {
             return Err(Error::general("name should not be an empty string"));
         }
 
-        let map = self.tokens.write();
-        if let Err(e) = map {
-            let message = format!("Error accessing token cache: {}", e);
-            return Err(Error::general(message));
-        }
-
-        let mut map = map.unwrap();
+        let mut map = self.tokens.write()?;
 
         // If it already exists, return it.
         if let Some(value) = map.get(name) {
@@ -143,11 +137,8 @@ impl TokenStore for System {
     ///
     /// Note that this does not create any new tokens to the system.
     fn get_token(&self, name: &str) -> Option<Token> {
-        if let Ok(tokens) = self.tokens.read() {
-            return tokens.get(name).copied();
-        }
-
-        panic!("Access to the token vector has been poisoned");
+        let tokens = self.tokens.read().ok()?;
+        return tokens.get(name).copied();
     }
 }
 
@@ -167,7 +158,7 @@ impl ProductionStore for System {
             return Ok(productions.iter().find(|p| (*p.head()).eq(&head)).unwrap().clone())
         }
 
-        Err(Error::general("production lock is poisoned"))
+        Err(Error::new(ErrorKind::Locking, "production lock is poisoned"))
     }
 }
 
