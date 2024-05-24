@@ -1,6 +1,7 @@
 //! General error handling tools and utilities
 
 use std::fmt::{Display, Formatter};
+use std::sync::PoisonError;
 
 #[derive(Debug, Clone)]
 pub enum ErrorKind {
@@ -10,7 +11,9 @@ pub enum ErrorKind {
     /// and so on.
     Definitions,
     /// Errors related to running a system. See [`crate::system::System`].
-    Execution
+    Execution,
+    /// Indicates an error with locks, such as a [`PoisonError`].
+    Locking
 }
 
 
@@ -54,5 +57,11 @@ impl Error {
 
     pub fn execution<T : ToString>(message: T) -> Self {
         Self::new(ErrorKind::Execution, message)
+    }
+}
+
+impl<T> From<PoisonError<T>> for Error {
+    fn from(value: PoisonError<T>) -> Self {
+        Error::new(ErrorKind::Locking, value.to_string())
     }
 }

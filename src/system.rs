@@ -16,6 +16,7 @@ use crate::tokens::{TokenKind, TokenStore};
 use super::{DisplaySystem, Result};
 
 pub mod parser;
+pub mod family;
 
 /// Represents an L-system. This is the base for running the
 /// production rules.
