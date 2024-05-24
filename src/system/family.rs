@@ -14,19 +14,23 @@ impl Builder {
     /// has already been registered ([`ErrorKind::Definitions`]), or
     /// if any locks have been poisoned ([`ErrorKind::Locking`]).
     pub fn register<S: AsRef<str>>(&self, name: S) -> Result<Arc<SystemFamily>> {
-        if name.as_ref().trim().is_empty() {
+        let name = name.as_ref();
+        if name.trim().is_empty() {
             return Err(Error::new(ErrorKind::Definitions, "family name cannot be empty"));
         }
 
         let mut map = reference().write()?;
-        if map.contains_key(name.as_ref()) {
+        if map.contains_key(name) {
             return Err(Error::new(ErrorKind::Definitions,
-                                  format!("family name [{}] is already taken", name.as_ref())));
+                                  format!("family name [{}] is already taken", name)));
         }
-        map.insert(name.as_ref().to_string(), Arc::new(SystemFamily {
-            name: name.as_ref().to_string()
-        }));
-        Ok(map.get(name.as_ref()).unwrap().clone())
+        
+        let family = SystemFamily {
+            name: name.to_string()
+        };
+        
+        map.insert(name.to_string(), Arc::new(family));
+        Ok(map.get(name).unwrap().clone())
     }
 }
 
