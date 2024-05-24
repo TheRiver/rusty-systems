@@ -1,10 +1,11 @@
 [package]
 name = "rusty-systems"
 description = "A library for procedurally generating content using L-Systems"
-version = "0.3.0"
+version = "1.0.0"
 edition = "2021"
 license = "MIT"
 readme = "README.md"
+homepage = "https://theriver.github.io/rusty-systems/"
 repository = "https://github.com/TheRiver/rusty-systems/"
 keywords = ["grammar", "l-systems", "procedural", "generation"]
 

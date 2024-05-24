@@ -6,8 +6,8 @@
 //! # Introduction
 //!
 //! This crate currently supports producing strings using *context-free* and
-//! *stochastic* [L-Systems][wiki].
-//! 
+//! *stochastic* [L-Systems][wiki]. 
+//!
 //! The [`system`] namespace contains the primary tools for defining
 //! and running these grammars. As a convenience, the [`geometry`] namespace
 //! contains types for easily handling the interpretation of the grammar's output
@@ -62,7 +62,7 @@
 //! # Code repository, license, and versioning.
 //! 
 //! This crate has a website available at 
-//! [https://theriver.github.io/rusty-systems/](https://theriver.github.io/rusty-systems/).
+//! [https://theriver.github.io/rusty-systems/][website].
 //!
 //! The code repository is hosted on [GitHub](https://github.com/TheRiver/rusty-systems/) and
 //! is distributed under an [MIT license][license]. A [changelog][changelog] is also available.
@@ -78,6 +78,7 @@
 //! [docs]: https://docs.rs/rusty-systems/latest/rusty_systems/
 //! [license]: https://github.com/TheRiver/rusty-systems/blob/main/LICENSE
 //! [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
+//! [website]: https://theriver.github.io/rusty-systems/
 
 pub mod error;
 pub mod tokens;
