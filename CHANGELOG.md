@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added ErrorKind::Locking to indicate problems acquiring synchronisation locks.
 
 ### Changed
 - README updates.
+- Using ErrorKind::Locking in more places
 
 ### Removed
 
