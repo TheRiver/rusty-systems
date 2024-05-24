@@ -1,3 +1,5 @@
+//! Utilities for creating rewrite rules for a [`System`].
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -325,7 +327,7 @@ impl DisplaySystem for Production {
 }
 
 
-/// An trait for things that accept and store productions.
+/// A trait for collections that accept and store productions.
 ///
 /// Design note: this does not use `&mut self` to allow greater
 /// flexibility with sharing [`System`] and other implementers of this

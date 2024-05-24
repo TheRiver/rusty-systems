@@ -87,6 +87,14 @@ pub mod strings;
 pub mod system;
 pub mod geometry;
 
+
+/// Some commonly used members of the crate re-exported for easy access. 
+/// 
+/// Use it like so:
+/// 
+/// ```rust
+/// use rusty_systems::prelude::*;
+/// ```
 pub mod prelude {
     pub use super::error::Error;
     pub use super::strings::ProductionString;

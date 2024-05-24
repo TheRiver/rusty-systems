@@ -1,3 +1,6 @@
+//! The string of [`Token`] instances which are rewritten using [`crate::productions::Production`]
+//! rules of a [`System`].
+
 use std::collections::HashMap;
 use std::iter::Cloned;
 use std::slice::Iter;

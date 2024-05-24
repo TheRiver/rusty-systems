@@ -1,3 +1,6 @@
+//! Collection of tools for defining a group of [`Production`] rules on strings
+//! of tokens.
+
 use std::collections::{HashMap};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
