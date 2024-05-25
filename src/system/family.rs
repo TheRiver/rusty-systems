@@ -302,7 +302,7 @@ pub fn abop_family() -> SystemFamily {
         .with_production("Forward", Some("Move the turtle forward"))
         .with_production("X", Some("A growth point for the plant / branch"))
         .with_interpretation(NullInterpretation::boxed())
-        .build("abop")
+        .build("ABOP")
         .unwrap()
 }
 
@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     fn abop_available() {
-        let abop = get_or_init_family("abop", abop_family);
-        assert_eq!(abop.name(), "abop");
+        let abop = get_or_init_family("ABOP", abop_family);
+        assert_eq!(abop.name(), "ABOP");
     }
 }

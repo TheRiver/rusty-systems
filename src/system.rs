@@ -79,7 +79,7 @@ impl System {
     /// use rusty_systems::system::{family, System};
     ///
     /// family::register(family::abop_family()).expect("Unable to register the family");
-    /// let system = System::of_family("ABOP").expect("Unable to find system"); 
+    /// let system = System::of_family("ABOP").expect("Unable to find system");
     /// ```
     pub fn of_family<F: TryAsFamily>(family: F) -> Result<Self> {
         let family = family.as_family()?;
