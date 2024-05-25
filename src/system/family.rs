@@ -108,8 +108,8 @@ pub trait Interpretation: Debug + Sync + Send + Default {
                                 string: &ProductionString) -> Result<Self::Item>;
 
 
-    fn bob<S: TokenStore>(tokens: &S,
-                          string: &ProductionString) -> Result<Self::Item> {
+    fn default_interpret<S: TokenStore>(tokens: &S,       
+                                        string: &ProductionString) -> Result<Self::Item> {
         let instance = Self::default();
         instance.interpret(tokens, string)
     }
@@ -126,7 +126,7 @@ impl NullInterpretation {
 
 impl Default for NullInterpretation {
     fn default() -> Self {
-        Self { } 
+        Self { }
     }
 }
 
