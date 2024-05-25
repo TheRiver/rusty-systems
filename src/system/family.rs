@@ -15,7 +15,7 @@ pub struct Builder {
 impl Builder {
     /// Register a terminal, with an optional description of what that terminal represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`System::add_token`]),
+    /// This does *not* create terminals (see, for instance, [`System`]),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -37,7 +37,7 @@ impl Builder {
 
     /// Register a production, with an optional description of the kind of action that production represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`System::add_token`]),
+    /// This does *not* create terminals (see, for instance, [`System`]),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -158,7 +158,7 @@ impl SystemFamily {
     pub fn productions(&self) -> impl Iterator<Item=&TokenDescription> {
         self.productions.values()
     }
-    
+
     /// Returns an iterator over all terminals and productions of this family.
     pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
         self.terminals().chain(self.productions())
@@ -203,7 +203,7 @@ impl TryAsFamily for Arc<SystemFamily> {
 
 impl TryAsFamily for &str {
     fn as_family(&self) -> Result<Arc<SystemFamily>> {
-        get_family(self).ok_or_else(|| 
+        get_family(self).ok_or_else(||
             crate::prelude::Error::definition(format!("family {self} has not been registered")))
     }
 }

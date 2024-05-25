@@ -1,5 +1,30 @@
 //! Collection of tools for defining a group of [`Production`] rules on strings
 //! of tokens.
+//!
+//! # Creating systems
+//!
+//! ## Using [`System`]
+//!
+//! * TODO Talk about [`System::new`] and [`System::default`].
+//! * TODO Talk about [`System::of_family`].
+//!
+//! ## Collections of [`Token`] and [`Production`]
+//!
+//! TODO talk about collections of tokens and productions.
+//!
+//! # Families
+//!
+//! TODO talk about families
+//!
+//! # Thread safety
+//!
+//! TODO Talk about thread safety
+//!
+//! # See also
+//! * [`Token`]
+//! * [`Production`]
+//! * [`ProductionString`]
+//! * [`SystemFamily`]
 
 use std::collections::{HashMap};
 use std::ops::Deref;
@@ -22,12 +47,15 @@ pub mod family;
 /// Represents an L-system. This is the base for running the
 /// production rules.
 ///
+/// This struct is convenient for defining and storing tokens
+/// and productions without having to create your own collections.
+///
+/// See the [system namespace](crate::system) to for information more broadly.
+///
 /// * Productions can be parsed via strings.
 /// * Productions can be programmatically created.
 ///
 /// This is thread safe, and is [`Sync`] and [`Send`].
-///
-/// See [`Token`].
 #[derive(Debug)]
 pub struct System {
     tokens: RwLock<HashMap<String, Token>>,
@@ -52,7 +80,7 @@ impl System {
     /// # rusty_systems::prelude::SystemFamily::define().with_interpretation(Box::<NullInterpretation>::default()).register("ABOP").unwrap();
     /// use rusty_systems::system::System;
     /// let system = System::of_family("ABOP")
-    ///     .expect("Unable to find system"); // Assumes ABOP was previously defined 
+    ///     .expect("Unable to find system"); // Assumes ABOP was previously defined
     /// ```
     pub fn of_family<F: TryAsFamily>(family: F) -> Result<Self> {
         let family = family.as_family()?;
