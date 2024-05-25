@@ -69,30 +69,39 @@ impl Builder {
     /// if any locks have been poisoned ([`ErrorKind::Locking`]).
     pub fn register<S: AsRef<str>>(self, name: S) -> Result<Arc<SystemFamily>> {
         let name = name.as_ref();
-        if name.trim().is_empty() {
-            return Err(Error::new(ErrorKind::Definitions, "family name cannot be empty"));
-        }
 
         let mut map = reference().write()?;
         if map.contains_key(name) {
-            return Err(Error::new(ErrorKind::Definitions,
+            return Err(Error::new(ErrorKind::Duplicate,
                                   format!("family name [{}] is already taken", name)));
+        }
+
+        let family = self.build(name)?;
+        map.insert(name.to_string(), Arc::new(family));
+        Ok(map.get(name).unwrap().clone())
+    }
+
+    /// Create a [`SystemFamily`] without registering it.
+    ///
+    /// See [`Builder::register`].
+    pub fn build<S: AsRef<str>>(self, name: S) -> Result<SystemFamily> {
+        let name = name.as_ref();
+        if name.trim().is_empty() {
+            return Err(Error::new(ErrorKind::Definitions, "family name cannot be empty"));
         }
 
         if self.interpretation.is_none() {
             return Err(Error::definition("family should have an interpretation"))
         }
 
-        let family = SystemFamily {
+        Ok(SystemFamily {
             name: name.to_string(),
             terminals: self.terminals.into_iter().collect(),
             productions: self.productions.into_iter().collect(),
             interpretation: Arc::from(self.interpretation.unwrap())
-        };
-
-        map.insert(name.to_string(), Arc::new(family));
-        Ok(map.get(name).unwrap().clone())
+        })
     }
+
 }
 
 pub trait Interpretation: Debug + Sync + Send {
@@ -111,6 +120,10 @@ pub struct NullInterpretation {
 impl NullInterpretation {
     pub fn new() -> Self {
         NullInterpretation { }
+    }
+
+    pub fn boxed() -> Box<Self> {
+        Box::new(NullInterpretation::new())
     }
 }
 
@@ -175,6 +188,37 @@ pub fn get_family<S: AsRef<str>>(name: S) -> Option<Arc<SystemFamily>> {
     map.get(name.as_ref()).cloned()
 }
 
+/// Examples
+/// 
+/// ```
+/// use rusty_systems::system::family;
+/// let abop = family::get_or_init_family("ABOP", family::abop_family);
+/// ```
+pub fn get_or_init_family<S, F>(name: S, default: F) -> Arc<SystemFamily>
+    where S: AsRef<str>,
+          F: FnOnce() -> SystemFamily
+{
+    // See if we have a value using just a read lock.
+    if let Some(value) = get_family(name.as_ref()) {
+        return value;
+    }
+
+    let mut map = reference().write().unwrap();
+    // Now we have a write lock. Need to double check that the family
+    // hasn't been registered
+    if let Some(value) = map.get(name.as_ref()) {
+        return value.clone();
+    }
+
+    // Build, but synchronised via write guard.
+    let family = default();
+
+    let family = Arc::new(family);
+    map.insert(name.as_ref().to_string(), family.clone());
+
+    family
+}
+
 /// Returns true if and only if a family with the given name has been registered.
 ///
 /// Note: if synchronisation locks are poisoned this will return [`None`],
@@ -189,7 +233,19 @@ fn reference() -> &'static RwLock<HashMap<String, Arc<SystemFamily>>> {
     REGISTRY.get_or_init(|| RwLock::new(HashMap::new()))
 }
 
+pub fn register(family: SystemFamily) -> Result<Arc<SystemFamily>> {
+    let name = family.name().clone();
+    let mut map = reference().write()?;
+    
+    if map.get(&name).is_some() {
+        return Err(Error::new(ErrorKind::Duplicate, format!("family {name} has already been registered")));
+    }
+    
+    let family = Arc::new(family);
+    map.insert(name.to_string(), family.clone());
 
+    Ok(family)
+}
 
 pub trait TryAsFamily {
     fn as_family(&self) -> Result<Arc<SystemFamily>>;
@@ -237,6 +293,20 @@ impl FromIterator<TokenDescription> for HashMap<String, TokenDescription> {
 }
 
 
+pub fn abop_family() -> SystemFamily {
+    SystemFamily::define()
+        .with_terminal("[", Some("Start a branch"))
+        .with_terminal("]", Some("Finish a branch"))
+        .with_terminal("+", Some("Turn turtle right"))
+        .with_terminal("-", Some("Turn turtle left"))
+        .with_production("Forward", Some("Move the turtle forward"))
+        .with_production("X", Some("A growth point for the plant / branch"))
+        .with_interpretation(NullInterpretation::boxed())
+        .build("abop")
+        .unwrap()
+}
+
+
 
 #[cfg(test)]
 mod tests {
@@ -272,5 +342,11 @@ mod tests {
         assert_eq!(surname.name, "surname");
         assert!(surname.description.is_some());
         assert_eq!(surname.description.as_ref().unwrap(), "It's a surname");
+    }
+
+    #[test]
+    fn abop_available() {
+        let abop = get_or_init_family("abop", abop_family);
+        assert_eq!(abop.name(), "abop");
     }
 }

@@ -76,11 +76,10 @@ impl System {
     /// using the defined tokens / alphabet / words of that family of systems.
     ///
     /// ```
-    /// # use rusty_systems::system::family::NullInterpretation;
-    /// # rusty_systems::prelude::SystemFamily::define().with_interpretation(Box::<NullInterpretation>::default()).register("ABOP").unwrap();
-    /// use rusty_systems::system::System;
-    /// let system = System::of_family("ABOP")
-    ///     .expect("Unable to find system"); // Assumes ABOP was previously defined
+    /// use rusty_systems::system::{family, System};
+    ///
+    /// family::register(family::abop_family()).expect("Unable to register the family");
+    /// let system = System::of_family("ABOP").expect("Unable to find system"); 
     /// ```
     pub fn of_family<F: TryAsFamily>(family: F) -> Result<Self> {
         let family = family.as_family()?;

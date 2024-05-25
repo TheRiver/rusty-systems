@@ -10,6 +10,8 @@ pub enum ErrorKind {
     /// Errors related to defining systems, production rules,
     /// and so on.
     Definitions,
+    /// Returned when attempting to create duplicate items
+    Duplicate,
     /// Errors related to running a system. See [`crate::system::System`].
     Execution,
     /// Indicates an error with locks, such as a [`PoisonError`].
