@@ -98,10 +98,22 @@ impl Builder {
 
 }
 
-pub trait Interpretation<T>: Debug + Sync + Send {
+pub trait Interpretation: Debug + Sync + Send + Default {
+    type Item;
+
+    fn system() -> Result<System>;
+
     fn interpret<S: TokenStore>(&self,
                                 tokens: &S,
-                                string: &ProductionString) -> Result<T>;
+                                string: &ProductionString) -> Result<Self::Item>;
+
+
+    fn bob<S: TokenStore>(tokens: &S,
+                          string: &ProductionString) -> Result<Self::Item> {
+        let instance = Self::default();
+        instance.interpret(tokens, string)
+    }
+
 }
 
 /// An interpretation that does nothing except produce
@@ -110,24 +122,23 @@ pub struct NullInterpretation {
 }
 
 impl NullInterpretation {
-    pub fn new() -> Self {
-        NullInterpretation { }
-    }
-
-    pub fn boxed() -> Box<Self> {
-        Box::new(NullInterpretation::new())
-    }
 }
 
 impl Default for NullInterpretation {
     fn default() -> Self {
-        Self::new()
+        Self { } 
     }
 }
 
-impl Interpretation<()> for NullInterpretation {
+impl Interpretation for NullInterpretation {
+    type Item = ();
+
+    fn system() -> Result<System> {
+        Ok(System::default())
+    }
+
     #[inline]
-    fn interpret<S: TokenStore>(&self, _: &S, _: &ProductionString) -> Result<()> {
+    fn interpret<S: TokenStore>(&self, _: &S, _: &ProductionString) -> Result<Self::Item> {
         Ok(())
     }
 }

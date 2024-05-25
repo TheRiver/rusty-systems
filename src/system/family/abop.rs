@@ -1,6 +1,6 @@
 use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
-use crate::system::family::Interpretation;
+use crate::system::family::{get_or_init_family, Interpretation};
 use crate::tokens::TokenStore;
 
 pub fn abop_family() -> SystemFamily {
@@ -32,10 +32,17 @@ impl Default for AbopInterpretation {
 }
 
 
-impl Interpretation<Vec<Path>> for AbopInterpretation {
+impl Interpretation for AbopInterpretation {
+    type Item = Vec<Path>;
+
+    fn system() -> crate::Result<System> {
+        let family = get_or_init_family("ABOP", abop_family);
+        System::of_family(family)
+    }
+
     fn interpret<S: TokenStore>(&self,
                                 tokens: &S,
-                                string: &ProductionString) -> crate::Result<Vec<Path>> {
+                                string: &ProductionString) -> crate::Result<Self::Item> {
         // We need token values to interpret the strings.
         let forward = tokens.get_token("Forward").unwrap();
         let right = tokens.get_token("+").unwrap();
@@ -88,14 +95,12 @@ impl Interpretation<Vec<Path>> for AbopInterpretation {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::System;
-    use crate::system::family::{abop_family, Interpretation};
     use crate::system::family::abop::AbopInterpretation;
+    use crate::system::family::Interpretation;
 
     #[test]
     fn geometry_interpretation() {
-        let family = abop_family();
-        let system = System::of_family(family.clone()).unwrap();
+        let system = AbopInterpretation::system().unwrap();
         system.parse_production("Forward -> Forward Forward").unwrap();
 
         let string = system.parse_prod_string("Forward").unwrap();
