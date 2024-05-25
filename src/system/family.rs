@@ -1,19 +1,22 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::sync::{Arc, OnceLock, RwLock};
+
 use crate::error::{Error, ErrorKind};
+use crate::prelude::*;
 use crate::Result;
 use crate::tokens::TokenKind;
-
 
 pub struct Builder {
     terminals: Vec<TokenDescription>,
     productions: Vec<TokenDescription>,
+    interpretation: Option<Box<dyn Interpretation>>
 }
 
 impl Builder {
     /// Register a terminal, with an optional description of what that terminal represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`crate::prelude::System::add_token`]),
+    /// This does *not* create terminals (see, for instance, [`System::add_token`]),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -35,7 +38,7 @@ impl Builder {
 
     /// Register a production, with an optional description of the kind of action that production represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`crate::prelude::System::add_token`]),
+    /// This does *not* create terminals (see, for instance, [`System::add_token`]),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -55,6 +58,10 @@ impl Builder {
         self
     }
 
+    pub fn with_interpretation(mut self, interpretation:  Box<dyn Interpretation>) -> Self {
+        self.interpretation = Some(interpretation);
+        self
+    }
 
     /// Registers the new [`SystemFamily`] and returns a pointer to it.
     ///
@@ -73,10 +80,15 @@ impl Builder {
                                   format!("family name [{}] is already taken", name)));
         }
 
+        if self.interpretation.is_none() {
+            return Err(Error::definition("family should have an interpretation"))
+        }
+
         let family = SystemFamily {
             name: name.to_string(),
             terminals: self.terminals.into_iter().collect(),
-            productions: self.productions.into_iter().collect()
+            productions: self.productions.into_iter().collect(),
+            interpretation: Arc::from(self.interpretation.unwrap())
         };
 
         map.insert(name.to_string(), Arc::new(family));
@@ -84,18 +96,53 @@ impl Builder {
     }
 }
 
+pub trait Interpretation: Debug + Sync + Send {
+    fn interpret(&self, string: &ProductionString);
+}
+
+pub trait AsProduced<T> {
+    fn result(&self) -> T;
+}
+
+/// An interpretation that does nothing except produce 
+#[derive(Debug, Clone)]
+pub struct NullInterpretation {
+}
+
+impl NullInterpretation {
+    pub fn new() -> Self {
+        NullInterpretation { }
+    }
+}
+
+impl Default for NullInterpretation {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Interpretation for NullInterpretation {
+    fn interpret(&self, _: &ProductionString) {}
+}
+
+impl AsProduced<f32> for NullInterpretation {
+    fn result(&self) -> f32 {
+        0.0
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct SystemFamily {
     name: String,
     terminals: HashMap<String, TokenDescription>,
-    productions: HashMap<String, TokenDescription>
+    productions: HashMap<String, TokenDescription>,
+    interpretation: Arc<dyn Interpretation>
 }
 
 impl SystemFamily {
     /// Define a family of [`crate::prelude::System`] instances.
     pub fn define() -> Builder {
-        Builder { terminals: Vec::new(), productions: Vec::new() }
+        Builder { terminals: Vec::new(), productions: Vec::new(), interpretation: None }
     }
 
     /// Returns the name of the [`SystemFamily`]
@@ -103,7 +150,6 @@ impl SystemFamily {
         &self.name
     }
 }
-
 
 
 /// Returns a pointer to the given [`SystemFamily`], if it has been registered.
@@ -162,8 +208,15 @@ mod tests {
 
     #[test]
     fn empty_name() {
-        let result = SystemFamily::define().register("");
-        assert!(result.is_err())
+        let result = SystemFamily::define()
+            .with_interpretation(Box::<NullInterpretation>::default())
+            .register("");
+        assert!(result.is_err());
+
+        let result = SystemFamily::define()
+            .with_interpretation(Box::<NullInterpretation>::default())
+            .register("bob");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -171,6 +224,7 @@ mod tests {
         let result = SystemFamily::define()
             .with_terminal("surname", Some("It's a surname"))
             .with_production("Company", None)
+            .with_interpretation(Box::<NullInterpretation>::default())
             .register("NameSystems")
             .unwrap();
 
