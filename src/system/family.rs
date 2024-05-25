@@ -5,7 +5,7 @@ use std::sync::{Arc, OnceLock, RwLock};
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Result;
-use crate::tokens::TokenKind;
+use crate::tokens::{TokenKind, TokenStore};
 
 mod abop;
 pub use abop::abop_family;
@@ -109,7 +109,9 @@ impl Builder {
 }
 
 pub trait Interpretation: Debug + Sync + Send {
-    fn interpret(&self, string: &ProductionString) -> Box<dyn Any>;
+    fn interpret(&self,
+                 tokens: &dyn TokenStore,
+                 string: &ProductionString) -> Box<dyn Any>;
 }
 
 pub trait AsProduced<T> {
@@ -138,7 +140,7 @@ impl Default for NullInterpretation {
 }
 
 impl Interpretation for NullInterpretation {
-    fn interpret(&self, _: &ProductionString) -> Box<dyn Any> {
+    fn interpret(&self, _: &dyn TokenStore, _: &ProductionString) -> Box<dyn Any> {
         Box::new(())
     }
 }

@@ -68,6 +68,11 @@ impl Vector {
     }
 
     #[inline]
+    pub fn down() -> Self {
+        Vector::new(0.0, -1.0)
+    }
+
+    #[inline]
     pub fn zero() -> Self {
         Vector::new(0.0, 0.0)
     }
@@ -228,6 +233,7 @@ impl Edge {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Path {
     points: Vec<Point>
 }
