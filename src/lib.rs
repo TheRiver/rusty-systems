@@ -8,7 +8,7 @@
 //! This crate currently supports producing strings using *context-free* and
 //! *stochastic* [L-Systems][wiki]. 
 //!
-//! The [`system`] namespace contains the primary tools for defining
+//! The [system namespace](crate::system) contains the primary tools for defining
 //! and running these grammars. As a convenience, the [`geometry`] namespace
 //! contains types for easily handling the interpretation of the grammar's output
 //! in a 2D space. Note that the geometry tools are not meant to be complete or high performance —
