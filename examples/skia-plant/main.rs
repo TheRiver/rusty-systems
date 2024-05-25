@@ -23,7 +23,7 @@ fn main() {
     let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap().unwrap();
     
     let pixmap = interpret(&plant, &result);
-    pixmap.save_png("skia-plant.png").unwrap();
+    pixmap.save_png("target/skia-plant.png").unwrap();
 }
 
 fn interpret<T: TokenStore>(system: &T, string: &ProductionString) -> Pixmap {
