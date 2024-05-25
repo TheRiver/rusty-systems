@@ -108,7 +108,7 @@ pub trait Interpretation: Debug + Sync + Send + Default {
                                 string: &ProductionString) -> Result<Self::Item>;
 
 
-    fn default_interpret<S: TokenStore>(tokens: &S,       
+    fn default_interpret<S: TokenStore>(tokens: &S,
                                         string: &ProductionString) -> Result<Self::Item> {
         let instance = Self::default();
         instance.interpret(tokens, string)
@@ -117,22 +117,17 @@ pub trait Interpretation: Debug + Sync + Send + Default {
 }
 
 /// An interpretation that does nothing except produce
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct NullInterpretation {
 }
 
 impl NullInterpretation {
 }
 
-impl Default for NullInterpretation {
-    fn default() -> Self {
-        Self { }
-    }
-}
-
 impl Interpretation for NullInterpretation {
     type Item = ();
 
+    #[inline]
     fn system() -> Result<System> {
         Ok(System::default())
     }

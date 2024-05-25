@@ -15,22 +15,9 @@ pub fn abop_family() -> SystemFamily {
         .unwrap()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct AbopInterpretation {
 }
-
-impl AbopInterpretation {
-    pub fn new() -> Self {
-        AbopInterpretation { }
-    }
-}
-
-impl Default for AbopInterpretation {
-    fn default() -> Self {
-        AbopInterpretation::new()
-    }
-}
-
 
 impl Interpretation for AbopInterpretation {
     type Item = Vec<Path>;
@@ -107,9 +94,7 @@ mod tests {
         let string = system.derive_once(string).unwrap().unwrap();
         assert_eq!(string.len(), 2);
 
-        let interpretation = AbopInterpretation::default();
-
-        let result = interpretation.interpret(&system, &string).unwrap();
+        let result = AbopInterpretation::default_interpret(&system, &string).unwrap();
         assert_eq!(result.len(), 1);
 
         let result = result[0].clone();
