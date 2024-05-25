@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 use crate::DisplaySystem;
-use crate::error::{Error, ErrorKind};
+use crate::error::Error;
 
 /// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]

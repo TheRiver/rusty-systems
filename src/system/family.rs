@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::collections::HashMap;
 use std::fmt::{Debug};
 use std::sync::{Arc, OnceLock, RwLock};
@@ -5,6 +6,9 @@ use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Result;
 use crate::tokens::TokenKind;
+
+mod abop;
+pub use abop::abop_family;
 
 pub struct Builder {
     terminals: Vec<TokenDescription>,
@@ -105,7 +109,7 @@ impl Builder {
 }
 
 pub trait Interpretation: Debug + Sync + Send {
-    fn interpret(&self, string: &ProductionString);
+    fn interpret(&self, string: &ProductionString) -> Box<dyn Any>;
 }
 
 pub trait AsProduced<T> {
@@ -134,7 +138,9 @@ impl Default for NullInterpretation {
 }
 
 impl Interpretation for NullInterpretation {
-    fn interpret(&self, _: &ProductionString) {}
+    fn interpret(&self, _: &ProductionString) -> Box<dyn Any> {
+        Box::new(())
+    }
 }
 
 impl AsProduced<f32> for NullInterpretation {
@@ -176,7 +182,7 @@ impl SystemFamily {
     pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
         self.terminals().chain(self.productions())
     }
-    
+
     pub fn interpretation(&self) -> Arc<dyn Interpretation> {
         self.interpretation.clone()
     }
@@ -193,7 +199,7 @@ pub fn get_family<S: AsRef<str>>(name: S) -> Option<Arc<SystemFamily>> {
 }
 
 /// Examples
-/// 
+///
 /// ```
 /// use rusty_systems::system::family;
 /// let abop = family::get_or_init_family("ABOP", family::abop_family);
@@ -240,37 +246,43 @@ fn reference() -> &'static RwLock<HashMap<String, Arc<SystemFamily>>> {
 pub fn register(family: SystemFamily) -> Result<Arc<SystemFamily>> {
     let name = family.name().clone();
     let mut map = reference().write()?;
-    
+
     if map.get(&name).is_some() {
         return Err(Error::new(ErrorKind::Duplicate, format!("family {name} has already been registered")));
     }
-    
+
     let family = Arc::new(family);
     map.insert(name.to_string(), family.clone());
 
     Ok(family)
 }
 
-pub trait TryAsFamily {
-    fn as_family(&self) -> Result<Arc<SystemFamily>>;
+pub trait TryIntoFamily {
+    fn into_family(self) -> Result<Arc<SystemFamily>>;
 }
 
-impl TryAsFamily for Arc<SystemFamily> {
-    fn as_family(&self) -> Result<Arc<SystemFamily>> {
+impl TryIntoFamily for Arc<SystemFamily> {
+    fn into_family(self) -> Result<Arc<SystemFamily>> {
         Ok(self.clone())
     }
 }
 
-impl TryAsFamily for &str {
-    fn as_family(&self) -> Result<Arc<SystemFamily>> {
+impl TryIntoFamily for SystemFamily {
+    fn into_family(self) -> Result<Arc<SystemFamily>> {
+        Ok(Arc::new(self))
+    }
+}
+
+impl TryIntoFamily for &str {
+    fn into_family(self) -> Result<Arc<SystemFamily>> {
         get_family(self).ok_or_else(||
             Error::definition(format!("family {self} has not been registered")))
     }
 }
 
-impl TryAsFamily for String {
-    fn as_family(&self) -> Result<Arc<SystemFamily>> {
-        self.as_str().as_family()
+impl TryIntoFamily for String {
+    fn into_family(self) -> Result<Arc<SystemFamily>> {
+        self.as_str().into_family()
     }
 }
 
@@ -295,21 +307,6 @@ impl FromIterator<TokenDescription> for HashMap<String, TokenDescription> {
         result
     }
 }
-
-
-pub fn abop_family() -> SystemFamily {
-    SystemFamily::define()
-        .with_terminal("[", Some("Start a branch"))
-        .with_terminal("]", Some("Finish a branch"))
-        .with_terminal("+", Some("Turn turtle right"))
-        .with_terminal("-", Some("Turn turtle left"))
-        .with_production("Forward", Some("Move the turtle forward"))
-        .with_production("X", Some("A growth point for the plant / branch"))
-        .with_interpretation(NullInterpretation::boxed())
-        .build("ABOP")
-        .unwrap()
-}
-
 
 
 #[cfg(test)]

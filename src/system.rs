@@ -36,7 +36,7 @@ use parser::determine_kind;
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
-use crate::system::family::TryAsFamily;
+use crate::system::family::TryIntoFamily;
 use crate::tokens::{TokenKind, TokenStore};
 
 use super::{DisplaySystem, Result};
@@ -81,8 +81,8 @@ impl System {
     /// family::register(family::abop_family()).expect("Unable to register the family");
     /// let system = System::of_family("ABOP").expect("Unable to find system");
     /// ```
-    pub fn of_family<F: TryAsFamily>(family: F) -> Result<Self> {
-        let family = family.as_family()?;
+    pub fn of_family<F: TryIntoFamily>(family: F) -> Result<Self> {
+        let family = family.into_family()?;
         let system = System::default();
 
         for token in family.tokens() {

@@ -16,6 +16,10 @@ crate-type = ["rlib", "dylib"]
 
 [dependencies]
 rand = "0.8"
+tiny-skia = { version = "0.11", optional = true}
 
 [dev-dependencies]
 tiny-skia = "0.11"
+
+[features]
+skia = ["dep:tiny-skia"]
