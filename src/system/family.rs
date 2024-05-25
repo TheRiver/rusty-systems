@@ -152,7 +152,7 @@ pub struct SystemFamily {
 }
 
 impl SystemFamily {
-    /// Define a family of [`crate::prelude::System`] instances.
+    /// Define a family of [`System`] instances.
     pub fn define() -> Builder {
         Builder { terminals: Vec::new(), productions: Vec::new(), interpretation: None }
     }
@@ -264,7 +264,7 @@ impl TryAsFamily for Arc<SystemFamily> {
 impl TryAsFamily for &str {
     fn as_family(&self) -> Result<Arc<SystemFamily>> {
         get_family(self).ok_or_else(||
-            crate::prelude::Error::definition(format!("family {self} has not been registered")))
+            Error::definition(format!("family {self} has not been registered")))
     }
 }
 
