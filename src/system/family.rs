@@ -176,6 +176,10 @@ impl SystemFamily {
     pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
         self.terminals().chain(self.productions())
     }
+    
+    pub fn interpretation(&self) -> Arc<dyn Interpretation> {
+        self.interpretation.clone()
+    }
 }
 
 
@@ -204,13 +208,13 @@ pub fn get_or_init_family<S, F>(name: S, default: F) -> Arc<SystemFamily>
     }
 
     let mut map = reference().write().unwrap();
-    // Now we have a write lock. Need to double check that the family
+    // Now we have a write lock. Need to double-check that the family
     // hasn't been registered
     if let Some(value) = map.get(name.as_ref()) {
         return value.clone();
     }
 
-    // Build, but synchronised via write guard.
+    // Build, but now synchronised via the above write guard.
     let family = default();
 
     let family = Arc::new(family);
