@@ -11,6 +11,7 @@ use parser::determine_kind;
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
+use crate::system::family::TryAsFamily;
 use crate::tokens::{TokenKind, TokenStore};
 
 use super::{DisplaySystem, Result};
@@ -41,6 +42,27 @@ impl System {
             productions: RwLock::new(Vec::new()),
             token_id: AtomicU32::new(100)
         }
+    }
+
+    /// Given a previously defined family, this returns a new system
+    /// using the defined tokens / alphabet / words of that family of systems.
+    ///
+    /// ```
+    /// # use rusty_systems::system::family::NullInterpretation;
+    /// # rusty_systems::prelude::SystemFamily::define().with_interpretation(Box::<NullInterpretation>::default()).register("ABOP").unwrap();
+    /// use rusty_systems::system::System;
+    /// let system = System::of_family("ABOP")
+    ///     .expect("Unable to find system"); // Assumes ABOP was previously defined 
+    /// ```
+    pub fn of_family<F: TryAsFamily>(family: F) -> Result<Self> {
+        let family = family.as_family()?;
+        let system = System::default();
+
+        for token in family.tokens() {
+            system.add_token(token.name.as_str(), token.kind)?;
+        }
+
+        Ok(system)
     }
 
     /// Parse a string as a production and add it to the system.

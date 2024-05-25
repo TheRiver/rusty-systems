@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::fmt::{Debug};
 use std::sync::{Arc, OnceLock, RwLock};
-
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Result;
@@ -104,7 +103,7 @@ pub trait AsProduced<T> {
     fn result(&self) -> T;
 }
 
-/// An interpretation that does nothing except produce 
+/// An interpretation that does nothing except produce
 #[derive(Debug, Clone)]
 pub struct NullInterpretation {
 }
@@ -149,6 +148,21 @@ impl SystemFamily {
     pub fn name(&self) -> &String {
         &self.name
     }
+
+    /// Returns an iterator over all of the terminals registered for this family.
+    pub fn terminals(&self) -> impl Iterator<Item=&TokenDescription> {
+        self.terminals.values()
+    }
+
+    /// Returns an iterator over all of the Productions registered for this family.
+    pub fn productions(&self) -> impl Iterator<Item=&TokenDescription> {
+        self.productions.values()
+    }
+    
+    /// Returns an iterator over all terminals and productions of this family.
+    pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
+        self.terminals().chain(self.productions())
+    }
 }
 
 
@@ -177,15 +191,37 @@ fn reference() -> &'static RwLock<HashMap<String, Arc<SystemFamily>>> {
 
 
 
+pub trait TryAsFamily {
+    fn as_family(&self) -> Result<Arc<SystemFamily>>;
+}
+
+impl TryAsFamily for Arc<SystemFamily> {
+    fn as_family(&self) -> Result<Arc<SystemFamily>> {
+        Ok(self.clone())
+    }
+}
+
+impl TryAsFamily for &str {
+    fn as_family(&self) -> Result<Arc<SystemFamily>> {
+        get_family(self).ok_or_else(|| 
+            crate::prelude::Error::definition(format!("family {self} has not been registered")))
+    }
+}
+
+impl TryAsFamily for String {
+    fn as_family(&self) -> Result<Arc<SystemFamily>> {
+        self.as_str().as_family()
+    }
+}
 
 #[derive(Debug, Clone)]
-struct TokenDescription {
+pub struct TokenDescription {
     /// Indicates the kind of token this [`TokenDescription`] represents
-    kind: TokenKind,
+    pub kind: TokenKind,
     /// The token's name
-    name: String,
+    pub name: String,
     /// What this token represents.
-    description: Option<String>
+    pub description: Option<String>
 }
 
 impl FromIterator<TokenDescription> for HashMap<String, TokenDescription> {
