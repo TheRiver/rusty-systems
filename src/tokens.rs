@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
 use crate::DisplaySystem;
-use crate::error::Error;
+use crate::error::{Error, ErrorKind};
 
 /// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
@@ -94,6 +94,12 @@ pub trait TokenStore {
 impl TokenStore for RefCell<HashMap<String, Token>> {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token> {
         let mut map = self.borrow_mut();
+        
+        // If it already exists, return it.
+        if let Some(value) = map.get(name) {
+            return Ok(*value);
+        }
+        
         let max = map.values().map(|t| t.code).max().unwrap_or(0);
         let token = Token::new(kind, max + 1);
 
