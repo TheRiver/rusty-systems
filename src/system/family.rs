@@ -1,19 +1,19 @@
-use std::any::Any;
 use std::collections::HashMap;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 use std::sync::{Arc, OnceLock, RwLock};
+
+pub use abop::abop_family;
+
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Result;
 use crate::tokens::{TokenKind, TokenStore};
 
 mod abop;
-pub use abop::abop_family;
 
 pub struct Builder {
     terminals: Vec<TokenDescription>,
-    productions: Vec<TokenDescription>,
-    interpretation: Option<Box<dyn Interpretation>>
+    productions: Vec<TokenDescription>
 }
 
 impl Builder {
@@ -61,11 +61,6 @@ impl Builder {
         self
     }
 
-    pub fn with_interpretation(mut self, interpretation:  Box<dyn Interpretation>) -> Self {
-        self.interpretation = Some(interpretation);
-        self
-    }
-
     /// Registers the new [`SystemFamily`] and returns a pointer to it.
     ///
     /// Fails if the [`SystemFamily`] is malformed, or if the chosen name
@@ -94,28 +89,19 @@ impl Builder {
             return Err(Error::new(ErrorKind::Definitions, "family name cannot be empty"));
         }
 
-        if self.interpretation.is_none() {
-            return Err(Error::definition("family should have an interpretation"))
-        }
-
         Ok(SystemFamily {
             name: name.to_string(),
             terminals: self.terminals.into_iter().collect(),
-            productions: self.productions.into_iter().collect(),
-            interpretation: Arc::from(self.interpretation.unwrap())
+            productions: self.productions.into_iter().collect()
         })
     }
 
 }
 
-pub trait Interpretation: Debug + Sync + Send {
-    fn interpret(&self,
-                 tokens: &dyn TokenStore,
-                 string: &ProductionString) -> Box<dyn Any>;
-}
-
-pub trait AsProduced<T> {
-    fn result(&self) -> T;
+pub trait Interpretation<T>: Debug + Sync + Send {
+    fn interpret<S: TokenStore>(&self,
+                                tokens: &S,
+                                string: &ProductionString) -> Result<T>;
 }
 
 /// An interpretation that does nothing except produce
@@ -139,15 +125,10 @@ impl Default for NullInterpretation {
     }
 }
 
-impl Interpretation for NullInterpretation {
-    fn interpret(&self, _: &dyn TokenStore, _: &ProductionString) -> Box<dyn Any> {
-        Box::new(())
-    }
-}
-
-impl AsProduced<f32> for NullInterpretation {
-    fn result(&self) -> f32 {
-        0.0
+impl Interpretation<()> for NullInterpretation {
+    #[inline]
+    fn interpret<S: TokenStore>(&self, _: &S, _: &ProductionString) -> Result<()> {
+        Ok(())
     }
 }
 
@@ -155,14 +136,13 @@ impl AsProduced<f32> for NullInterpretation {
 pub struct SystemFamily {
     name: String,
     terminals: HashMap<String, TokenDescription>,
-    productions: HashMap<String, TokenDescription>,
-    interpretation: Arc<dyn Interpretation>
+    productions: HashMap<String, TokenDescription>
 }
 
 impl SystemFamily {
     /// Define a family of [`System`] instances.
     pub fn define() -> Builder {
-        Builder { terminals: Vec::new(), productions: Vec::new(), interpretation: None }
+        Builder { terminals: Vec::new(), productions: Vec::new() }
     }
 
     /// Returns the name of the [`SystemFamily`]
@@ -183,10 +163,6 @@ impl SystemFamily {
     /// Returns an iterator over all terminals and productions of this family.
     pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
         self.terminals().chain(self.productions())
-    }
-
-    pub fn interpretation(&self) -> Arc<dyn Interpretation> {
-        self.interpretation.clone()
     }
 }
 
@@ -318,12 +294,10 @@ mod tests {
     #[test]
     fn empty_name() {
         let result = SystemFamily::define()
-            .with_interpretation(Box::<NullInterpretation>::default())
             .register("");
         assert!(result.is_err());
 
         let result = SystemFamily::define()
-            .with_interpretation(Box::<NullInterpretation>::default())
             .register("bob");
         assert!(result.is_ok());
     }
@@ -333,7 +307,6 @@ mod tests {
         let result = SystemFamily::define()
             .with_terminal("surname", Some("It's a surname"))
             .with_production("Company", None)
-            .with_interpretation(Box::<NullInterpretation>::default())
             .register("NameSystems")
             .unwrap();
 

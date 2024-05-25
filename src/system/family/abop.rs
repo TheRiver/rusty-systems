@@ -1,6 +1,4 @@
-use std::any::Any;
 use crate::geometry::{Path, Point, Vector};
-
 use crate::prelude::*;
 use crate::system::family::Interpretation;
 use crate::tokens::TokenStore;
@@ -13,27 +11,31 @@ pub fn abop_family() -> SystemFamily {
         .with_terminal("-", Some("Turn turtle left"))
         .with_production("Forward", Some("Move the turtle forward"))
         .with_production("X", Some("A growth point for the plant / branch"))
-        .with_interpretation(AbopInterpretation::boxed())
         .build("ABOP")
         .unwrap()
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct AbopInterpretation {
-
 }
 
 impl AbopInterpretation {
-    pub fn boxed() -> Box<Self> {
-        Box::new(AbopInterpretation { })
+    pub fn new() -> Self {
+        AbopInterpretation { }
+    }
+}
+
+impl Default for AbopInterpretation {
+    fn default() -> Self {
+        AbopInterpretation::new()
     }
 }
 
 
-impl Interpretation for AbopInterpretation {
-    fn interpret(&self,
-                 tokens: &dyn TokenStore,
-                 string: &ProductionString) -> Box<dyn Any> {
+impl Interpretation<Vec<Path>> for AbopInterpretation {
+    fn interpret<S: TokenStore>(&self,
+                                tokens: &S,
+                                string: &ProductionString) -> crate::Result<Vec<Path>> {
         // We need token values to interpret the strings.
         let forward = tokens.get_token("Forward").unwrap();
         let right = tokens.get_token("+").unwrap();
@@ -79,17 +81,16 @@ impl Interpretation for AbopInterpretation {
             paths.push(path)
         }
 
-        Box::new(paths)
+        Ok(paths)
     }
 }
 
 
-
 #[cfg(test)]
 mod tests {
-    use crate::geometry::Path;
     use crate::prelude::System;
-    use crate::system::family::abop_family;
+    use crate::system::family::{abop_family, Interpretation};
+    use crate::system::family::abop::AbopInterpretation;
 
     #[test]
     fn geometry_interpretation() {
@@ -101,12 +102,9 @@ mod tests {
         let string = system.derive_once(string).unwrap().unwrap();
         assert_eq!(string.len(), 2);
 
-        let result = family.interpretation.interpret(&system, &string);
-        let result = result.downcast_ref::<Vec<Path>>();
+        let interpretation = AbopInterpretation::default();
 
-        assert!(result.is_some(), "Returning unexpected type");
-
-        let result = result.unwrap();
+        let result = interpretation.interpret(&system, &string).unwrap();
         assert_eq!(result.len(), 1);
 
         let result = result[0].clone();
