@@ -17,7 +17,7 @@
 
 use std::fmt::{Display, Formatter};
 use std::iter::FromIterator;
-use std::ops::{Add, Index, Neg, Sub};
+use std::ops::{Add, Div, Index, Neg, Sub};
 use std::slice::Iter;
 use std::vec::IntoIter;
 
@@ -204,6 +204,14 @@ impl Sub for Point {
     }
 }
 
+impl Div<f64> for Point {
+    type Output = Point;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        Point::new(self.x() / rhs, self.y() / rhs)
+    }
+}
+
 impl Neg for Point {
     type Output = Point;
 
@@ -213,6 +221,12 @@ impl Neg for Point {
 }
 
 impl Display for Point {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+impl Display for Vector {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "({},{})", self.x, self.y)
     }
@@ -311,12 +325,22 @@ impl FromIterator<Point> for Path {
     }
 }
 
+/// Offset all points in the path by the given vector.
+impl Add<Vector> for Path {
+    type Output = Path;
+
+    fn add(self, rhs: Vector) -> Self::Output {
+        self.into_iter().map(|p| p + rhs).collect()
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct BoundingBox {
     pub min_x: f64,
     pub max_x: f64,
     pub min_y: f64,
-    pub max_y: f64
+    pub max_y: f64,
+    pub com: Point
 }
 
 impl BoundingBox {
@@ -327,11 +351,11 @@ impl BoundingBox {
 
     #[inline]
     pub fn height(&self) -> f64 {
-        (self.max_x - self.min_x).abs()
+        (self.max_y - self.min_y).abs()
     }
 
     #[inline]
-    pub fn centre(&self) -> Point {
+    pub fn center(&self) -> Point {
         Point::new(self.width() / 2.0, self.height() / 2.0)
     }
 
@@ -341,7 +365,8 @@ impl BoundingBox {
             min_x: f64::INFINITY,
             max_x: f64::NEG_INFINITY,
             min_y: f64::INFINITY,
-            max_y: f64::NEG_INFINITY
+            max_y: f64::NEG_INFINITY,
+            ..Default::default()
         }
     }
 
@@ -367,7 +392,11 @@ impl Bounds for Path {
     fn bounds(&self) -> Option<BoundingBox> {
         let mut bounds = BoundingBox::initial_infinite();
 
+        let mut center = Point::zero();
+
         for point in &self.points {
+            center = center + *point;
+
             if point.x < bounds.min_x {
                 bounds.min_x = point.x;
             }
@@ -382,6 +411,8 @@ impl Bounds for Path {
             }
         }
 
+        bounds.com = center / self.len() as f64;
+
         Some(bounds)
     }
 }
@@ -393,8 +424,15 @@ impl Bounds for Vec<Path> {
         let mut min_y = f64::INFINITY;
         let mut max_y = f64::NEG_INFINITY;
 
+        let mut center = Point::zero();
+        let mut len = 0_f64;
+
         for path in self {
+            len += path.len() as f64;
+
             for point in &path.points {
+                center = center + *point;
+
                 if point.x < min_x {
                     min_x = point.x;
                 }
@@ -419,6 +457,7 @@ impl Bounds for Vec<Path> {
             max_x,
             min_y,
             max_y,
+            com: center / len
         })
     }
 }
@@ -426,7 +465,7 @@ impl Bounds for Vec<Path> {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::Vector;
+    use super::*;
 
     #[test]
     fn testing_rotations() {
@@ -437,5 +476,17 @@ mod tests {
 
         assert!((one.x - -1.0).abs() < 0.001);
         assert!((one.y - 0.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn bounding_box() {
+        assert_eq!(BoundingBox::zero().width(), 0.0);
+        assert_eq!(BoundingBox::zero().height(), 0.0);
+        assert_eq!(BoundingBox { min_y: -12.0, max_y: 100.0, ..Default::default()}.height(), 112.0);
+        assert_eq!(BoundingBox { min_x: -10.0, max_x: 100.0, ..Default::default()}.width(), 110.0);
+
+        let b = BoundingBox { min_x: -22.0, max_x:-2.0, min_y: 100.0, max_y: 101.0, ..BoundingBox::default()};
+        assert_eq!(b.width(), 20.0);
+        assert_eq!(b.height(), 1.0);
     }
 }

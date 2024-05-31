@@ -1,29 +1,303 @@
 //!
 //! See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
-use crate::geometry::Path;
+use std::fmt::Debug;
+use std::fs::File;
+use std::io::prelude::*;
+use std::ops::Deref;
+use std::rc::Rc;
+
+use crate::geometry::{Bounds, Path, Point, Vector};
 use crate::prelude::{Interpretation, ProductionString, System};
 use crate::tokens::TokenStore;
 
-
-#[derive(Debug, Clone, Default)]
-pub struct SvgPathInterpretation<T> 
+#[derive(Debug, Clone)]
+pub struct SvgPathInterpretation<T>
     where T: Interpretation<Item=Vec<Path>>
 {
-    initial: T
+    initial: T,
+    width: usize,
+    height: usize
 }
 
-impl<T> Interpretation for SvgPathInterpretation<T> 
-    where T: Interpretation<Item=Vec<Path>> 
+impl<T> Default for SvgPathInterpretation<T>
+    where T: Interpretation<Item=Vec<Path>>
 {
-    type Item = ();
+    fn default() -> Self {
+        SvgPathInterpretation {
+            initial: T::default(),
+            width: 500,
+            height: 500,
+        }
+    }
+}
+
+impl<T> SvgPathInterpretation<T>
+    where T: Interpretation<Item=Vec<Path>>
+{
+    pub fn new(width: usize, height: usize) -> Self {
+        SvgPathInterpretation {
+            width,
+            height,
+            ..Default::default()
+        }
+    }
+
+    #[inline]
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    #[inline]
+    pub fn height(&self) -> usize {
+        self.height
+    }
+}
+
+impl<T> Interpretation for SvgPathInterpretation<T>
+    where T: Interpretation<Item=Vec<Path>>
+{
+    type Item = Svg;
 
     fn system() -> crate::Result<System> {
-        todo!()
+        T::system()
     }
 
     fn interpret<S: TokenStore>(&self, tokens: &S, string: &ProductionString) -> crate::Result<Self::Item> {
-        todo!()
+        let paths = self.initial.interpret(tokens, string)?;
+
+        let translate = paths.bounds()
+            .map(|_| {
+                let width = self.width() as f64;
+                let height = self.height() as f64;
+                
+                Vector::new(width / 2.0, height)
+            })
+            .unwrap_or_else(Vector::zero);
+
+        let scale = paths.bounds()
+            .map(|bounds| {
+                let scale_y = self.height() as f64 / bounds.height();
+                let scale_x = self.width() as f64 / bounds.width();
+                let scale = scale_x.min(scale_y);
+
+                Point::new(scale, -scale)
+            })
+            .unwrap_or(Point::new(1.0, -1.0));
+
+        let elements: Vec<_> = paths.into_iter()
+            // .map(|path| path + translate )
+            .map(SvgPath::from)
+            .map(Rc::new)
+            .map(|rc| rc as Rc<dyn SvgElement>)
+            .collect();
+
+        let group = SvgGroup {
+            elements,
+            stroke: Some(String::from("black")),
+            stroke_width: Some(0.2),
+            fill: Some(String::from("none")),
+            transforms: vec![
+                Rc::new(SvgTranslate(translate)),
+                Rc::new(SvgScale(scale)),
+            ],
+            ..SvgGroup::default()
+        };
+
+        Ok(Svg {
+            elements: vec![Rc::new(group)],
+            width: self.width,
+            height: self.height
+        })
     }
 }
-    
+
+pub trait SvgElement : Debug {
+    fn to_svg(&self) -> String;
+
+}
+
+#[derive(Debug, Clone)]
+pub struct Svg {
+    elements: Vec<Rc<dyn SvgElement>>,
+    width: usize,
+    height: usize
+}
+
+impl Default for Svg {
+    fn default() -> Self {
+        Svg {
+            elements: Vec::new(),
+            width: 500,
+            height: 500
+        }
+    }
+}
+
+impl Svg {
+    /// Writes the SVG to file.
+    pub fn save_file<P: AsRef<std::path::Path>>(&self, name: P) -> std::io::Result<()> {
+        let mut file = File::create(name)?;
+        file.write_all(self.to_svg().as_bytes())
+    }
+}
+
+impl SvgElement for Svg {
+    fn to_svg(&self) -> String {
+        let mut string = String::new();
+        string.push_str(format!("<svg version=\"1.1\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">",
+                                self.width, self.height).as_str());
+
+        for item in &self.elements {
+            string.push_str(item.to_svg().as_str());
+        }
+
+        string.push_str("</svg>");
+        string
+    }
+}
+
+
+
+#[derive(Debug, Clone)]
+pub struct SvgPath {
+    path: Path,
+    fill: Option<String>,
+    stroke: Option<String>
+}
+
+impl SvgPath {
+    pub fn fill(&self) -> Option<&String> {
+        self.fill.as_ref()
+    }
+
+    pub fn stroke(&self) -> Option<&String> {
+        self.stroke.as_ref()
+    }
+}
+
+impl From<Path> for SvgPath {
+    fn from(path: Path) -> Self {
+        SvgPath { path, fill: None, stroke: None }
+    }
+}
+
+impl SvgElement for SvgPath {
+    fn to_svg(&self) -> String {
+        let mut string = String::new();
+
+        string.push_str("<path");
+
+        if let Some(fill) = self.fill() {
+            string.push_str(format!(" fill=\"{}\"", fill).as_str());
+        }
+        if let Some(stroke) = self.stroke() {
+            string.push_str(format!(" stroke=\"{}\"", stroke).as_str());
+        }
+
+        if !self.is_empty() {
+            string.push_str(" d=\"");
+            let first = self.get(0).unwrap();
+            string.push_str(format!("M {} {}", first.x(), first.y()).as_str());
+            for point in self.iter().skip(1) {
+                string.push_str(format!("L {} {}", point.x(), point.y()).as_str());
+            }
+            string.push('"');
+        }
+        string.push_str("/>");
+
+        string
+    }
+}
+
+impl Deref for SvgPath {
+    type Target = Path;
+
+    fn deref(&self) -> &Self::Target {
+        &self.path
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct SvgGroup {
+    elements: Vec<Rc<dyn SvgElement>>,
+    fill: Option<String>,
+    stroke: Option<String>,
+    stroke_width: Option<f32>,
+
+    transforms: Vec<Rc<dyn SvgTransformEl>>
+}
+
+
+
+impl SvgGroup {
+    pub fn fill(&self) -> Option<&String> {
+        self.fill.as_ref()
+    }
+
+    pub fn stroke(&self) -> Option<&String> {
+        self.stroke.as_ref()
+    }
+
+    pub fn stroke_width(&self) -> Option<f32> {
+        self.stroke_width
+    }
+}
+
+impl SvgElement for SvgGroup {
+    fn to_svg(&self) -> String {
+        let mut string = String::new();
+
+        string.push_str("<g");
+        if let Some(fill) = self.fill() {
+            string.push_str(format!(" fill=\"{}\"", fill).as_str());
+        }
+        if let Some(stroke) = self.stroke() {
+            string.push_str(format!(" stroke=\"{}\"", stroke).as_str());
+        }
+        if let Some(width) = self.stroke_width() {
+            string.push_str(format!(" stroke-width=\"{}\"", width).as_str());
+        }
+
+        if !self.transforms.is_empty() {
+            string.push_str(" transform=\"");
+            for transform in &self.transforms {
+                string.push_str(transform.to_transform().as_str());
+                string.push(' ');
+            }
+            string.push('\"');
+        }
+
+        string.push('>');
+
+        for element in &self.elements {
+            string.push_str(element.to_svg().as_str());
+        }
+
+        string.push_str("</g>");
+
+        string
+    }
+}
+
+pub trait SvgTransformEl: Debug {
+    fn to_transform(&self) -> String;
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct SvgScale(Point);
+
+impl SvgTransformEl for SvgScale {
+    fn to_transform(&self) -> String {
+        format!("scale({} {})", self.0.x(), self.0.y())
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct SvgTranslate(Vector);
+
+impl SvgTransformEl for SvgTranslate {
+    fn to_transform(&self) -> String {
+        format!("translate({} {})", self.0.x(), self.0.y())
+    }
+}

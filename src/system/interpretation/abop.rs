@@ -63,7 +63,7 @@ impl Interpretation for AbopTurtleInterpretation {
         // the stack is for the push / pop tokens.
         let mut pos_stack: Vec<(Point, Vector)> = Vec::new();
         let mut pos = Point::zero();
-        let mut dir = Vector::down();
+        let mut dir = Vector::up();
         let angle: f64 = 22.5; // degrees
 
         // Every time we "branch" (using push and pop), we start a new path.
