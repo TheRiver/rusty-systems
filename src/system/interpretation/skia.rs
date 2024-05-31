@@ -4,7 +4,6 @@ use crate::geometry::Path;
 use crate::prelude::{ProductionString, System};
 use crate::Result;
 use crate::system::family::{abop_family, get_or_init_family};
-use crate::system::interpretation::abop::AbopTurtleInterpretation;
 use crate::system::interpretation::Interpretation;
 use crate::tokens::TokenStore;
 
@@ -30,11 +29,6 @@ impl<T> Default for SkiaInterpretation<T>
         }
     }
 }
-
-/// For easy use of the [`SkiaInterpretation`] interpreting the output of
-/// [`AbopTurtleInterpretation`].
-pub type AbopSkiaInterpretation = SkiaInterpretation<AbopTurtleInterpretation>;
-
 
 impl<T> Interpretation for SkiaInterpretation<T>
     where T: Interpretation<Item=Vec<Path>>

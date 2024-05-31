@@ -2,6 +2,9 @@ use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
 use crate::system::family::get_or_init_family;
 use crate::system::interpretation::Interpretation;
+#[cfg(feature = "skia")]
+use crate::system::interpretation::skia::SkiaInterpretation;
+use crate::system::interpretation::svg::SvgPathInterpretation;
 use crate::tokens::TokenStore;
 
 pub fn abop_family() -> SystemFamily {
@@ -19,7 +22,9 @@ pub fn abop_family() -> SystemFamily {
 /// This implements a [turtle graphics][turtle] approach
 /// to the interpretation of strings, as described in the [Algorithmic Beauty of Plants][abop].
 /// 
-/// See [Logo][logo]
+/// See:
+/// * [Logo][logo]
+/// * [`AbopSvgInterpretation`]
 /// 
 /// [turtle]: https://en.wikipedia.org/wiki/Turtle_graphics
 /// [logo]: https://en.wikipedia.org/wiki/Logo_(programming_language)
@@ -27,6 +32,13 @@ pub fn abop_family() -> SystemFamily {
 #[derive(Debug, Clone, Default)]
 pub struct AbopTurtleInterpretation {
 }
+
+pub type AbopSvgInterpretation = SvgPathInterpretation<AbopTurtleInterpretation>;
+
+/// For easy use of the [`SkiaInterpretation`] interpreting the output of
+/// [`AbopTurtleInterpretation`].
+#[cfg(feature = "skia")]
+pub type AbopSkiaInterpretation = SkiaInterpretation<AbopTurtleInterpretation>;
 
 impl Interpretation for AbopTurtleInterpretation {
     type Item = Vec<Path>;
