@@ -16,10 +16,10 @@ pub fn abop_family() -> SystemFamily {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct AbopInterpretation {
+pub struct AbopTurtleInterpretation {
 }
 
-impl Interpretation for AbopInterpretation {
+impl Interpretation for AbopTurtleInterpretation {
     type Item = Vec<Path>;
 
     fn system() -> crate::Result<System> {
@@ -82,19 +82,19 @@ impl Interpretation for AbopInterpretation {
 
 #[cfg(test)]
 mod tests {
-    use crate::system::family::abop::AbopInterpretation;
+    use crate::system::family::abop::AbopTurtleInterpretation;
     use crate::system::family::Interpretation;
 
     #[test]
     fn geometry_interpretation() {
-        let system = AbopInterpretation::system().unwrap();
+        let system = AbopTurtleInterpretation::system().unwrap();
         system.parse_production("Forward -> Forward Forward").unwrap();
 
         let string = system.parse_prod_string("Forward").unwrap();
         let string = system.derive_once(string).unwrap().unwrap();
         assert_eq!(string.len(), 2);
 
-        let result = AbopInterpretation::default_interpret(&system, &string).unwrap();
+        let result = AbopTurtleInterpretation::default_interpret(&system, &string).unwrap();
         assert_eq!(result.len(), 1);
 
         let result = result[0].clone();
