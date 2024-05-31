@@ -16,9 +16,12 @@
 //! [nalgebra-glm]: https://nalgebra.org/docs/user_guide/nalgebra_glm
 
 use std::fmt::{Display, Formatter};
-use std::ops::{Add, Neg, Sub};
+use std::iter::FromIterator;
+use std::ops::{Add, Index, Neg, Sub};
+use std::slice::Iter;
+use std::vec::IntoIter;
 
-/// Represents an immutable point in 2-space. 
+/// Represents an immutable point in 2-space.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Point {
     x: f64,
@@ -233,6 +236,8 @@ impl Edge {
     }
 }
 
+/// A path is a sequence of points. These can represent
+/// a line.
 #[derive(Debug, Clone)]
 pub struct Path {
     points: Vec<Point>
@@ -258,11 +263,163 @@ impl Path {
     pub fn push<T: Into<Point>>(&mut self, point: T) {
         self.points.push(point.into())
     }
+
+    #[inline]
+    pub fn get(&self, index: usize) -> Option<&Point> {
+        self.points.get(index)
+    }
+
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, Point> {
+        self.points.iter()
+    }
+
+    /// Returns the starting point of the path.
+    #[inline]
+    pub fn get_start(&self) -> Option<&Point> {
+        self.points.first()
+    }
+}
+
+impl Index<usize> for Path {
+    type Output = Point;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.points[index]
+    }
 }
 
 impl Default for Path {
     fn default() -> Self {
         Path::new()
+    }
+}
+
+impl IntoIterator for Path {
+    type Item = Point;
+    type IntoIter = IntoIter<Point>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.points.into_iter()
+    }
+}
+
+/// Create a [`Path`] from a collection of [`Point`] objects.
+impl FromIterator<Point> for Path {
+    fn from_iter<T: IntoIterator<Item=Point>>(iter: T) -> Self {
+        Path { points: iter.into_iter().collect() }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct BoundingBox {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64
+}
+
+impl BoundingBox {
+    #[inline]
+    pub fn width(&self) -> f64 {
+        (self.max_x - self.min_x).abs()
+    }
+
+    #[inline]
+    pub fn height(&self) -> f64 {
+        (self.max_x - self.min_x).abs()
+    }
+
+    #[inline]
+    pub fn centre(&self) -> Point {
+        Point::new(self.width() / 2.0, self.height() / 2.0)
+    }
+
+    /// Returns a bounding box set up to have its values updated.
+    fn initial_infinite() -> Self {
+        BoundingBox {
+            min_x: f64::INFINITY,
+            max_x: f64::NEG_INFINITY,
+            min_y: f64::INFINITY,
+            max_y: f64::NEG_INFINITY
+        }
+    }
+
+    /// Returns a bounding box that only contains 0.
+    ///
+    /// This is a synonym for [`BoundingBox::default`].
+    pub fn zero() -> Self {
+        Self::default()
+    }
+}
+
+/// Represents an item that potentially has bounds.
+///
+/// Note that empty collections, such as a [`Path`] that
+/// contains no points, will return [`None`].
+pub trait Bounds {
+    fn bounds(&self) -> Option<BoundingBox>;
+}
+
+impl Bounds for Path {
+    /// Returns the bounds for the path.
+
+    fn bounds(&self) -> Option<BoundingBox> {
+        let mut bounds = BoundingBox::initial_infinite();
+
+        for point in &self.points {
+            if point.x < bounds.min_x {
+                bounds.min_x = point.x;
+            }
+            if point.x > bounds.max_x {
+                bounds.max_x = point.x;
+            }
+            if point.y < bounds.min_y {
+                bounds.min_y = point.y;
+            }
+            if point.y > bounds.max_y {
+                bounds.max_y = point.y;
+            }
+        }
+
+        Some(bounds)
+    }
+}
+
+impl Bounds for Vec<Path> {
+    fn bounds(&self) -> Option<BoundingBox> {
+        let mut min_x = f64::INFINITY;
+        let mut max_x = f64::NEG_INFINITY;
+        let mut min_y = f64::INFINITY;
+        let mut max_y = f64::NEG_INFINITY;
+
+        for path in self {
+            for point in &path.points {
+                if point.x < min_x {
+                    min_x = point.x;
+                }
+                if point.x > max_x {
+                    max_x = point.x;
+                }
+                if point.y < min_y {
+                    min_y = point.y;
+                }
+                if point.y > max_y {
+                    max_y = point.y;
+                }
+            }
+        }
+
+        if min_x.is_infinite() {
+            return None
+        }
+
+        Some(BoundingBox {
+            min_x,
+            max_x,
+            min_y,
+            max_y,
+        })
     }
 }
 

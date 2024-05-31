@@ -11,6 +11,9 @@ use crate::tokens::{TokenKind, TokenStore};
 
 mod abop;
 
+#[cfg(feature = "skia")]
+mod skia;
+
 pub struct Builder {
     terminals: Vec<TokenDescription>,
     productions: Vec<TokenDescription>
@@ -101,6 +104,12 @@ impl Builder {
 pub trait Interpretation: Debug + Sync + Send + Default {
     type Item;
 
+    /// Returns a default system that can handle tokens that this Interpretation
+    /// understands. 
+    /// 
+    /// Note that an interpretation can [`Interpretation::interpret`] other 
+    /// systems not produced by this function. THIS FUNCTION IS ONLY A CONVENIENCE
+    /// FUNCTION.
     fn system() -> Result<System>;
 
     fn interpret<S: TokenStore>(&self,
