@@ -9,10 +9,10 @@ use crate::prelude::*;
 use crate::Result;
 use crate::tokens::{TokenKind, TokenStore};
 
-mod abop;
+pub mod abop;
 
 #[cfg(feature = "skia")]
-mod skia;
+pub mod skia;
 
 pub struct Builder {
     terminals: Vec<TokenDescription>,
