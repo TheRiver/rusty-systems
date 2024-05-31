@@ -91,7 +91,7 @@ impl Interpretation for AbopTurtleInterpretation {
 
 #[cfg(test)]
 mod tests {
-    use crate::system::family::abop::AbopTurtleInterpretation;
+    use super::*;
     use crate::system::interpretation::Interpretation;
 
     #[test]

@@ -4,7 +4,7 @@ use crate::geometry::Path;
 use crate::prelude::{ProductionString, System};
 use crate::Result;
 use crate::system::family::{abop_family, get_or_init_family};
-use crate::system::family::abop::AbopTurtleInterpretation;
+use crate::system::interpretation::abop::AbopTurtleInterpretation;
 use crate::system::interpretation::Interpretation;
 use crate::tokens::TokenStore;
 
