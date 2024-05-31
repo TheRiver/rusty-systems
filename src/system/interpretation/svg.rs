@@ -1,4 +1,7 @@
-//!
+//! Provides support for producing SVGs as well as interpreting [`ProductionString`] instances
+//! as instructions for creating SVGs. 
+//! 
+//! TODO: more info on SVG support
 //! See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
 use std::fmt::Debug;
