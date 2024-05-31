@@ -102,6 +102,7 @@ pub mod prelude {
     pub use super::system::System;
     pub use super::system::RunSettings;
     pub use super::system::family::SystemFamily;
+    pub use super::system::family::Interpretation;
 }
 
 use std::collections::HashMap;

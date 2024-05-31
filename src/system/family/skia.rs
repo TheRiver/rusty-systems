@@ -4,11 +4,12 @@ use crate::geometry::{Path};
 use crate::prelude::{ProductionString, System};
 use crate::Result;
 use crate::system::family::{abop_family, get_or_init_family, Interpretation};
+use crate::system::family::abop::AbopInterpretation;
 use crate::tokens::TokenStore;
 
 #[derive(Debug, Clone)]
 pub struct SkiaInterpretation<T>
-    where T: Interpretation<Item=Vec<Path>>
+    where T : Interpretation<Item=Vec<Path>>
 {
     /// Skia only interprets collections of paths. This is
     /// an interpretation to produce that initial collection.
@@ -29,7 +30,9 @@ impl<T> Default for SkiaInterpretation<T>
     }
 }
 
-
+/// For easy use of the [`SkiaInterpretation`] interpreting the output of
+/// [`AbopInterpretation`].
+pub type AbopSkiaInterpretation = SkiaInterpretation<AbopInterpretation>;
 
 
 impl<T> Interpretation for SkiaInterpretation<T>
