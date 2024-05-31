@@ -1,10 +1,11 @@
 use tiny_skia::{Color, LineCap, Paint, PathBuilder, Pixmap, Stroke, Transform};
 
-use crate::geometry::{Path};
+use crate::geometry::Path;
 use crate::prelude::{ProductionString, System};
 use crate::Result;
-use crate::system::family::{abop_family, get_or_init_family, Interpretation};
+use crate::system::family::{abop_family, get_or_init_family};
 use crate::system::family::abop::AbopTurtleInterpretation;
+use crate::system::interpretation::Interpretation;
 use crate::tokens::TokenStore;
 
 #[derive(Debug, Clone)]

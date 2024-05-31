@@ -41,6 +41,7 @@ use crate::tokens::{TokenKind, TokenStore};
 
 use super::{DisplaySystem, Result};
 
+pub mod interpretation;
 pub mod parser;
 pub mod family;
 

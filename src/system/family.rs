@@ -5,9 +5,8 @@ use std::sync::{Arc, OnceLock, RwLock};
 pub use abop::abop_family;
 
 use crate::error::{Error, ErrorKind};
-use crate::prelude::*;
 use crate::Result;
-use crate::tokens::{TokenKind, TokenStore};
+use crate::tokens::{TokenKind};
 
 pub mod abop;
 
@@ -99,52 +98,6 @@ impl Builder {
         })
     }
 
-}
-
-pub trait Interpretation: Debug + Sync + Send + Default {
-    type Item;
-
-    /// Returns a default system that can handle tokens that this Interpretation
-    /// understands. 
-    /// 
-    /// Note that an interpretation can [`Interpretation::interpret`] other 
-    /// systems not produced by this function. THIS FUNCTION IS ONLY A CONVENIENCE
-    /// FUNCTION.
-    fn system() -> Result<System>;
-
-    fn interpret<S: TokenStore>(&self,
-                                tokens: &S,
-                                string: &ProductionString) -> Result<Self::Item>;
-
-
-    fn default_interpret<S: TokenStore>(tokens: &S,
-                                        string: &ProductionString) -> Result<Self::Item> {
-        let instance = Self::default();
-        instance.interpret(tokens, string)
-    }
-
-}
-
-/// An interpretation that does nothing except produce
-#[derive(Debug, Clone, Default)]
-pub struct NullInterpretation {
-}
-
-impl NullInterpretation {
-}
-
-impl Interpretation for NullInterpretation {
-    type Item = ();
-
-    #[inline]
-    fn system() -> Result<System> {
-        Ok(System::default())
-    }
-
-    #[inline]
-    fn interpret<S: TokenStore>(&self, _: &S, _: &ProductionString) -> Result<Self::Item> {
-        Ok(())
-    }
 }
 
 #[derive(Debug, Clone)]

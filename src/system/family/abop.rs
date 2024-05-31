@@ -1,6 +1,7 @@
 use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
-use crate::system::family::{get_or_init_family, Interpretation};
+use crate::system::family::get_or_init_family;
+use crate::system::interpretation::Interpretation;
 use crate::tokens::TokenStore;
 
 pub fn abop_family() -> SystemFamily {
@@ -91,7 +92,7 @@ impl Interpretation for AbopTurtleInterpretation {
 #[cfg(test)]
 mod tests {
     use crate::system::family::abop::AbopTurtleInterpretation;
-    use crate::system::family::Interpretation;
+    use crate::system::interpretation::Interpretation;
 
     #[test]
     fn geometry_interpretation() {
