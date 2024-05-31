@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ErrorKind::Locking to indicate problems acquiring synchronisation locks.
 - Added the ability to define families of L-Systems that share common tokens.
 - Path is now a fuller collection, with indexing and iterator support
+- Minimal SVG support. 
+- An interpretation that will save to SVG
 
 ### Changed
 - README updates.
