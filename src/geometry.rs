@@ -356,7 +356,7 @@ impl BoundingBox {
 
     #[inline]
     pub fn center(&self) -> Point {
-        Point::new(self.width() / 2.0, self.height() / 2.0)
+        Point::new((self.max_x + self.min_x) / 2.0, (self.max_y + self.min_y) / 2.0)
     }
 
     /// Returns a bounding box set up to have its values updated.
@@ -488,5 +488,7 @@ mod tests {
         let b = BoundingBox { min_x: -22.0, max_x:-2.0, min_y: 100.0, max_y: 101.0, ..BoundingBox::default()};
         assert_eq!(b.width(), 20.0);
         assert_eq!(b.height(), 1.0);
+        assert_eq!(b.center().x, -12.0);
+        assert_eq!(b.center().y, 100.5);
     }
 }

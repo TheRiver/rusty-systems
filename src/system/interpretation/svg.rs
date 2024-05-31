@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::ops::Deref;
 use std::rc::Rc;
+use crate::error::Error;
 
 use crate::geometry::{Bounds, Path, Point, Vector};
 use crate::prelude::{Interpretation, ProductionString, System};
@@ -65,17 +66,12 @@ impl<T> Interpretation for SvgPathInterpretation<T>
 
     fn interpret<S: TokenStore>(&self, tokens: &S, string: &ProductionString) -> crate::Result<Self::Item> {
         let paths = self.initial.interpret(tokens, string)?;
+        let bounds = paths.bounds();
 
-        let translate = paths.bounds()
-            .map(|_| {
-                let width = self.width() as f64;
-                let height = self.height() as f64;
-                
-                Vector::new(width / 2.0, height)
-            })
-            .unwrap_or_else(Vector::zero);
+        let center = bounds.as_ref().unwrap().center();
+        let canvas_centre = Point::new(self.width as f64 / 2.0, self.height as f64 / 2.0);
 
-        let scale = paths.bounds()
+        let scale = bounds.as_ref()
             .map(|bounds| {
                 let scale_y = self.height() as f64 / bounds.height();
                 let scale_x = self.width() as f64 / bounds.width();
@@ -86,7 +82,6 @@ impl<T> Interpretation for SvgPathInterpretation<T>
             .unwrap_or(Point::new(1.0, -1.0));
 
         let elements: Vec<_> = paths.into_iter()
-            // .map(|path| path + translate )
             .map(SvgPath::from)
             .map(Rc::new)
             .map(|rc| rc as Rc<dyn SvgElement>)
@@ -94,12 +89,15 @@ impl<T> Interpretation for SvgPathInterpretation<T>
 
         let group = SvgGroup {
             elements,
-            stroke: Some(String::from("black")),
-            stroke_width: Some(0.2),
-            fill: Some(String::from("none")),
+            decorations: SvgDecorations {
+                stroke: Some(String::from("black")),
+                stroke_width: Some(0.2),
+                fill: Some(String::from("none")),
+            },
             transforms: vec![
-                Rc::new(SvgTranslate(translate)),
+                Rc::new(SvgTranslate(Vector::from(canvas_centre))),
                 Rc::new(SvgScale(scale)),
+                Rc::new(SvgTranslate(-Vector::from(center))),
             ],
             ..SvgGroup::default()
         };
@@ -219,45 +217,38 @@ impl Deref for SvgPath {
 }
 
 #[derive(Debug, Clone, Default)]
+pub struct SvgDecorations {
+    pub fill: Option<String>,
+    pub stroke: Option<String>,
+    pub stroke_width: Option<f32>,
+}
+
+impl SvgDecorations {
+    pub fn to_attr_string(&self) -> String {
+        [
+            self.fill.as_ref().map(|fill| format!("fill=\"{}\"", fill)).unwrap_or_default(),
+            self.stroke.as_ref().map(|stroke| format!("stroke=\"{}\"", stroke)).unwrap_or_default(),
+            self.stroke_width.as_ref().map(|width| format!("stroke-width=\"{}\"", width)).unwrap_or_default()
+        ].join(" ")
+
+    }
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct SvgGroup {
     elements: Vec<Rc<dyn SvgElement>>,
-    fill: Option<String>,
-    stroke: Option<String>,
-    stroke_width: Option<f32>,
+    decorations: SvgDecorations,
 
     transforms: Vec<Rc<dyn SvgTransformEl>>
 }
 
 
-
-impl SvgGroup {
-    pub fn fill(&self) -> Option<&String> {
-        self.fill.as_ref()
-    }
-
-    pub fn stroke(&self) -> Option<&String> {
-        self.stroke.as_ref()
-    }
-
-    pub fn stroke_width(&self) -> Option<f32> {
-        self.stroke_width
-    }
-}
-
 impl SvgElement for SvgGroup {
     fn to_svg(&self) -> String {
         let mut string = String::new();
 
-        string.push_str("<g");
-        if let Some(fill) = self.fill() {
-            string.push_str(format!(" fill=\"{}\"", fill).as_str());
-        }
-        if let Some(stroke) = self.stroke() {
-            string.push_str(format!(" stroke=\"{}\"", stroke).as_str());
-        }
-        if let Some(width) = self.stroke_width() {
-            string.push_str(format!(" stroke-width=\"{}\"", width).as_str());
-        }
+        string.push_str("<g ");
+        string.push_str(self.decorations.to_attr_string().as_str());
 
         if !self.transforms.is_empty() {
             string.push_str(" transform=\"");
@@ -299,5 +290,39 @@ pub struct SvgTranslate(Vector);
 impl SvgTransformEl for SvgTranslate {
     fn to_transform(&self) -> String {
         format!("translate({} {})", self.0.x(), self.0.y())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SvgCircle {
+    pub centre: Point,
+    pub radius: f64,
+    pub decorations: SvgDecorations
+}
+
+impl SvgCircle {
+    pub fn build<P: Into<Point>>(point: P, radius: f64) -> crate::Result<SvgCircle> {
+        if radius < 0.0 {
+            return Err(Error::general("radius should be non-negative"))
+        }
+
+        Ok(SvgCircle { centre: point.into(), radius, ..Default::default()})
+    }
+}
+
+impl Default for SvgCircle {
+    fn default() -> Self {
+        SvgCircle {
+            centre: Point::default(),
+            radius: 5.0,
+            decorations: SvgDecorations { stroke: Some(String::from("black")), ..Default::default() }
+        }
+    }
+}
+
+impl SvgElement for SvgCircle {
+    fn to_svg(&self) -> String {
+        format!("<circle cx=\"{}\" cy=\"{}\" r=\"{}\" {}/>",
+                self.centre.x(), self.centre.y(), self.radius, self.decorations.to_attr_string())
     }
 }
