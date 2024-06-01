@@ -165,7 +165,7 @@ mod tests {
         system.parse_production("Forward -> Forward Forward").unwrap();
 
         let string = system.parse_prod_string("Forward").unwrap();
-        let string = system.derive_once(string).unwrap().unwrap();
+        let string = system.derive_once(string).unwrap();
         assert_eq!(string.len(), 2);
 
         let result = AbopTurtleInterpretation::default_interpret(&system, &string).unwrap();

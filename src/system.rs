@@ -124,28 +124,28 @@ impl System {
 
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
-    pub fn derive_once(&self, string: ProductionString) -> Option<Result<ProductionString>> {
+    pub fn derive_once(&self, string: ProductionString) -> Result<ProductionString> {
         if string.is_empty() {
-            return None
+            return Ok(ProductionString::empty())
         }
 
         if let Ok(productions) = self.productions.read() {
             return derive_once(string, productions.deref());
         }
 
-        Some(Err(Error::general("Poisoned lock on production list")))
+        Err(Error::general("Poisoned lock on production list"))
     }
 
-    pub fn derive(&self, string: ProductionString, settings: RunSettings) -> Option<Result<ProductionString>> {
+    pub fn derive(&self, string: ProductionString, settings: RunSettings) -> Result<ProductionString> {
         if string.is_empty() {
-            return None
+            return Ok(ProductionString::empty())
         }
 
         if let Ok(productions) = self.productions.read() {
             return derive(string, productions.deref(), settings);
         }
 
-        Some(Err(Error::general("Poisoned lock on production list")))
+        Err(Error::general("Poisoned lock on production list"))
     }
 
     pub fn parse_prod_string(&self, string: &str) -> Result<ProductionString> {
@@ -266,9 +266,9 @@ pub fn find_matching<'a>(productions: &'a [Production],
 ///
 /// Most of the time you will want to make use of [`System::derive_once`]
 /// instead of trying to call this function directly.  
-pub fn derive_once(string: ProductionString, productions: &[Production]) -> Option<Result<ProductionString>> {
+pub fn derive_once(string: ProductionString, productions: &[Production]) -> Result<ProductionString> {
     if string.is_empty() {
-        return None
+        return Ok(ProductionString::empty())
     }
 
     let mut result = ProductionString::default();
@@ -280,13 +280,9 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
         }
 
         if let Some(production) = find_matching(productions, &string, index) {
-            let body = production.body();
-            if body.is_err() {
-                return body.err().map(Err);
-            }
+            let body = production.body()?;
 
-            body.unwrap()
-                .string()
+            body.string()
                 .tokens()
                 .iter()
                 .copied()
@@ -300,26 +296,22 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Opti
     }
 
     match result.len() {
-        0 => None,
-        _ => Some(Ok(result))
+        0 => Ok(ProductionString::empty()),
+        _ => Ok(result)
     }
-
 }
 
-pub fn derive(string: ProductionString, productions: &[Production], settings: RunSettings) -> Option<Result<ProductionString>> {
+pub fn derive(string: ProductionString, productions: &[Production], settings: RunSettings) -> Result<ProductionString> {
     if string.is_empty() {
-        return None
+        return Ok(ProductionString::empty())
     }
 
     let mut current = string;
     for _ in 0..settings.max_iterations {
-        match derive_once(current, productions)? {
-            Err(e) => return Some(Err(e)),
-            Ok(val) => current = val
-        }
+        current = derive_once(current, productions)?;
     }
 
-    Some(Ok(current))
+    Ok(current)
 }
 
 
@@ -402,7 +394,7 @@ mod tests {
         let system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
         let string = system.parse_prod_string("Company").expect("Unable to create string");
-        let result = system.derive_once(string).unwrap().unwrap();
+        let result = system.derive_once(string).unwrap();
 
         assert_eq!(result. len(), 2);
     }
@@ -414,7 +406,7 @@ mod tests {
         let string = system.parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
 
-        assert_eq!(result.unwrap().len(), 3);
+        assert_eq!(result.len(), 3);
     }
 
     #[test]

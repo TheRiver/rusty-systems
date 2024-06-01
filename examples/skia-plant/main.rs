@@ -20,7 +20,7 @@ fn main() {
 
     // We start off with just a single apex token, and iterate for only 6 times.
     let start = plant.parse_prod_string("X").unwrap();
-    let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap().unwrap();
+    let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap();
     
     let pixmap = interpret(&plant, &result);
     pixmap.save_png("target/skia-plant.png").unwrap();
