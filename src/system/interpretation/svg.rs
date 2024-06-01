@@ -47,6 +47,15 @@ impl<T> SvgPathInterpretation<T>
         }
     }
 
+    pub fn new_with(width: usize, height: usize, interpretation: T) -> Self {
+        SvgPathInterpretation {
+            width,
+            height,
+            initial: interpretation
+        }
+    }
+    
+
     #[inline]
     pub fn width(&self) -> usize {
         self.width
@@ -112,6 +121,7 @@ impl<T> Interpretation for SvgPathInterpretation<T>
         })
     }
 }
+
 
 pub trait SvgElement : Debug {
     fn to_svg(&self) -> String;
