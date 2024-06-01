@@ -12,7 +12,7 @@ use std::rc::Rc;
 use crate::error::Error;
 
 use crate::geometry::{Bounds, Path, Point, Vector};
-use crate::prelude::{Interpretation, ProductionString, System};
+use crate::prelude::{Interpretation, ProductionString, RunSettings, System};
 use crate::tokens::TokenStore;
 
 #[derive(Debug, Clone)]
@@ -119,6 +119,10 @@ impl<T> Interpretation for SvgPathInterpretation<T>
             width: self.width,
             height: self.height
         })
+    }
+
+    fn run_settings(&self) -> RunSettings {
+        self.initial.run_settings()
     }
 }
 

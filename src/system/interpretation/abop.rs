@@ -33,13 +33,15 @@ pub fn abop_family() -> SystemFamily {
 /// [abop]: http://algorithmicbotany.org/papers/#abop
 #[derive(Debug, Clone)]
 pub struct AbopTurtleInterpretation {
+    /// the number of iterations
     n: usize,
+    /// in degrees
     delta: f32
 }
 
 impl Default for AbopTurtleInterpretation {
     fn default() -> Self {
-        AbopTurtleInterpretation::new(5, 10.0)
+        AbopTurtleInterpretation::new(5, 22.5)
     }
 }
 
@@ -49,6 +51,18 @@ impl AbopTurtleInterpretation {
             n,
             delta
         }
+    }
+
+    /// The number of rewite iterations that a system should perform
+    ///
+    /// See [`RunSettings::for_max_iterations`]
+    pub fn n(&self) -> usize {
+        self.n
+    }
+
+    /// The angle that the turtle will move.
+    pub fn delta(&self) -> f32 {
+        self.delta
     }
 }
 
@@ -83,7 +97,7 @@ impl Interpretation for AbopTurtleInterpretation {
         let mut pos_stack: Vec<(Point, Vector)> = Vec::new();
         let mut pos = Point::zero();
         let mut dir = Vector::up();
-        let angle: f64 = 22.5; // degrees
+        let angle: f64 = self.delta() as f64; // degrees
 
         // Every time we "branch" (using push and pop), we start a new path.
         let mut paths: Vec<Path> = Vec::new();

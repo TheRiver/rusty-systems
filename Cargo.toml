@@ -18,8 +18,8 @@ name = "lsystem"
 crate-type = ["rlib", "dylib"]
 
 [dependencies]
-ansi_term = "0.12.1"
-clap = { version = "4.5.4", features = ["derive"] }
+ansi_term = "0.12"
+clap = { version = "4.5", features = ["derive"] }
 rand = "0.8"
 tiny-skia = { version = "0.11", optional = true}
 
