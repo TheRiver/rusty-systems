@@ -120,7 +120,6 @@ impl Interpretation for AbopTurtleInterpretation {
                 path = Path::new();
                 path.push(pos);
             } else if token == push {               // interpret push tokens. This starts "a branch" of the plant.
-                println!("[");
                 pos_stack.push((pos, dir));
             } else if token == pop {                // interpret pop tokens. This ends "a branch", returning to where the branch started.
                 (pos, dir) = pos_stack.pop().expect("Nothing to pop");
