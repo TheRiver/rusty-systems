@@ -3,8 +3,6 @@ use crate::prelude::{ProductionString, RunSettings, System};
 use crate::tokens::TokenStore;
 
 pub mod abop;
-#[cfg(feature = "skia")]
-pub mod skia;
 pub mod svg;
 
 pub trait Interpretation: Debug + Sync + Send + Default {

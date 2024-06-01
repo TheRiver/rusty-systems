@@ -2,8 +2,6 @@ use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
 use crate::system::family::get_or_init_family;
 use crate::system::interpretation::Interpretation;
-#[cfg(feature = "skia")]
-use crate::system::interpretation::skia::SkiaInterpretation;
 use crate::system::interpretation::svg::SvgPathInterpretation;
 use crate::tokens::TokenStore;
 
@@ -68,11 +66,6 @@ impl AbopTurtleInterpretation {
 }
 
 pub type AbopSvgInterpretation = SvgPathInterpretation<AbopTurtleInterpretation>;
-
-/// For easy use of the [`SkiaInterpretation`] interpreting the output of
-/// [`AbopTurtleInterpretation`].
-#[cfg(feature = "skia")]
-pub type AbopSkiaInterpretation = SkiaInterpretation<AbopTurtleInterpretation>;
 
 impl Interpretation for AbopTurtleInterpretation {
     type Item = Vec<Path>;
