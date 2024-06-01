@@ -30,9 +30,13 @@ pub fn handle_derive(args: &Cli, derive: &DeriveArgs) -> ExitCode {
 
     let interpretation = SvgPathInterpretation::new_with(derive.width, derive.height, interpretation);
 
-    // todo should this be option<result> or result<option>
-    let result = system.derive(axiom, interpretation.run_settings()).unwrap();
-    let result = interpretation.interpret(&system, &result);
+    let result = system.derive(axiom, interpretation.run_settings());
+    if let Err(e) = result {
+        eprintln!("\n{}", error_style().paint("Error"));
+        eprintln!("{}", e);
+        return ExitCode::FAILURE;
+    }
+    let result = interpretation.interpret(&system, &result.unwrap());
 
     if let Err(e) = result {
         eprintln!("\n{}", error_style().paint("Error"));
