@@ -3,7 +3,8 @@ use tiny_skia::{Color, LineCap, Paint, PathBuilder, Pixmap, Stroke, Transform};
 use crate::geometry::Path;
 use crate::prelude::{ProductionString, System};
 use crate::Result;
-use crate::system::family::{abop_family, get_or_init_family};
+use crate::system::family;
+use crate::system::family::abop;
 use crate::system::interpretation::Interpretation;
 use crate::tokens::TokenStore;
 
@@ -37,7 +38,7 @@ impl<T> Interpretation for SkiaInterpretation<T>
 
     /// Returns a system initialised to understand tokens from [`abop_family`].
     fn system() -> Result<System> {
-        let family = get_or_init_family("ABOP", abop_family);
+        let family = family::get_or_init_family("ABOP", abop::abop_family);
         System::of_family(family)
     }
 

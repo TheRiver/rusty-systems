@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock, RwLock};
 
-pub use super::interpretation::abop::abop_family;
+pub use super::interpretation::abop;
 
 use crate::error::{Error, ErrorKind};
 use crate::Result;
@@ -16,7 +16,7 @@ pub struct Builder {
 impl Builder {
     /// Register a terminal, with an optional description of what that terminal represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`System`]),
+    /// This does *not* create terminals (see, for instance, [`System`](crate::prelude::System)),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -38,7 +38,7 @@ impl Builder {
 
     /// Register a production, with an optional description of the kind of action that production represents.
     ///
-    /// This does *not* create terminals (see, for instance, [`System`]),
+    /// This does *not* create terminals (see, for instance, [`System`](crate::prelude::System)),
     /// it just defines what tokens are allowed.
     ///
     /// For example:
@@ -103,7 +103,7 @@ pub struct SystemFamily {
 }
 
 impl SystemFamily {
-    /// Define a family of [`System`] instances.
+    /// Define a family of [`System`](crate::prelude::System) instances.
     pub fn define() -> Builder {
         Builder { terminals: Vec::new(), productions: Vec::new() }
     }
@@ -143,7 +143,8 @@ pub fn get_family<S: AsRef<str>>(name: S) -> Option<Arc<SystemFamily>> {
 ///
 /// ```
 /// use rusty_systems::system::family;
-/// let abop = family::get_or_init_family("ABOP", family::abop_family);
+/// use rusty_systems::system::family::abop;
+/// let abop = family::get_or_init_family("ABOP", abop::abop_family);
 /// ```
 pub fn get_or_init_family<S, F>(name: S, default: F) -> Arc<SystemFamily>
     where S: AsRef<str>,
@@ -285,7 +286,7 @@ mod tests {
 
     #[test]
     fn abop_available() {
-        let abop = get_or_init_family("ABOP", abop_family);
+        let abop = get_or_init_family("ABOP", abop::abop_family);
         assert_eq!(abop.name(), "ABOP");
     }
 }

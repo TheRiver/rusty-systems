@@ -1,11 +1,11 @@
 use std::process::ExitCode;
-use rusty_systems::system::family;
+use rusty_systems::system::family::abop;
 use rusty_systems::system::family::TokenDescription;
 use crate::heading_style;
 
 
 pub fn describe() -> ExitCode {
-    let family = family::abop_family();
+    let family = abop::abop_family();
 
     let print= |t : &TokenDescription| {
         print!("  {: <10}", t.name);

@@ -2,7 +2,7 @@
 //! as instructions for creating SVGs. 
 //! 
 //! TODO: more info on SVG support
-//! See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+//! See <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths>
 
 use std::fmt::Debug;
 use std::fs::File;
