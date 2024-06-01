@@ -2,40 +2,32 @@ use std::process::ExitCode;
 use std::sync::OnceLock;
 
 use ansi_term::{Color, Style};
-use clap::{Args, Parser, Subcommand};
+use clap::Parser;
 
-use crate::derive::{handle_derive};
+use crate::derive::handle_derive;
 
 mod derive;
 mod describe;
+mod cli;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-#[command(propagate_version = true)]
-struct Cli {
-    #[arg(short, long, global = true)]
-    verbose: bool,
 
-    #[command(subcommand)]
-    command: Command
+
+// todo Need to set up features to include libraries only for this.
+fn main() -> ExitCode {
+    let args = cli::Cli::parse();
+
+
+    match &args.command {
+        cli::Command::Derive(derive) => {
+            handle_derive(&args, derive)
+        },
+        cli::Command::Describe => {
+            describe::describe()
+        }
+    }
 }
 
-#[derive(Debug, Args)]
-struct DeriveArgs {
-    file: Box<std::path::Path>, // todo Figure out how to document
-    #[arg(short, long)]
-    output: Box<std::path::Path>,
-    #[arg(long, default_value = "500")]
-    width: usize,
-    #[arg(long, default_value = "500")]
-    height: usize
-}
 
-#[derive(Debug, Subcommand)]
-enum Command {
-    Derive(DeriveArgs),
-    Describe,
-}
 
 
 fn green() -> &'static Style {
@@ -52,24 +44,4 @@ fn heading_style() -> &'static Style {
     static HEADING: OnceLock<Style> = OnceLock::new();
     HEADING.get_or_init(|| Color::White.underline().bold())
 }
-
-
-
-// todo Need to set up features to include libraries only for this.
-fn main() -> ExitCode {
-    let args = Cli::parse();
-
-
-    match &args.command {
-        Command::Derive(derive) => {
-            handle_derive(&args, derive)
-        },
-        Command::Describe => {
-            describe::describe()
-        }
-    }
-}
-
-
-
 
