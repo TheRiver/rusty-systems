@@ -99,6 +99,7 @@ impl<T> Interpretation for SvgPathInterpretation<T>
             .map(|rc| rc as Rc<dyn SvgElement>)
             .collect();
 
+        #[allow(clippy::needless_update)]
         let group = SvgGroup {
             elements,
             decorations: SvgDecorations {
