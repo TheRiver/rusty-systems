@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README updates.
 - Using ErrorKind::Locking in more places
 - Many documentation updates
+- derivation functions now only return a Result, not a Result<Option>.
 
 ### Removed
 
