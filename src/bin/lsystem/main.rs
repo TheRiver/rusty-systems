@@ -4,9 +4,10 @@ use std::sync::OnceLock;
 use ansi_term::{Color, Style};
 use clap::{Args, Parser, Subcommand};
 
-use crate::derive::handle_derive;
+use crate::derive::{handle_derive};
 
 mod derive;
+mod describe;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -32,7 +33,8 @@ struct DeriveArgs {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    Derive(DeriveArgs)
+    Derive(DeriveArgs),
+    Describe,
 }
 
 
@@ -46,8 +48,10 @@ fn error_style() -> &'static Style {
     ERROR.get_or_init(|| Color::Red.underline())
 }
 
-
-
+fn heading_style() -> &'static Style {
+    static HEADING: OnceLock<Style> = OnceLock::new();
+    HEADING.get_or_init(|| Color::White.underline().bold())
+}
 
 
 
@@ -58,7 +62,10 @@ fn main() -> ExitCode {
 
     match &args.command {
         Command::Derive(derive) => {
-            handle_derive(&args, &derive)
+            handle_derive(&args, derive)
+        },
+        Command::Describe => {
+            describe::describe()
         }
     }
 }
