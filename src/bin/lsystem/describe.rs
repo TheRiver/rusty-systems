@@ -8,7 +8,7 @@ pub fn describe() -> ExitCode {
     let family = family::abop_family();
 
     let print= |t : &TokenDescription| {
-        print!("{: <10}", t.name);
+        print!("  {: <10}", t.name);
         t.description.iter().for_each(|d| print!("{}", d));
         println!();
     };
