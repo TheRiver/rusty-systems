@@ -59,7 +59,7 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
 
     if !is_production {
         return Err(Error::new(ErrorKind::Parse,
-                              "production tokes should start with a capitalised letter"));
+                              String::from("production tokens should start with a capitalised letter: ") + head));
     }
 
     let head_token = store.add_token(head, TokenKind::Production)?;
@@ -120,13 +120,13 @@ pub fn parse_production<T, P>(token_store: &T,
 {
     let production = production.trim();
     if production.is_empty() {
-        return Err(Error::new(ErrorKind::Parse, 
+        return Err(Error::new(ErrorKind::Parse,
                               String::from("production string should not be an empty string")));
     }
 
     let index = production
         .find("->")
-        .ok_or_else(|| Error::new(ErrorKind::Parse, 
+        .ok_or_else(|| Error::new(ErrorKind::Parse,
                                   String::from("supplied string is not a production: ") + production))?;
 
     let head_str = &production[0..index];
