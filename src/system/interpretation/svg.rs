@@ -54,7 +54,7 @@ impl<T> SvgPathInterpretation<T>
             initial: interpretation
         }
     }
-    
+
 
     #[inline]
     pub fn width(&self) -> usize {
@@ -215,7 +215,7 @@ impl SvgElement for SvgPath {
             let first = self.get(0).unwrap();
             string.push_str(format!("M {} {}", first.x(), first.y()).as_str());
             for point in self.iter().skip(1) {
-                string.push_str(format!("L {} {}", point.x(), point.y()).as_str());
+                string.push_str(format!(" L {} {}", point.x(), point.y()).as_str());
             }
             string.push('"');
         }

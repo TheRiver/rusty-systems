@@ -96,7 +96,7 @@ impl Interpretation for AbopTurtleInterpretation {
         // the stack is for the push / pop tokens.
         let mut pos_stack: Vec<(Point, Vector)> = Vec::new();
         let mut pos = Point::zero();
-        let mut dir = Vector::up();
+        let mut dir = Vector::new(0.0, 5.0);
         let angle: f64 = self.delta() as f64; // degrees
 
         // Every time we "branch" (using push and pop), we start a new path.
@@ -105,11 +105,13 @@ impl Interpretation for AbopTurtleInterpretation {
         let mut path = Path::new();
         path.push(pos);
 
+        // todo indicate what productions / tokens haven't been used
         for token in string {
             if token == forward {                   // interpret forward tokens.
                 pos = pos + dir;
                 path.push(pos);
             } else if token == push {               // interpret push tokens. This starts "a branch" of the plant.
+                println!("[");
                 pos_stack.push((pos, dir));
             } else if token == pop {                // interpret pop tokens. This ends "a branch", returning to where the branch started.
                 (pos, dir) = pos_stack.pop().expect("Nothing to pop");
