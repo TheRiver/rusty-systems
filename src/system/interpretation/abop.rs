@@ -7,6 +7,8 @@ use crate::system::interpretation::skia::SkiaInterpretation;
 use crate::system::interpretation::svg::SvgPathInterpretation;
 use crate::tokens::TokenStore;
 
+pub mod parser;
+
 pub fn abop_family() -> SystemFamily {
     SystemFamily::define()
         .with_terminal("[", Some("Start a branch"))
@@ -29,8 +31,25 @@ pub fn abop_family() -> SystemFamily {
 /// [turtle]: https://en.wikipedia.org/wiki/Turtle_graphics
 /// [logo]: https://en.wikipedia.org/wiki/Logo_(programming_language)
 /// [abop]: http://algorithmicbotany.org/papers/#abop
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AbopTurtleInterpretation {
+    n: usize,
+    delta: f32
+}
+
+impl Default for AbopTurtleInterpretation {
+    fn default() -> Self {
+        AbopTurtleInterpretation::new(5, 10.0)
+    }
+}
+
+impl AbopTurtleInterpretation {
+    pub fn new(n: usize, delta: f32) -> Self {
+        Self {
+            n,
+            delta
+        }
+    }
 }
 
 pub type AbopSvgInterpretation = SvgPathInterpretation<AbopTurtleInterpretation>;
@@ -98,7 +117,17 @@ impl Interpretation for AbopTurtleInterpretation {
 
         Ok(paths)
     }
+
+    fn run_settings(&self) -> RunSettings {
+        #[allow(clippy::needless_update)]
+        RunSettings {
+            max_iterations: self.n,
+            ..RunSettings::default()
+        }
+    }
 }
+
+
 
 
 #[cfg(test)]

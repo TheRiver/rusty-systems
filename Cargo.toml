@@ -11,10 +11,15 @@ keywords = ["grammar", "l-systems", "procedural", "generation"]
 
 exclude = ["docs", "11ty", ".*"]
 
+[[bin]]
+name = "lsystem"
+
 [lib]
 crate-type = ["rlib", "dylib"]
 
 [dependencies]
+ansi_term = "0.12.1"
+clap = { version = "4.5.4", features = ["derive"] }
 rand = "0.8"
 tiny-skia = { version = "0.11", optional = true}
 

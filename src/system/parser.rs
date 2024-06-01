@@ -120,12 +120,14 @@ pub fn parse_production<T, P>(token_store: &T,
 {
     let production = production.trim();
     if production.is_empty() {
-        return Err(Error::new(ErrorKind::Parse, "no terms in production string"));
+        return Err(Error::new(ErrorKind::Parse, 
+                              String::from("production string should not be an empty string")));
     }
 
     let index = production
         .find("->")
-        .ok_or_else(|| Error::new(ErrorKind::Parse, "supplied string is not a production"))?;
+        .ok_or_else(|| Error::new(ErrorKind::Parse, 
+                                  String::from("supplied string is not a production: ") + production))?;
 
     let head_str = &production[0..index];
     let body_str = &production[index + 2..];

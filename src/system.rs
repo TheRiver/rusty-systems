@@ -26,7 +26,7 @@
 //! * [`ProductionString`]
 //! * [`SystemFamily`]
 
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
@@ -248,8 +248,6 @@ impl Default for RunSettings {
         }
     }
 }
-
-
 
 /// Given a vector of productions, this returns a reference to a
 /// production that matches the string at the given location.

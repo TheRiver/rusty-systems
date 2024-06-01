@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::prelude::{ProductionString, System};
+use crate::prelude::{ProductionString, RunSettings, System};
 use crate::tokens::TokenStore;
 
 pub mod abop;
@@ -27,6 +27,13 @@ pub trait Interpretation: Debug + Sync + Send + Default {
                                         string: &ProductionString) -> crate::Result<Self::Item> {
         let instance = Self::default();
         instance.interpret(tokens, string)
+    }
+
+    /// Returns default run settings for this interpretation.
+    ///
+    /// This defines how a system should be derived.
+    fn run_settings(&self) -> RunSettings {
+        RunSettings::default()
     }
 
 }
