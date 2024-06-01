@@ -15,7 +15,8 @@ pub fn abop_family() -> SystemFamily {
         .with_terminal("]", Some("Finish a branch"))
         .with_terminal("+", Some("Turn turtle right"))
         .with_terminal("-", Some("Turn turtle left"))
-        .with_production("Forward", Some("Move the turtle forward"))
+        .with_production("Forward", Some("Move the turtle forward, drawing a line"))
+        .with_production("Move", Some("Move the turtle forward WITHOUT drawing"))
         .with_production("X", Some("A growth point for the plant / branch"))
         .build("ABOP")
         .unwrap()
@@ -86,6 +87,7 @@ impl Interpretation for AbopTurtleInterpretation {
                                 string: &ProductionString) -> crate::Result<Self::Item> {
         // We need token values to interpret the strings.
         let forward = tokens.get_token("Forward").unwrap();
+        let space = tokens.get_token("Move").unwrap();
         let right = tokens.get_token("+").unwrap();
         let left = tokens.get_token("-").unwrap();
         let push = tokens.get_token("[").unwrap();
@@ -110,12 +112,19 @@ impl Interpretation for AbopTurtleInterpretation {
             if token == forward {                   // interpret forward tokens.
                 pos = pos + dir;
                 path.push(pos);
+            } else if token == space {
+                pos = pos + dir;
+                if path.len() > 1 {
+                    paths.push(path)
+                }
+                path = Path::new();
+                path.push(pos);
             } else if token == push {               // interpret push tokens. This starts "a branch" of the plant.
                 println!("[");
                 pos_stack.push((pos, dir));
             } else if token == pop {                // interpret pop tokens. This ends "a branch", returning to where the branch started.
                 (pos, dir) = pos_stack.pop().expect("Nothing to pop");
-                if !path.is_empty() {
+                if path.len() > 1 {
                     paths.push(path)
                 }
                 path = Path::new();
