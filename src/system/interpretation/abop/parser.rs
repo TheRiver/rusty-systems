@@ -3,7 +3,7 @@
 use crate::error::ErrorKind;
 use crate::system::interpretation::abop::*;
 
-type ParsedAbop = (AbopTurtleInterpretation, System);
+type ParsedAbop = (AbopTurtleInterpretation, System, ProductionString);
 
 // todo document parse function
 pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
@@ -18,6 +18,8 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
     let mut delta = 5.0_f32;
 
     let system = AbopTurtleInterpretation::system()?;
+    let mut prod_count = 0_usize;
+    let mut initial : Option<&str> = None;
 
     #[allow(clippy::while_let_on_iterator)]
     while let Some(line) = lines.next() {
@@ -35,17 +37,33 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
                 "d" | "D" | "delta" | "∂" => {
                     delta = equality.value.parse()?;
                 }
-                _ => {
-            } }
+                _ => return Err(Error::new(ErrorKind::Parse, format!("Unrecognised line {}", line)))
+            }
 
             continue;
         }
+        
+        if is_initial(line) {
+            initial = Some(parse_initial(line));
+            continue;
+        }
 
+        prod_count += 1;
         system.parse_production(line)?;
     }
 
+    if prod_count == 0 {
+        return Err(Error::new(ErrorKind::Parse, "No productions have been supplied"));
+    }
+    
+    if initial.is_none() {
+        return Err(Error::new(ErrorKind::Parse, "No initial axiom has been supplied"));
+    }
+    
+    let initial = system.parse_prod_string(initial.unwrap())?;
+    
     let interpretation = AbopTurtleInterpretation::new(n, delta);
-    Ok((interpretation, system))
+    Ok((interpretation, system, initial))
 }
 
 // todo document
@@ -62,6 +80,15 @@ struct EqualityLine<'a> {
 
 fn is_equality_line(line: &str) -> bool {
     line.contains('=')
+}
+
+fn is_initial(line: &str) -> bool {
+    line.trim().starts_with("initial:")
+}
+
+fn parse_initial<'a>(line: &'a str) -> &'a str {
+    let parts: Vec<_> = line.splitn(2, ':').collect();
+    parts[1].trim()
 }
 
 fn parse_equality(line: &str) -> crate::Result<EqualityLine> {

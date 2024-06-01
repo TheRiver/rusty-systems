@@ -9,10 +9,10 @@ pub fn handle_derive(args: &Cli, derive: &DeriveArgs) -> ExitCode {
         print!("Reading {} ", derive.file.to_str().unwrap());
     }
 
-    let (interpretation, system) = {
+    let (interpretation, system, axiom) = {
         let result = parser::parse_file(derive.file.as_ref());
         if let Err(e) = result {
-            println!("❌");
+            if args.verbose { println!("❌") }
             eprint!("\n{}: ", error_style().paint("Error"));
             eprintln!("{}", e);
             return ExitCode::FAILURE;
@@ -27,7 +27,6 @@ pub fn handle_derive(args: &Cli, derive: &DeriveArgs) -> ExitCode {
 
     let interpretation = SvgPathInterpretation::new_with(derive.width, derive.height, interpretation);
 
-    let axiom = system.parse_prod_string("X").unwrap();
     // todo should this be option<result> or result<option>
     let result = system.derive(axiom, interpretation.run_settings()).unwrap().unwrap();
     let result = interpretation.interpret(&system, &result);
