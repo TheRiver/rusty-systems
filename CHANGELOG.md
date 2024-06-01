@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Path is now a fuller collection, with indexing and iterator support
 - Minimal SVG support. 
 - An interpretation that will save to SVG
+- A command line lsystem tool
 
 ### Changed
 - README updates.
