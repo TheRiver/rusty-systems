@@ -47,7 +47,7 @@ You can also install any of the tagged development versions using git:
 
 ```toml
 [dependencies]
-rusty-systems = {git = "https://github.com/TheRiver/rusty-systems.git", tag = "0.3.0"}
+rusty-systems = {git = "https://github.com/TheRiver/rusty-systems.git", tag = "2.0.0"}
 
 ```
 

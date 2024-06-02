@@ -3,6 +3,12 @@
 //! 
 //! TODO: more info on SVG support
 //! See <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths>
+//! 
+//! <div class="warning">
+//! Note that this isn't meant to be a full featured SVG composition library. If you want 
+//! more SVG features, crates such as <a href="https://crates.io/crates/svg ">svg</a> might be of use. 
+//! </div>
+//!
 
 use std::fmt::Debug;
 use std::fs::File;
