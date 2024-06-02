@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Removed
+
+## [2.0.0]
+
+### Added
 - Added ErrorKind::Locking to indicate problems acquiring synchronisation locks.
 - Added ErrorKind::Io for passing on handling std::io::Error.
 - Added the ability to define families of L-Systems that share common tokens.
