@@ -43,13 +43,14 @@
 //!
 //! Some features that you might find useful:
 //!
-//! * **Some support for interpreting L-Systems as defined in [the Algorithmic Beauty of Plants][abop].**
-//!   See the [abop module](crate::system::interpretation::abop) documentation.
+//! * **Some support for interpreting L-Systems as defined in [the Algorithmic Beauty of Plants (ABOP)][abop].**
+//!   See the [abop module](system::interpretation::abop) documentation.
 //! * **Some native, limited support for geometric primitives.**
-//!   See the [geometry module](crate::geometry). This is not meant as a replacement for libraries
-//!   such as [nalgebra][nalgebra].
+//!   See the [geometry module](geometry). This is not meant as a replacement for libraries
+//!   such as [nalgebra][nalgebra], just as something convenient to use.
 //! * **Native support for creating and outputting SVGs.**
-//!   See the [svg module](crate::system::interpretation::svg).
+//!   See the [svg module](system::interpretation::svg).
+//! * A command line app, `lsystem`, for creating SVGs of systems from ABOP.
 //!
 //! # Examples
 //!
@@ -69,7 +70,7 @@
 //! # Learn more about L-Systems
 //!
 //! If you would like to learn more about L-Systems, the original *Algorithmic Beauty of Plants*
-//! book, by Prusinkiewicz and Lindenmayer, is [available for free, online][abop].
+//! book by Prusinkiewicz and Lindenmayer is [available for free, online][abop].
 //!
 //! # Code repository, license, and versioning.
 //! 
