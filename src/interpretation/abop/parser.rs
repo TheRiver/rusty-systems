@@ -20,7 +20,7 @@
 //! If we have a string in the format given above, you can parse it like so:
 //!
 //! ```
-//! use rusty_systems::system::family::abop::parser::parse;
+//! use rusty_systems::interpretation::abop::parser::parse;
 //! # let plant_string = "initial: X\nX -> F F";
 //!
 //! let (interpretation, system, initial_string) = parse(plant_string).unwrap();
@@ -35,7 +35,7 @@
 //! * `initial_string`, being the [`ProductionString`] the file specifies as the initial string.
 
 use crate::error::ErrorKind;
-use crate::system::interpretation::abop::*;
+use crate::interpretation::abop::*;
 
 /// A tuple containing information parsed from a string or file containing an L-System
 /// specified in this library's "plant" format.
@@ -48,14 +48,14 @@ use crate::system::interpretation::abop::*;
 /// You can use destructuring to easily access the tuple members:
 ///
 /// ```
-/// use rusty_systems::system::family::abop::parser::parse;
+/// use rusty_systems::interpretation::abop::parser::parse;
 /// # let plant_string = "initial: X\nX -> F F";
 ///
 /// let (interpretation, system, initial_string) = parse(plant_string).unwrap();
 /// ```
 type ParsedAbop = (AbopTurtleInterpretation, System, ProductionString);
 
-/// Parses a string in a bespoke "plant" format. See the [namespace](crate::system::interpretation::abop::parser)
+/// Parses a string in a bespoke "plant" format. See the [namespace](crate::interpretation::abop::parser)
 /// namespace documentation for more information.
 ///
 /// See [`parse_file`] to parse a file containing a string in this format.
@@ -121,7 +121,7 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
 
 /// Reads a file containing an L-System written in the library's bespoke "plant" format.
 ///
-/// See the [module documentation](crate::system::interpretation::abop::parser) for more information,
+/// See the [module documentation](crate::interpretation::abop::parser) for more information,
 /// as well as the [`parser`] function.
 pub fn parse_file<P: AsRef<std::path::Path>>(name: P) -> crate::Result<ParsedAbop> {
     let contents = std::fs::read_to_string(name)?;

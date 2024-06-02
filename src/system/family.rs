@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock, RwLock};
 
-pub use super::interpretation::abop;
-
 use crate::error::{Error, ErrorKind};
 use crate::Result;
 use crate::tokens::{TokenKind};
@@ -143,7 +141,7 @@ pub fn get_family<S: AsRef<str>>(name: S) -> Option<Arc<SystemFamily>> {
 ///
 /// ```
 /// use rusty_systems::system::family;
-/// use rusty_systems::system::family::abop;
+/// use rusty_systems::interpretation::abop;
 /// let abop = family::get_or_init_family("ABOP", abop::abop_family);
 /// ```
 pub fn get_or_init_family<S, F>(name: S, default: F) -> Arc<SystemFamily>
@@ -254,6 +252,7 @@ impl FromIterator<TokenDescription> for HashMap<String, TokenDescription> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpretation::abop;
 
     #[test]
     fn empty_name() {

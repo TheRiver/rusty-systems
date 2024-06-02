@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * the --output flag in `lsystem` now has a default value of `out.svg`.
-* Documentation updates
+* Documentation updates.
+* Refactored crate::system::interpretation module to crate::interpretation 
 
 ### Removed
 

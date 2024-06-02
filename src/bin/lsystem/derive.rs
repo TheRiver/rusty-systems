@@ -1,8 +1,8 @@
 use std::process::ExitCode;
 
 use rusty_systems::prelude::*;
-use rusty_systems::system::interpretation::abop::parser;
-use rusty_systems::system::interpretation::svg::SvgPathInterpretation;
+use rusty_systems::interpretation::abop::parser;
+use rusty_systems::interpretation::svg::SvgPathInterpretation;
 
 use crate::{error_style, green};
 use crate::cli::{Cli, DeriveArgs};

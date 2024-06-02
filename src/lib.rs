@@ -44,12 +44,12 @@
 //! Some features that you might find useful:
 //!
 //! * **Some support for interpreting L-Systems as defined in [the Algorithmic Beauty of Plants (ABOP)][abop].**
-//!   See the [abop module](system::interpretation::abop) documentation.
+//!   See the [abop module](interpretation::abop) documentation.
 //! * **Some native, limited support for geometric primitives.**
 //!   See the [geometry module](geometry). This is not meant as a replacement for libraries
 //!   such as [nalgebra][nalgebra], just as something convenient to use.
 //! * **Native support for creating and outputting SVGs.**
-//!   See the [svg module](system::interpretation::svg).
+//!   See the [svg module](interpretation::svg).
 //! * **A command line app, `lsystem`, for creating SVGs of systems from ABOP.** 
 //!   You can read about using this tool [here][lsystem-tool]
 //!
@@ -102,6 +102,7 @@ pub mod productions;
 pub mod strings;
 pub mod system;
 pub mod geometry;
+pub mod interpretation;
 
 
 /// Some commonly used members of the crate re-exported for easy access. 
@@ -118,7 +119,7 @@ pub mod prelude {
     pub use super::system::System;
     pub use super::system::RunSettings;
     pub use super::system::family::SystemFamily;
-    pub use crate::system::interpretation::Interpretation;
+    pub use crate::interpretation::Interpretation;
 }
 
 use std::collections::HashMap;

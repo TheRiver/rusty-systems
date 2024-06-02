@@ -5,8 +5,8 @@
 use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
 use crate::system::family::get_or_init_family;
-use crate::system::interpretation::Interpretation;
-use crate::system::interpretation::svg::SvgPathInterpretation;
+use crate::interpretation::Interpretation;
+use crate::interpretation::svg::SvgPathInterpretation;
 use crate::tokens::TokenStore;
 
 pub mod parser;
@@ -154,7 +154,7 @@ impl Interpretation for AbopTurtleInterpretation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::system::interpretation::Interpretation;
+    use crate::interpretation::Interpretation;
 
     #[test]
     fn geometry_interpretation() {

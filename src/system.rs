@@ -41,7 +41,6 @@ use crate::tokens::{TokenKind, TokenStore};
 
 use super::{DisplaySystem, Result};
 
-pub mod interpretation;
 pub mod parser;
 pub mod family;
 
@@ -78,7 +77,7 @@ impl System {
     ///
     /// ```
     /// use rusty_systems::system::{family, System};
-    /// use rusty_systems::system::family::abop;
+    /// use rusty_systems::interpretation::abop;
     ///
     /// family::register(abop::abop_family()).expect("Unable to register the family");
     /// let system = System::of_family("ABOP").expect("Unable to find system");
