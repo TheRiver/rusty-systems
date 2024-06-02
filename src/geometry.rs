@@ -4,6 +4,9 @@
 //! module makes it much easier to implement interpretations
 //! for these examples and see your output.
 //!
+//! 
+//! <div class="warning">
+//! 
 //! Note that this is not meant to be a *complete* or *performant* implementation
 //! of 2D geometry and transformations. It does not even have an implementation of
 //! a transformation matrix — if you need transformation matrices, your needs have moved
@@ -11,6 +14,8 @@
 //! alternatives include [nalgebra][nalgebra], and if you specifically want
 //! a computer graphics related package focusing on 2D and 3D operations using
 //! homogenous coordinates, consider their [nalgebra-glm][nalgebra-glm] crate.
+//! 
+//! </div>
 //!
 //! [nalgebra]: https://nalgebra.org/
 //! [nalgebra-glm]: https://nalgebra.org/docs/user_guide/nalgebra_glm

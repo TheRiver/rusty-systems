@@ -5,9 +5,13 @@
 //! See <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths>
 //! 
 //! <div class="warning">
+//! 
 //! Note that this isn't meant to be a full featured SVG composition library. If you want 
-//! more SVG features, crates such as <a href="https://crates.io/crates/svg ">svg</a> might be of use. 
+//! more SVG features, crates such as [svg][svg] might be of use.
+//! 
 //! </div>
+//! 
+//! [svg]: https://crates.io/crates/svg
 //!
 
 use std::fmt::Debug;
