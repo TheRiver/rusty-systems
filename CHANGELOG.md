@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - derivation functions now only return a Result, not a Result<Option>.
 
 ### Removed
+- Edge removed from Geometry, since nothing was using it. 
 
 ## [1.0.0] - 2024-05-24
 

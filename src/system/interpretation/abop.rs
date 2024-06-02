@@ -1,3 +1,5 @@
+//! Support for running L-Systems defined in the Algorithmic Beauty of Plants.
+
 use crate::geometry::{Path, Point, Vector};
 use crate::prelude::*;
 use crate::system::family::get_or_init_family;

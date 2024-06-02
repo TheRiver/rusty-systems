@@ -1,11 +1,53 @@
-//! todo describe this
+//! Parsing grammars from *the Algorithmic Beauty of Plants* 
+//! 
+//! # The format
+//! 
+//! ```plant
+//! # Comments start with a hash. 
+//! # This describes the plant 5 in fig 1.24 of ABOP (pg 25)
+//! n = 6           # Number of derivation iterations. This is one more iteration than in ABOP
+//! delta = 22.5    # The angle that the + and - tokens turn the "turtle" by.
+//! 
+//! initial: X      # The starting string
+//! 
+//! # And now the productions
+//! Forward -> Forward Forward 
+//! X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
+//! ```
+//! 
+//! # Parsing
+//! 
+//! If we have a string in the format given above, you can parse it like so:
+//! 
+//! ```
+//! use rusty_systems::system::family::abop::parser::parse;
+//! # let plant_string = "initial: X\nX -> F F";
+//!
+//! let (interpretation, system, initial_string) = parse(plant_string).unwrap();
+//!
+//! ```
+//! 
+//! The [`parse`] function returns the following:
+//! 
+//! * `interpretation`, being a [`AbopTurtleInterpretation`]. If you want to output SVG from
+//!    this, see [`SvgPathInterpretation`].
+//! * `system`, being a [`System`] ready to run. 
+//! * `initial_string`, being the [`ProductionString`] the file specifies as the initial string.
 
 use crate::error::ErrorKind;
 use crate::system::interpretation::abop::*;
 
 type ParsedAbop = (AbopTurtleInterpretation, System, ProductionString);
 
-// todo document parse function
+/// Parses a string in a bespoke "plant" format. See the [namespace](crate::system::interpretation::abop::parser)
+/// namespace documentation for more information. 
+///
+/// * `interpretation`, being a [`AbopTurtleInterpretation`]. If you want to output SVG from
+///    this, see [`SvgPathInterpretation`].
+/// * `system`, being a [`System`] ready to run. 
+/// * `initial_string`, being the [`ProductionString`] the file specifies as the initial string.
+/// 
+/// See [`parse_file`] to parse a file containing a string in this format.
 pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
     let string = string.trim();
     if string.is_empty() {

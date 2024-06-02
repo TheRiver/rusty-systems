@@ -8,8 +8,8 @@
 //! This crate currently supports producing strings using *context-free* and
 //! *stochastic* [L-Systems][wiki]. 
 //!
-//! The [system namespace](crate::system) contains the primary tools for defining
-//! and running these grammars. As a convenience, the [`geometry`] namespace
+//! The [system module](system) contains the primary tools for defining
+//! and running these grammars. As a convenience, the [`geometry`] module
 //! contains types for easily handling the interpretation of the grammar's output
 //! in a 2D space. Note that the geometry tools are not meant to be complete or high performance —
 //! it's meant to only be utilitarian.
@@ -37,7 +37,19 @@
 //! * [`system::parser::parse_production`] to parse individual productions.
 //! 
 //! See [`system::parser`] for more information, and for generic parsing
-//! functions that do not need you to use [`System`]. 
+//! functions that do not need you to use [`System`].
+//!
+//! # Features
+//!
+//! Some features that you might find useful:
+//!
+//! * **Some support for interpreting L-Systems as defined in [the Algorithmic Beauty of Plants][abop].**
+//!   See the [abop module](crate::system::interpretation::abop) documentation.
+//! * **Some native, limited support for geometric primitives.**
+//!   See the [geometry module](crate::geometry). This is not meant as a replacement for libraries
+//!   such as [nalgebra][nalgebra].
+//! * **Native support for creating and outputting SVGs.**
+//!   See the [svg module](crate::system::interpretation::svg).
 //!
 //! # Examples
 //!
@@ -79,6 +91,7 @@
 //! [license]: https://github.com/TheRiver/rusty-systems/blob/main/LICENSE
 //! [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
 //! [website]: https://theriver.github.io/rusty-systems/
+//! [nalgebra]: https://nalgebra.org/
 
 pub mod error;
 pub mod tokens;

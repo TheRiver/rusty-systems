@@ -232,24 +232,6 @@ impl Display for Vector {
     }
 }
 
-
-pub struct Edge {
-    pub from: Point,
-    pub to: Point
-}
-
-impl Edge {
-    #[inline]
-    pub fn new(from: Point, to: Point) -> Self {
-        Edge { from, to }
-    }
-    
-    #[inline]
-    pub fn zero() -> Self {
-        Edge::new(Point::zero(), Point::zero())
-    }
-}
-
 /// A path is a sequence of points. These can represent
 /// a line.
 #[derive(Debug, Clone)]
@@ -334,12 +316,14 @@ impl Add<Vector> for Path {
     }
 }
 
+/// The bounds of a geometric object, defined as a square. The object is contained in these bounds.
 #[derive(Debug, Clone, Default)]
 pub struct BoundingBox {
     pub min_x: f64,
     pub max_x: f64,
     pub min_y: f64,
     pub max_y: f64,
+    /// The "center of mass" of object.
     pub com: Point
 }
 
@@ -354,6 +338,7 @@ impl BoundingBox {
         (self.max_y - self.min_y).abs()
     }
 
+    /// The center of the box.
     #[inline]
     pub fn center(&self) -> Point {
         Point::new((self.max_x + self.min_x) / 2.0, (self.max_y + self.min_y) / 2.0)
