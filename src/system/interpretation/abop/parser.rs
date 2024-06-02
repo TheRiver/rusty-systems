@@ -1,24 +1,24 @@
-//! Parsing grammars from *the Algorithmic Beauty of Plants* 
-//! 
+//! Parsing grammars from *the Algorithmic Beauty of Plants*
+//!
 //! # The format
-//! 
+//!
 //! ```plant
-//! # Comments start with a hash. 
+//! # Comments start with a hash.
 //! # This describes the plant 5 in fig 1.24 of ABOP (pg 25)
 //! n = 6           # Number of derivation iterations. This is one more iteration than in ABOP
 //! delta = 22.5    # The angle that the + and - tokens turn the "turtle" by.
-//! 
+//!
 //! initial: X      # The starting string
-//! 
+//!
 //! # And now the productions
-//! Forward -> Forward Forward 
+//! Forward -> Forward Forward
 //! X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
 //! ```
-//! 
+//!
 //! # Parsing
-//! 
+//!
 //! If we have a string in the format given above, you can parse it like so:
-//! 
+//!
 //! ```
 //! use rusty_systems::system::family::abop::parser::parse;
 //! # let plant_string = "initial: X\nX -> F F";
@@ -26,27 +26,38 @@
 //! let (interpretation, system, initial_string) = parse(plant_string).unwrap();
 //!
 //! ```
-//! 
+//!
 //! The [`parse`] function returns the following:
-//! 
+//!
 //! * `interpretation`, being a [`AbopTurtleInterpretation`]. If you want to output SVG from
 //!    this, see [`SvgPathInterpretation`].
-//! * `system`, being a [`System`] ready to run. 
+//! * `system`, being a [`System`] ready to run.
 //! * `initial_string`, being the [`ProductionString`] the file specifies as the initial string.
 
 use crate::error::ErrorKind;
 use crate::system::interpretation::abop::*;
 
-type ParsedAbop = (AbopTurtleInterpretation, System, ProductionString);
-
-/// Parses a string in a bespoke "plant" format. See the [namespace](crate::system::interpretation::abop::parser)
-/// namespace documentation for more information. 
+/// A tuple containing information parsed from a string or file containing an L-System
+/// specified in this library's "plant" format.
 ///
 /// * `interpretation`, being a [`AbopTurtleInterpretation`]. If you want to output SVG from
 ///    this, see [`SvgPathInterpretation`].
-/// * `system`, being a [`System`] ready to run. 
+/// * `system`, being a [`System`] ready to run.
 /// * `initial_string`, being the [`ProductionString`] the file specifies as the initial string.
-/// 
+///
+/// You can use destructuring to easily access the tuple members:
+///
+/// ```
+/// use rusty_systems::system::family::abop::parser::parse;
+/// # let plant_string = "initial: X\nX -> F F";
+///
+/// let (interpretation, system, initial_string) = parse(plant_string).unwrap();
+/// ```
+type ParsedAbop = (AbopTurtleInterpretation, System, ProductionString);
+
+/// Parses a string in a bespoke "plant" format. See the [namespace](crate::system::interpretation::abop::parser)
+/// namespace documentation for more information.
+///
 /// See [`parse_file`] to parse a file containing a string in this format.
 pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
     let string = string.trim();
@@ -108,7 +119,10 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
     Ok((interpretation, system, initial))
 }
 
-// todo document
+/// Reads a file containing an L-System written in the library's bespoke "plant" format.
+///
+/// See the [module documentation](crate::system::interpretation::abop::parser) for more information,
+/// as well as the [`parser`] function.
 pub fn parse_file<P: AsRef<std::path::Path>>(name: P) -> crate::Result<ParsedAbop> {
     let contents = std::fs::read_to_string(name)?;
     parse(&contents)
@@ -152,7 +166,7 @@ fn remove_comment(line: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     static GENERAL : &str = "# Totally for testing purposes
 n = 6
 delta = 22.5
@@ -160,23 +174,23 @@ delta = 22.5
 initial: X # Here we go
 # Start on a line
 
-Forward -> Forward Forward 
+Forward -> Forward Forward
 X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
 
 # ENDED";
-    
+
 
     #[test]
     fn test_parsing() {
-        
+
         let result = parse(GENERAL);
         assert!(result.is_ok());
-        
+
         let (_, system, ..) = result.unwrap();
         assert_eq!(system.production_len(), 2);
 
         // The test data does not add any more tokens to the system than the family does.
         assert_eq!(system.token_len(), AbopTurtleInterpretation::system().unwrap().token_len());
-        
+
     }
 }

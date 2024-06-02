@@ -36,7 +36,7 @@ pub trait Interpretation: Debug + Sync + Send + Default {
 
 }
 
-/// An interpretation that does nothing except produce
+/// An interpretation that does nothing except
 #[derive(Debug, Clone, Default)]
 pub struct NullInterpretation {
 }
