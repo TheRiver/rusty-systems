@@ -50,7 +50,8 @@
 //!   such as [nalgebra][nalgebra], just as something convenient to use.
 //! * **Native support for creating and outputting SVGs.**
 //!   See the [svg module](system::interpretation::svg).
-//! * A command line app, `lsystem`, for creating SVGs of systems from ABOP.
+//! * **A command line app, `lsystem`, for creating SVGs of systems from ABOP.** 
+//!   You can read about using this tool [here][lsystem-tool]
 //!
 //! # Examples
 //!
@@ -93,6 +94,7 @@
 //! [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
 //! [website]: https://theriver.github.io/rusty-systems/
 //! [nalgebra]: https://nalgebra.org/
+//! [lsystem-tool]: https://github.com/TheRiver/rusty-systems/wiki/The-lsystem-Command-Line-Tool
 
 pub mod error;
 pub mod tokens;
