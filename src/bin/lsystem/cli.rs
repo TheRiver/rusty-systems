@@ -32,7 +32,7 @@ pub struct DeriveArgs {
     /// ```
     pub file: Box<std::path::Path>, 
     /// Where the SVG file should be saved 
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "out.svg")]
     pub output: Box<std::path::Path>,
     /// The image width
     #[arg(long, default_value = "500")]
