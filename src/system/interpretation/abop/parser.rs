@@ -23,7 +23,7 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
 
     #[allow(clippy::while_let_on_iterator)]
     while let Some(line) = lines.next() {
-        let line = line.trim();
+        let line = remove_comment(line);
         if line.is_empty() {
             continue;
         }
@@ -42,7 +42,7 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
 
             continue;
         }
-        
+
         if is_initial(line) {
             initial = Some(parse_initial(line));
             continue;
@@ -55,13 +55,13 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
     if prod_count == 0 {
         return Err(Error::new(ErrorKind::Parse, "No productions have been supplied"));
     }
-    
+
     if initial.is_none() {
         return Err(Error::new(ErrorKind::Parse, "No initial axiom has been supplied"));
     }
-    
+
     let initial = system.parse_prod_string(initial.unwrap())?;
-    
+
     let interpretation = AbopTurtleInterpretation::new(n, delta);
     Ok((interpretation, system, initial))
 }
@@ -86,7 +86,7 @@ fn is_initial(line: &str) -> bool {
     line.trim().starts_with("initial:")
 }
 
-fn parse_initial<'a>(line: &'a str) -> &'a str {
+fn parse_initial(line: &str) -> &str {
     let parts: Vec<_> = line.splitn(2, ':').collect();
     parts[1].trim()
 }
@@ -99,4 +99,42 @@ fn parse_equality(line: &str) -> crate::Result<EqualityLine> {
     let name = parts[0].trim();
     let value = parts[1].trim();
     Ok(EqualityLine { name, value })
+}
+
+fn remove_comment(line: &str) -> &str {
+    line.split('#').next().unwrap().trim()
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    static GENERAL : &str = "# Totally for testing purposes
+n = 6
+delta = 22.5
+
+initial: X # Here we go
+# Start on a line
+
+Forward -> Forward Forward 
+X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
+
+# ENDED";
+    
+
+    #[test]
+    fn test_parsing() {
+        
+        let result = parse(GENERAL);
+        assert!(result.is_ok());
+        
+        let (_, system, ..) = result.unwrap();
+        assert_eq!(system.production_len(), 2);
+
+        // The test data does not add any more tokens to the system than the family does.
+        assert_eq!(system.token_len(), AbopTurtleInterpretation::system().unwrap().token_len());
+        
+    }
 }

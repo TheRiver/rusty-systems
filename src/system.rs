@@ -162,6 +162,32 @@ impl System {
 
         Ok(result)
     }
+    
+    /// Returns the number of production rules in the system.
+    pub fn production_len(&self) -> usize {
+        self.productions.read().unwrap().len()
+    }
+
+    /// Returns the number of tokens (terminal and production tokens) registered with the system
+    pub fn token_len(&self) -> usize {
+        self.tokens.read().unwrap().len()
+    }
+
+    /// Returns the number of terminal tokens registered with the system
+    pub fn terminal_tokens_len(&self) -> usize {
+        self.tokens.read().unwrap()
+            .values()
+            .filter(|t| t.is_terminal())
+            .count()
+    }
+
+    /// Returns the number of terminal tokens registered with the system
+    pub fn prod_tokens_len(&self) -> usize {
+        self.tokens.read().unwrap()
+            .values()
+            .filter(|t| t.is_production())
+            .count()
+    }
 }
 
 impl TokenStore for System {
@@ -420,4 +446,43 @@ mod tests {
         let string = system.parse_prod_string("a b c").unwrap();
         assert_eq!(system.format(&string).unwrap(), "a b c");
     }
+    
+    #[test]
+    fn test_counting_tokens() {
+        let system = System::default();
+        assert_eq!(system.token_len(), 0);
+        
+        system.add_token("a", TokenKind::Terminal).unwrap();
+        assert_eq!(system.token_len(), 1);
+        assert_eq!(system.prod_tokens_len(), 0);
+        assert_eq!(system.terminal_tokens_len(), 1);
+        assert_eq!(system.production_len(), 0);
+
+        // Nothing should change
+        system.add_token("a", TokenKind::Terminal).unwrap();
+        assert_eq!(system.token_len(), 1);
+
+        system.add_token("b", TokenKind::Terminal).unwrap();
+        assert_eq!(system.token_len(), 2);
+
+        system.add_token("c", TokenKind::Production).unwrap();
+        assert_eq!(system.token_len(), 3);
+        assert_eq!(system.prod_tokens_len(), 1);
+        assert_eq!(system.terminal_tokens_len(), 2);
+        assert_eq!(system.production_len(), 0);
+    }
+
+    #[test]
+    fn test_counting_productions() {
+        let system = System::default();
+        assert_eq!(system.token_len(), 0);
+        assert_eq!(system.production_len(), 0);
+
+        system.parse_production("F -> F F").unwrap();
+        assert_eq!(system.token_len(), 1);
+        assert_eq!(system.prod_tokens_len(), 1);
+        assert_eq!(system.terminal_tokens_len(), 0);
+        assert_eq!(system.production_len(), 1);
+    }
+
 }
