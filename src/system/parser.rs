@@ -53,7 +53,35 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
         return Err(Error::new(ErrorKind::Parse, "no head in production string"));
     }
 
-    let is_production = determine_kind(head)
+    let tokens : Vec<_> = head.split_ascii_whitespace().collect();
+    let split: Vec<_> = tokens.splitn(2, |s| *s == "<").collect();
+
+    let mut left : Option<&[&str]> = None;
+    let mut right : Option<&[&str]> = None;
+
+
+    let remains = if split.len() == 2 {
+        left = Some(split[0]);
+        split[1]
+    } else {
+        split[0]
+    };
+
+    let split : Vec<_> = remains.splitn(2, |s| *s == ">").collect();
+    let remains = if split.len() == 2 {
+        right = Some(split[1]);
+        split[0]
+    } else {
+        split[0]
+    };
+
+    if remains.len() != 1 {
+        return Err(Error::new(ErrorKind::Parse, "There should be exactly one token as the head target"))
+    }
+
+    let center = remains[0];
+
+    let is_production = determine_kind(center)
         .map(|kind| kind.is_production())
         .unwrap_or(false);
 
@@ -62,8 +90,49 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
                               String::from("production tokens should start with a capitalised letter: ") + head));
     }
 
-    let head_token = store.add_token(head, TokenKind::Production)?;
-    ProductionHead::build(head_token)
+    let head_token = store.add_token(center, TokenKind::Production)?;
+
+    let left = parse_head_context(store, left);
+    if let Some(Err(e)) = left {
+        return Err(e);
+    }
+
+    let left = left.map(|d| d.unwrap());
+
+    let right = parse_head_context(store, right);
+    if let Some(Err(e)) = right {
+        return Err(e);
+    }
+
+    let right = right.map(|d| d.unwrap());
+
+    ProductionHead::build(
+        left,
+        head_token,
+        right)
+}
+
+fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
+    strings.map(|strings| {
+        let iter = strings.iter()
+            .map(|s| (s, determine_kind(s)));
+
+        let all_known = iter.clone().all(|(_, k)| k.is_some());
+        if !all_known {
+            return Err(Error::new(ErrorKind::Parse, "Unable to parse left context"));
+        }
+
+        let iter = iter.map(|(s, k)| store.add_token(s, k.unwrap()));
+        let error = iter.clone().find(|t| t.is_err());
+
+        if let Some(Err(e)) = error {
+            return Err(e);
+        }
+
+        let tokens: Vec<_> = iter.map(|t| t.unwrap()).collect();
+
+        Ok(ProductionString::from(tokens))
+    })
 }
 
 /// Parse a production string.
@@ -169,9 +238,9 @@ pub fn determine_kind(string: &str) -> Option<TokenKind> {
 
 #[cfg(test)]
 mod test {
-    use crate::system::parser::{determine_kind, parse_production_body};
+    use crate::system::parser::{determine_kind, parse_production_body, parse_production_head};
     use crate::system::System;
-    use crate::tokens::TokenKind;
+    use crate::tokens::{TokenKind, TokenStore};
 
     #[test]
     fn can_parse_empty_body() {
@@ -206,6 +275,24 @@ mod test {
         assert_eq!(determine_kind("Bob").unwrap(), TokenKind::Production);
         assert!(determine_kind("Bo b").is_none());
         assert!(determine_kind("Bo(b)").is_none());
+    }
+
+    #[test]
+    fn parsing_production_head() {
+        let store = System::default();
+        let head = parse_production_head(&store, "A").unwrap();
+        assert_eq!(store.get_token("A").unwrap().code(), head.target().code());
+
+        let head = parse_production_head(&store, "Pre < A > Post").unwrap();
+        assert_eq!(store.get_token("A").unwrap().code(), head.target().code());
+
+        let left = head.pre_context().unwrap();
+        assert_eq!(left.len(), 1);
+        assert_eq!(store.get_token("Pre").unwrap().code(), left[0].code());
+
+        let right = head.post_context().unwrap();
+        assert_eq!(right.len(), 1);
+        assert_eq!(store.get_token("Post").unwrap().code(), right[0].code());
     }
 }
 

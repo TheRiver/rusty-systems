@@ -79,20 +79,24 @@ impl Chance {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionHead {
-    target: Token
+    pre: Option<ProductionString>,
+    target: Token,
+    post: Option<ProductionString>
 }
 
 impl ProductionHead {
     /// Create a new production head.
     ///
-    /// This will return [`Err`] if the given token is not a [`crate::tokens::TokenKind::Production`]
-    pub fn build(target: Token) -> Result<Self> {
+    /// This will return [`Err`] if the given target token is not a [`crate::tokens::TokenKind::Production`]
+    pub fn build(pre: Option<ProductionString>, target: Token, post: Option<ProductionString>) -> Result<Self> {
         if !target.is_production() {
             return Err(Error::general("token should be a Production"));
         }
 
         Ok(ProductionHead {
-            target
+            pre,
+            target,
+            post
         })
     }
 
@@ -100,6 +104,16 @@ impl ProductionHead {
     #[inline]
     pub fn target(&self) -> Token {
         self.target
+    }
+    
+    #[inline]
+    pub fn pre_context(&self) -> Option<&ProductionString> {
+        self.pre.as_ref()
+    }
+
+    #[inline]
+    pub fn post_context(&self) -> Option<&ProductionString> {
+        self.post.as_ref()
     }
 
     /// Returns true iff this matches the given

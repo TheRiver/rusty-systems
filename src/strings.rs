@@ -3,13 +3,14 @@
 
 use std::collections::HashMap;
 use std::iter::Cloned;
+use std::ops::Index;
 use std::slice::Iter;
 use crate::DisplaySystem;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
 /// are made up of a list of [`Token`] objects. 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionString {
     tokens: Vec<Token>
 }
@@ -72,6 +73,14 @@ impl From<Vec<Token>> for ProductionString {
         ProductionString {
             tokens: value
         }
+    }
+}
+
+impl Index<usize> for ProductionString {
+    type Output = Token;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.tokens[index]
     }
 }
 
