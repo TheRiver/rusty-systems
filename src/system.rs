@@ -308,6 +308,8 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
         if let Some(production) = find_matching(productions, &string, index) {
             let body = production.body()?;
 
+            // println!("body match: {index}: {:?}", body.string().iter().map(|t| t.code()).collect::<Vec<_>>());
+
             body.string()
                 .tokens()
                 .iter()
@@ -482,6 +484,24 @@ mod tests {
         assert_eq!(system.prod_tokens_len(), 1);
         assert_eq!(system.terminal_tokens_len(), 0);
         assert_eq!(system.production_len(), 1);
+    }
+
+
+    #[test]
+    fn testing_context_sensitive() {
+        let system = System::default();
+        let string = system.parse_prod_string("G S S S X").unwrap();
+        system.parse_production("G > S -> ").unwrap();
+        system.parse_production("G < S -> S G").unwrap();
+        let string = system.derive_once(string).unwrap();
+
+        assert_eq!(string, system.parse_prod_string("S G S S X").unwrap());
+        
+        let string = system.derive_once(string).unwrap();
+        assert_eq!(string, system.parse_prod_string("S S G S X").unwrap());
+
+        let string = system.derive_once(string).unwrap();
+        assert_eq!(string, system.parse_prod_string("S S S G X").unwrap());
     }
 
 }

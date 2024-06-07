@@ -138,12 +138,12 @@ impl ProductionHead {
             return left.is_empty();
         }
 
-        let tokens = string.tokens()[0..index].to_vec();
+        let tokens : Vec<_> = string.tokens()[0..index].iter().copied().rev().collect();
         if tokens.len() < left.len() {
             return false;
         }
 
-        return left.iter().copied().enumerate().all(|(i, t)| t == tokens[i]);
+        return left.iter().copied().rev().enumerate().all(|(i, t)| t == tokens[i]);
     }
 
     pub fn post_matches(&self, string: &ProductionString, index: usize) -> bool {
@@ -443,5 +443,14 @@ mod tests {
         assert!( production.matches(&string, 1));
         assert!(!production.matches(&string, 2));
         assert!(!production.matches(&string, 3));
+
+        let system = System::default();
+        let string = system.parse_prod_string("G S S S X").unwrap();
+        // system.parse_production("G > S -> ").unwrap();
+        let production = system.parse_production("G < S -> S G").unwrap();
+
+        assert!(!production.matches(&string, 0));
+        assert!( production.matches(&string, 1));
+        assert!(!production.matches(&string, 2));
     }
 }
