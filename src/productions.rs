@@ -105,7 +105,7 @@ impl ProductionHead {
     pub fn target(&self) -> Token {
         self.target
     }
-    
+
     #[inline]
     pub fn pre_context(&self) -> Option<&ProductionString> {
         self.pre.as_ref()
@@ -119,11 +119,52 @@ impl ProductionHead {
     /// Returns true iff this matches the given
     /// string's index position of the string.
     pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
-        string.tokens()
-            .get(index)
-            .map(|token| self.target == *token)
-            .unwrap_or(false)
+        self.pre_matches(string, index) &&
+        self.post_matches(string, index) &&
+            string.tokens()
+                .get(index)
+                .map(|token| self.target == *token)
+                .unwrap_or(false)
     }
+
+    pub fn pre_matches(&self, string: &ProductionString, index: usize) -> bool {
+        if self.pre.is_none() {
+            return true;
+        }
+
+        let left = self.pre.as_ref().unwrap();
+
+        if index == 0 {
+            return left.is_empty();
+        }
+
+        let tokens = string.tokens()[0..index].to_vec();
+        if tokens.len() < left.len() {
+            return false;
+        }
+
+        return left.iter().copied().enumerate().all(|(i, t)| t == tokens[i]);
+    }
+
+    pub fn post_matches(&self, string: &ProductionString, index: usize) -> bool {
+        if self.post.is_none() {
+            return true;
+        }
+
+        let right = self.post.as_ref().unwrap();
+
+        if index == string.len() - 1 {
+            return right.is_empty();
+        }
+
+        let tokens = string.tokens()[index + 1 ..].to_vec();
+        if tokens.len() < right.len() {
+            return false;
+        }
+
+        return right.iter().copied().enumerate().all(|(i, t)| t == tokens[i]);
+    }
+
 }
 
 impl DisplaySystem for ProductionHead {
@@ -355,5 +396,52 @@ impl ProductionStore for RefCell<Vec<Production>> {
         let mut vec = self.borrow_mut();
         vec.push(production);
         vec.last().cloned().ok_or_else(|| Error::general("Unable to add production"))
+    }
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn production_matches() {
+        let system = System::default();
+        let production = system.parse_production("X -> F F").unwrap();
+
+        let string = system.parse_prod_string("X").unwrap();
+        assert!(production.matches(&string, 0));
+
+        let production = system.parse_production("X < X -> F F").unwrap();
+        assert!(!production.matches(&string, 0));
+
+        let string = system.parse_prod_string("X X").unwrap();
+        assert!(!production.matches(&string, 0));
+        assert!( production.matches(&string, 1));
+
+
+        let production = system.parse_production("a b < X -> F F").unwrap();
+        let string = system.parse_prod_string("a b X").unwrap();
+        assert!(!production.matches(&string, 0));
+        assert!(!production.matches(&string, 1));
+        assert!( production.matches(&string, 2));
+
+
+
+        let production = system.parse_production("X > X -> F F").unwrap();
+        assert!(!production.matches(&string, 0));
+
+        let string = system.parse_prod_string("X X").unwrap();
+        assert!( production.matches(&string, 0));
+        assert!(!production.matches(&string, 1));
+
+
+        let production = system.parse_production("X > a b -> F F").unwrap();
+        let string = system.parse_prod_string("a X a b").unwrap();
+        assert!(!production.matches(&string, 0));
+        assert!( production.matches(&string, 1));
+        assert!(!production.matches(&string, 2));
+        assert!(!production.matches(&string, 3));
     }
 }
