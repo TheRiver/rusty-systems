@@ -50,7 +50,7 @@
 //!   such as [nalgebra][nalgebra], just as something convenient to use.
 //! * **Native support for creating and outputting SVGs.**
 //!   See the [svg module](interpretation::svg).
-//! * **A command line app, `lsystem`, for creating SVGs of systems from ABOP.** 
+//! * **A command line app, `lsystem`, for creating SVGs of systems from ABOP.**
 //!   You can read about using this tool [here][lsystem-tool]
 //!
 //! # Examples

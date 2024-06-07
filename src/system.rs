@@ -7,6 +7,29 @@
 //!
 //! * TODO Talk about [`System::new`] and [`System::default`].
 //! * TODO Talk about [`System::of_family`].
+//! * TODO define a system
+//!
+//! A production that produces the empty string can be represented as so:
+//!
+//! ```
+//! # use rusty_systems::system::System;
+//! # let system = System::default();
+//! let production = system.parse_production("X -> ").unwrap();
+//! ```
+//! 
+//! Context sensitive productions.
+//! todo More detail here
+//!
+//! ```
+//! # use rusty_systems::system::System;
+//! # let system = System::default();
+//! let production = system.parse_production("G < S -> S G").unwrap();
+//! let string = system.parse_prod_string("S G S").unwrap();
+//! assert!(!production.matches(&string, 0));       // Does not match the first S
+//! assert!( production.matches(&string, 2));       // Matches the last S
+//! ``` 
+//! 
+//! * todo discuss stochastic rules
 //!
 //! ## Collections of [`Token`] and [`Production`]
 //!
@@ -496,7 +519,7 @@ mod tests {
         let string = system.derive_once(string).unwrap();
 
         assert_eq!(string, system.parse_prod_string("S G S S X").unwrap());
-        
+
         let string = system.derive_once(string).unwrap();
         assert_eq!(string, system.parse_prod_string("S S G S X").unwrap());
 
