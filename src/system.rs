@@ -52,7 +52,7 @@
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 use parser::determine_kind;
 
@@ -62,7 +62,7 @@ use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
 use crate::tokens::{TokenKind, TokenStore};
 
-use super::{DisplaySystem, Result};
+use super::{Result};
 
 pub mod parser;
 pub mod family;
@@ -81,7 +81,7 @@ pub mod family;
 /// This is thread safe, and is [`Sync`] and [`Send`].
 #[derive(Debug)]
 pub struct System {
-    tokens: RwLock<HashMap<String, Token>>,
+    tokens: RwLock<HashMap<Arc<String>, Token>>,
     productions: RwLock<Vec<Production>>,
     token_id: AtomicU32
 }
@@ -123,27 +123,7 @@ impl System {
     pub fn parse_production(&self, production: &str) -> Result<Production> {
         parser::parse_production(self, self, production)
     }
-
-    /// Format [`Token`], [`ProductionString`], [`Production`] as strings.
-    pub fn format<T: DisplaySystem>(&self, item: &T) -> Result<String> {
-        let code_to_string = {
-            let mut map = HashMap::new();
-
-            if let Ok(tokens) = self.tokens.read() {
-                tokens.iter()
-                    .for_each(|(i, val)| {
-                        map.insert(*val, i.clone());
-                    });
-            } else {
-                return Err(Error::general("Poisoned lock when accessing tokens"));
-            }
-
-            map
-        };
-
-        item.format(&code_to_string)
-    }
-
+    
 
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
@@ -219,17 +199,19 @@ impl TokenStore for System {
         }
 
         let mut map = self.tokens.write()?;
+        let name = name.to_string();
 
         // If it already exists, return it.
-        if let Some(value) = map.get(name) {
-            return Ok(*value);
+        if let Some(value) = map.get(&name).cloned() {
+            return Ok(value);
         }
 
         // Safely create a new token.
         let atomic = self.token_id.fetch_add(1, Ordering::SeqCst);
-        let token = Token::new(kind, atomic);
-        map.insert(name.to_string(), token);
-        return Ok(map.get(name).copied().unwrap())
+        let name = Arc::new(name);
+        let token = Token::new(kind, atomic, Arc::downgrade(&name));
+        map.insert(name, token.clone());
+        Ok(token)
     }
     
     /// Return the token that represents the given term, if it exists.
@@ -237,7 +219,7 @@ impl TokenStore for System {
     /// Note that this does not create any new tokens to the system.
     fn get_token(&self, name: &str) -> Option<Token> {
         let tokens = self.tokens.read().ok()?;
-        return tokens.get(name).copied();
+        return tokens.get(&name.to_string()).cloned();
     }
 }
 
@@ -324,7 +306,7 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
 
     for (index, token) in string.tokens().iter().enumerate() {
         if token.is_terminal() {
-            result.push_token(*token);
+            result.push_token(token.clone());
             continue;
         }
 
@@ -336,11 +318,11 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
             body.string()
                 .tokens()
                 .iter()
-                .copied()
+                .cloned()
                 .for_each(|token| result.push_token(token));
             continue;
         } else {
-            result.push_token(*token);
+            result.push_token(token.clone());
         }
 
 
@@ -465,10 +447,10 @@ mod tests {
         let system = System::default();
 
         let token = system.add_token("a", TokenKind::Terminal).unwrap();
-        assert_eq!(system.format(&token).unwrap(), "a");
+        assert_eq!(token.to_string(), "a");
 
         let string = system.parse_prod_string("a b c").unwrap();
-        assert_eq!(system.format(&string).unwrap(), "a b c");
+        assert_eq!(string.to_string(), "a b c");
     }
     
     #[test]

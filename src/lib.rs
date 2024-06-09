@@ -27,7 +27,7 @@
 //! let starting_axiom = system.parse_prod_string("CompanyName").unwrap();
 //! let result = system.derive(starting_axiom, RunSettings::default()).unwrap();
 //!
-//! println!("The resulting string is:\n{}", system.format(&result).unwrap());
+//! println!("The resulting string is:\n{result}");
 //!
 //! ```
 //!
@@ -122,13 +122,7 @@ pub mod prelude {
     pub use crate::interpretation::Interpretation;
 }
 
-use std::collections::HashMap;
 use prelude::*;
 
 /// A result type for functions that can return errors.
 pub type Result<T> = std::result::Result<T, Error>;
-
-
-pub trait DisplaySystem {
-    fn format(&self, names: &HashMap<Token, String>) -> Result<String>;
-}

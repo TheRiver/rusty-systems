@@ -1,12 +1,11 @@
 //! Utilities for creating rewrite rules for a [`System`].
 
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use rand::{Rng, thread_rng};
 
-use crate::{DisplaySystem, Result};
+use crate::{Result};
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Token;
@@ -102,8 +101,8 @@ impl ProductionHead {
 
     /// Returns the token that this production is a target of.
     #[inline]
-    pub fn target(&self) -> Token {
-        self.target
+    pub fn target(&self) -> &Token {
+        &self.target
     }
 
     #[inline]
@@ -138,12 +137,12 @@ impl ProductionHead {
             return left.is_empty();
         }
 
-        let tokens : Vec<_> = string.tokens()[0..index].iter().copied().rev().collect();
+        let tokens : Vec<_> = string.tokens()[0..index].iter().rev().collect();
         if tokens.len() < left.len() {
             return false;
         }
 
-        return left.iter().copied().rev().enumerate().all(|(i, t)| t == tokens[i]);
+        return left.iter().rev().enumerate().all(|(i, t)| t == tokens[i]);
     }
 
     pub fn post_matches(&self, string: &ProductionString, index: usize) -> bool {
@@ -162,19 +161,10 @@ impl ProductionHead {
             return false;
         }
 
-        return right.iter().copied().enumerate().all(|(i, t)| t == tokens[i]);
+        return right.iter().enumerate().all(|(i, t)| *t == tokens[i]);
     }
 
 }
-
-impl DisplaySystem for ProductionHead {
-    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
-        names.get(&self.target)
-            .cloned()
-            .ok_or_else(|| Error::general(format!("No name for token {}", self.target)))
-    }
-}
-
 
 #[derive(Debug, Clone)]
 pub struct ProductionBody {
@@ -233,18 +223,6 @@ impl ProductionBody {
         &self.chance
     }
 }
-
-impl DisplaySystem for ProductionBody {
-    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
-        let body = self.string.format(names)?;
-        if self.chance.is_user_set() {
-            return Ok(format!("{} {body}", self.chance.unwrap()));
-        }
-
-        Ok(body)
-    }
-}
-
 
 
 /// Represents production rules in an L-System.
@@ -351,33 +329,6 @@ impl Eq for Production { }
 impl Hash for Production {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.head.hash(state);
-    }
-}
-
-impl DisplaySystem for Production {
-    fn format(&self, names: &HashMap<Token, String>) -> Result<String> {
-        let head = self.head.format(names)?;
-        let align_size = head.len() + 4;
-
-        let mut output = String::new();
-        output.push_str(&head);
-        output.push_str(" -> ");
-
-        let mut first = true;
-        for body in &self.body {
-            let tmp = body.format(names)?;
-
-            if first {
-                output.push_str(&tmp);
-                first = false;
-            } else {
-                output.push('\n');
-                output.push_str(" ".repeat(align_size).as_str());
-                output.push_str(&tmp);
-            }
-        }
-
-        Ok(output)
     }
 }
 

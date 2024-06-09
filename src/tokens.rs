@@ -11,9 +11,8 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-
-use crate::DisplaySystem;
-use crate::error::Error;
+use std::hash::{Hash, Hasher};
+use std::sync::{Arc, Weak};
 
 /// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
@@ -42,17 +41,32 @@ impl Display for TokenKind {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
+#[derive(Debug, Clone)]
 pub struct Token {
     kind: TokenKind,
-    code: u32
+    code: u32,
+    image: Weak<String>
+}
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind && self.code == other.code
+    }
+}
+
+impl Eq for Token {}
+
+impl Hash for Token {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.kind.hash(state);
+        self.code.hash(state);
+    }
 }
 
 impl Token {
-
-    pub fn new(kind: TokenKind, code: u32) -> Self {
+    pub fn new(kind: TokenKind, code: u32, name: Weak<String>) -> Self {
         Token {
-            kind, code
+            kind, code, image: name
         }
     }
 
@@ -69,6 +83,23 @@ impl Token {
         self.code
     }
 
+    /// The name of the string, if it has been stored.
+    ///
+    /// To access it, do this:
+    ///
+    /// ```
+    /// use std::sync::Weak;
+    /// use rusty_systems::tokens::{Token, TokenKind};
+    /// let token = Token::new(TokenKind::Terminal, 100, Weak::default());
+    ///
+    /// if let Some(name) = token.name().upgrade() {
+    ///     println!("The name is {name}");
+    /// }
+    /// ```
+    pub fn name(&self) -> &Weak<String> {
+        &self.image
+    }
+
     #[inline]
     pub fn is_terminal(&self) -> bool {
         self.kind.is_terminal()
@@ -82,6 +113,10 @@ impl Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if let Some(name) = self.name().upgrade() {
+            return f.write_str(name.as_str());
+        }
+
         write!(f, "{}[{}]", self.kind, self.code)
     }
 }
@@ -91,33 +126,28 @@ pub trait TokenStore {
     fn get_token(&self, name: &str) -> Option<Token>;
 }
 
-impl TokenStore for RefCell<HashMap<String, Token>> {
+impl TokenStore for RefCell<HashMap<Arc<String>, Token>> {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token> {
         let mut map = self.borrow_mut();
-        
-        // If it already exists, return it.
-        if let Some(value) = map.get(name) {
-            return Ok(*value);
-        }
-        
-        let max = map.values().map(|t| t.code).max().unwrap_or(0);
-        let token = Token::new(kind, max + 1);
 
-        map.insert(name.to_string(), token);
+        let name = name.to_string();
+
+        // If it already exists, return it.
+        if let Some(value) = map.get(&name) {
+            return Ok(value.clone());
+        }
+
+        let name = Arc::new(name);
+        let max = map.values().map(|t| t.code).max().unwrap_or(0);
+        let token = Token::new(kind, max + 1, Arc::downgrade(&name));
+
+        map.insert(name, token.clone());
         Ok(token)
     }
 
     fn get_token(&self, name: &str) -> Option<Token> {
         let map = self.borrow();
-        map.get(name).cloned()
+        map.get(&name.to_string()).cloned()
     }
 }
 
-impl DisplaySystem for Token {
-    fn format(&self, names: &HashMap<Token, String>) -> crate::Result<String> {
-        let name = names.get(self)
-            .ok_or_else(|| Error::general(format!("No name supplied for token {self:?}")))?;
-        
-        Ok(name.clone())
-    }
-}

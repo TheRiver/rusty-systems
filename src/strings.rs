@@ -1,11 +1,10 @@
 //! The string of [`Token`] instances which are rewritten using [`crate::productions::Production`]
 //! rules of a [`System`].
 
-use std::collections::HashMap;
+use std::fmt::{Display, Formatter, Write};
 use std::iter::Cloned;
 use std::ops::Index;
 use std::slice::Iter;
-use crate::DisplaySystem;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
@@ -111,24 +110,23 @@ impl<'a> IntoIterator for &'a ProductionString {
     }
 }
 
-impl DisplaySystem for ProductionString {
-    fn format(&self, names: &HashMap<Token, String>) -> crate::Result<String> {
-        let mut error = false;
-        let string : Vec<String> = self.tokens()
-            .iter()
-            .map(|t| names.get(t))
-            .map(|o| o.ok_or_else(|| Error::general("Some tokens have no name")))
-            .filter_map(|r| r.map_err(|_| error = true).ok())
-            .cloned()
-            .collect();
-
-        if error {
-            return Err(Error::general("Unable to find names for all tokens"));
+impl Display for ProductionString {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut first = true;
+        for token in self.tokens() {
+            if !first {
+                f.write_char(' ')?;
+            } else {
+                first = false;
+            }
+            f.write_str(token.to_string().as_str())?;
         }
-
-        Ok(string.join(" "))
+        
+        Ok(())
+        
     }
 }
+
 
 
 #[cfg(test)]
