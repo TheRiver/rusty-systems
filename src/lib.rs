@@ -94,7 +94,7 @@
 //! [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
 //! [website]: https://theriver.github.io/rusty-systems/
 //! [nalgebra]: https://nalgebra.org/
-//! [lsystem-tool]: https://github.com/TheRiver/rusty-systems/wiki/The-lsystem-Command-Line-Tool
+//! [lsystem-tool]: https://theriver.github.io/rusty-systems/lsystem/
 
 pub mod error;
 pub mod tokens;
