@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "pnpm clean && pnpm exec eleventy --serve",
-    "build": "ENVIRONMENT=production pnpm clean && pnpm exec eleventy",
+    "build": "pnpm clean && ENVIRONMENT=production pnpm exec eleventy",
     "clean": "rm -rf _site"
   },
   "keywords": [],
