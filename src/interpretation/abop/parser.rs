@@ -4,7 +4,7 @@
 //!
 //! ```plant
 //! # Comments start with a hash.
-//! # This describes the plant 5 in fig 1.24 of ABOP (pg 25)
+//! # This describes plant 5 in fig 1.24 of ABOP (pg 25)
 //! n = 6           # Number of derivation iterations. This is one more iteration than in ABOP
 //! delta = 22.5    # The angle that the + and - tokens turn the "turtle" by.
 //!
