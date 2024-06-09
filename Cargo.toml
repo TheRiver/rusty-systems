@@ -13,14 +13,19 @@ exclude = ["docs", "11ty", ".*"]
 
 [[bin]]
 name = "lsystem"
+required-features = ["lsystem"]
 
 [lib]
 crate-type = ["rlib", "dylib"]
 
 [dependencies]
-ansi_term = "0.12"
-clap = { version = "4.5", features = ["derive"] }
 rand = "0.8"
+ansi_term = { version = "0.12" , optional = true }
+clap = { version = "4.5", features = ["derive"], optional = true }
 
 [dev-dependencies]
 tiny-skia = "0.11"
+
+
+[features]
+lsystem = ["dep:clap", "dep:ansi_term"]
