@@ -1,10 +1,11 @@
 module.exports = function () {
 
     let base = "https://theriver.github.io/rusty-systems";
+    const environment = process.env.ENVIRONMENT || "development";
 
     return {
-        base,
-        environment: process.env.ENVIRONMENT || "development",
-        css: process.env.ENVIRONMENT === "production" ? `${base}/css/main.css` : "/css/main.css"
+        environment,
+        base:   environment === "production" ? base : '',
+        css:    environment === "production" ? `${base}/css/main.css` : "/css/main.css"
     };
 };
