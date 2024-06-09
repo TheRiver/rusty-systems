@@ -6,7 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="{{ project.css }}">
 
     {% if project.environment == "production" %}
         <base href="{{ project.base }}">
@@ -107,8 +107,9 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
 
 
         <p>
-            You can run the example using:
+            You can run this example using:
         </p>
+        <figure>
 {% highlight shell %}
 # Install the source
 git clone https://github.com/TheRiver/rusty-systems.git
@@ -119,29 +120,23 @@ cargo run --example skia-plant
 
 # output image saved to target/skia-plant.png
 {% endhighlight %}
-
-        <figure>
-            <img src="./images/examples/skia-plant.png"
-                 loading="lazy"
-                 decoding="async"
-                 alt="A black-and-white generated line-image of a plant">
-            <figcaption>6 iterations of the plant rules</figcaption>
+            <figcaption>
+                Running example code
+            </figcaption>
         </figure>
 
-        <div>
 
-            <p>
-                The command will create a file named <em>skia_plant.png</em> in the <em>target</em>
-                directory.
-            </p>
-            <p>
-                If you would like to know more about the <em>turtle interpretation</em>,
-                see §1.3 (pg 6) of
-                <a href="http://algorithmicbotany.org/papers/#abop" target="_blank">
-                    the Algorithmic Beauty of Plants</a>.
-                The rules are taken from the plant presented in figure 1.24f, from the same book.
-            </p>
-        </div>
+        <p>
+            The command will create a file named <em>skia_plant.png</em> in the <em>target</em>
+            directory.
+        </p>
+        <p>
+            If you would like to know more about the <em>turtle interpretation</em>,
+            see §1.3 (pg 6) of
+            <a href="http://algorithmicbotany.org/papers/#abop" target="_blank">
+                the Algorithmic Beauty of Plants</a>.
+            The rules are taken from the plant presented in figure 1.24f, from the same book.
+        </p>
     </section>
 
     <section>
