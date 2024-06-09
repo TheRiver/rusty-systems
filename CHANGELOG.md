@@ -11,10 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Removed
+
+## [4.0.0]
+
+### Changed
+
 * The `clap` and `ansi_term` dependencies are now optional, and not used by default.
 * The `lsystem` binary now requires the `lsystem` feature. 
-
-### Removed
 
 ## [3.0.0]
 

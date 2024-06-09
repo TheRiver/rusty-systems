@@ -1,7 +1,7 @@
 [package]
 name = "rusty-systems"
 description = "A library for procedurally generating content using L-Systems"
-version = "3.0.0"
+version = "4.0.0"
 edition = "2021"
 license = "MIT"
 readme = "README.md"
