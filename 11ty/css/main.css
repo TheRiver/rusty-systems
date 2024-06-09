@@ -167,7 +167,16 @@ pre[class*=language] {
     border-radius: 3px;
     box-shadow: 5px 5px 10px rgb(50 60 50);
     font-size: 0.8em;
+
+
+    @media (width < 100ch) {
+        figure > & {
+            border-radius: 0;
+            box-shadow: 0 0 10px rgb(50 60 50);
+        }
+    }
 }
+
 
 em.name {
     /*noinspection CssNoGenericFontName*/
@@ -175,4 +184,19 @@ em.name {
     font-style: normal;
     font-size: calc(1em + 1px);
     font-variant: all-small-caps;
+}
+
+
+.subpage {
+
+    header {
+        h1:has(+ [role="doc-subtitle"]) {
+            line-height: 1em;
+        }
+
+        [role="doc-subtitle"] {
+            padding-left: 0.4ch;
+        }
+
+    }
 }

@@ -6,9 +6,11 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="/css/main.css">
 
-    <base href="https://theriver.github.io/rusty-systems/">
+    {% if project.environment == "production" %}
+        <base href="{{ project.base }}">
+    {% endif %}
 
     <title>Rusty-Systems</title>
 </head>
@@ -65,17 +67,11 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
             <em class="name">X</em> is the token from which we
             grow our plant. You may think of it as being short for <em>apex</em>.
         </p>
+
         <p>
             <em class="name">F</em> represents <em>forward</em>
             movement or growth. The first rule, then says that every
             iteration of the L-System grammars
-        </p>
-        <p>
-            The second rule, which matches the token <em class="name">X</em>,
-            gives a scaffolding for the shape of the plant. the <em class="name">+</em>
-            and <em class="name">-</em> tokens effect the angle of growth of a branch,
-            while the <em class="name">[</em> and <em class="name">]</em> tokens
-            define branches.
         </p>
 
         <figure>
@@ -89,13 +85,54 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
         <div>
 
             <p>
-                If you have the source code, you can build the above example using:
+                The second rule, which matches the token <em class="name">X</em>,
+                gives a scaffolding for the shape of the plant. the <em class="name">+</em>
+                and <em class="name">-</em> tokens effect the angle of growth of a branch,
+                while the <em class="name">[</em> and <em class="name">]</em> tokens
+                define branches.
             </p>
-            {% highlight shell %}
-            cargo run --example skia-plant
-            {% endhighlight %}
+
             <p>
-                The command will create a file named <em>skia_plant.png</em> in your working directly.
+                When interpreted as instructions to draw lines, this plant image
+                is produced. One of the provided
+                <a href="https://github.com/TheRiver/rusty-systems/blob/main/examples/skia-plant/main.rs">
+                    example applications</a> uses the
+                <a href="https://crates.io/crates/tiny-skia" target="_blank">
+                    tiny-skia</a> graphics library to interpret the above L-system grammar
+                to produce a png.
+            </p>
+
+
+        </div>
+
+
+        <p>
+            You can run the example using:
+        </p>
+{% highlight shell %}
+# Install the source
+git clone https://github.com/TheRiver/rusty-systems.git
+cd rusty-systems
+
+# Run the example
+cargo run --example skia-plant
+
+# output image saved to target/skia-plant.png
+{% endhighlight %}
+
+        <figure>
+            <img src="./images/examples/skia-plant.png"
+                 loading="lazy"
+                 decoding="async"
+                 alt="A black-and-white generated line-image of a plant">
+            <figcaption>6 iterations of the plant rules</figcaption>
+        </figure>
+
+        <div>
+
+            <p>
+                The command will create a file named <em>skia_plant.png</em> in the <em>target</em>
+                directory.
             </p>
             <p>
                 If you would like to know more about the <em>turtle interpretation</em>,
@@ -107,9 +144,26 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
         </div>
     </section>
 
+    <section>
+        <h2>The lsystem command line tool</h2>
+
+        <p>
+            <em class="name">rusty-systems</em> also provides an optional command line interface
+            called <a href="/lsystem"><em class="name">lsystem</em></a>. It produces
+            <em>svg</em> output from plant grammars.
+        </p>
+    </section>
+
 
     <section>
         <h2>Find out more</h2>
+
+        <p>
+            The <em class="name">rusty-systems</em> crate has <strong>documentation</strong>
+            and examples showing how to use it. See
+            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/"
+               title="Open the documentation" target="_blank">docs.rs</a>.
+        </p>
 
         <p>
             An important book which developed L-Systems is
@@ -120,11 +174,7 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
             This is a good place to read more about L-Systems and
             see many examples on how to use them.
         </p>
-        <p>
-            The <em class="name">rusty-systems</em> crate has documentation
-            and examples showing how to use it. See
-            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">docs.rs</a>.
-        </p>
+
         <p>
             The source code is available on <a href="https://github.com/TheRiver/rusty-grammar/">GitHub</a>,
             and is <a href="https://github.com/TheRiver/rusty-systems/blob/main/LICENSE">licensed</a> under the MIT license.
@@ -133,22 +183,7 @@ X → F + [ [ X ] - X ] - F [ - F X ] + X
 
 </main>
 
-<footer>
-    <ul>
-        <li>
-            <a href="https://github.com/TheRiver/rusty-grammar/" target="_blank">GitHub</a>
-        </li>
-        <li>
-            <a href="https://crates.io/crates/rusty_systems" title="The crates website for rusty-systems" target="_blank">Crates.io</a>
-        </li>
-        <li>
-            <a href="https://docs.rs/rusty-systems/latest/rusty_systems/" title="Open the documentation" target="_blank">Docs.rs</a>
-        </li>
-    </ul>
-    <p>
-        Header photo by <a href="https://unsplash.com/@nahilnaseer">Nahil Naseer</a> on <a href="https://unsplash.com/photos/green-leaf-plants-xljtGZ2-P3Y">Unsplash</a>
-    </p>
-</footer>
+{%  include "partials/footer.liquid" %}
 
 </body>
 </html>
