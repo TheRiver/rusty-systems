@@ -54,7 +54,10 @@ Example of the plant file format understood by {% name "lsystem" %}
 
 </figure>
 
-## Other examples
+## Example output
+
+All of the following images are svg files created by {% name "LSYSTEM" %}
+using the example plant files linked below. 
 
 <div>
     <figure>
@@ -70,35 +73,35 @@ Example of the plant file format understood by {% name "lsystem" %}
     </div>
 </div>
 
-<!--
+
 <div>
     <figure>
-        <img src="{{'./lsystem/examples/abop2.plant' | derive | base }}">
+        <img src="{{'./lsystem/examples/fig-1.6-c.plant' | derive | base }}">
     </figure>
 
     <div>
 
-        This is plant 5, from figure 1.24 on page 25. 
+        This L-system is from figure 1.6c on page 8 of [ABOP][abop].
     
-        Download the plant file [here](/lsystem/examples/abop2.plant).
+        Download the plant file [here](/lsystem/examples/fig-1.6-c.plant).
 
     </div>
 </div>
 
 <div>
     <figure>
-        <img src="{{'./lsystem/examples/abop3.plant' | derive | base }}">
+        <img src="{{'./lsystem/examples/fig-1.8.plant' | derive | base }}">
     </figure>
 
     <div>
 
-        This is plant 5, from figure 1.24 on page 25. 
+        This is the L-system from figure 1.8, page 9, of [ABOP][abop]. 
     
-        Download the plant file [here](/lsystem/examples/abop3.plant).
+        Download the plant file [here](/lsystem/examples/fig-1.8.plant).
 
     </div>
 </div>
--->
+
 
 [abop]: http://algorithmicbotany.org/papers/#abop
 [turtle]: https://en.wikipedia.org/wiki/Turtle_graphics

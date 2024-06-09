@@ -27,7 +27,7 @@ module.exports = function (eleventyConfig) {
     });
 
     // Provides support for running the lsystem command line tool, like so
-    // <img src="{{'./lsystem/examples/abop3.plant' | derive | base }}">
+    // <img src="{{'./lsystem/examples/fig-1.8.plant' | derive | base }}">
     eleventyConfig.addAsyncFilter("derive", async function (name) {
         console.log("[lsystem] deriving", name);
         const file = name.split("/").at(-1);
