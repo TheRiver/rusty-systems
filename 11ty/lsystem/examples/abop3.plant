@@ -1,0 +1,7 @@
+n = 2
+delta = 90
+
+initial: Forward + Forward + Forward + Forward
+
+Forward -> Forward + Move - Forward Forward + Forward + Forward Forward + Forward Move + Forward Forward - Move + Forward Forward - Forward - Forward Forward - Forward Move - Forward Forward Forward
+Move -> Move Move Move Move Move Move
