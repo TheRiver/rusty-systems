@@ -1,5 +1,7 @@
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 
+const project = require("./_data/project")();
+
 module.exports = function (eleventyConfig) {
     eleventyConfig.addPlugin(syntaxHighlight);
 
@@ -13,4 +15,9 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addShortcode("rusty-systems", function() {
         return `<em class="name">Rusty-Systems</em>`;
     });
+
+    eleventyConfig.addFilter("base", function(value) {
+        return project.base + value;
+    });
+
 };
