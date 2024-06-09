@@ -57,50 +57,53 @@ Example of the plant file format understood by {% name "lsystem" %}
 ## Example output
 
 All of the following images are svg files created by {% name "LSYSTEM" %}
-using the example plant files linked below. 
+using the example plant files linked below. All of these examples
+are taken from [the Algorithmic Beauty of Plants][abop], as noted below.
 
-<div>
-    <figure>
-        <img src="{{'./lsystem/examples/fig-1.24-5.plant' | derive | base }}">
-    </figure>
-
-    <div>
-
-        This is plant 5, from figure 1.24 on page 25. 
+<div class="example-grid">
+    <div class="example">
+        <figure>
+            <img src="{{'./lsystem/examples/fig-1.24-5.plant' | derive | base }}">
+        </figure>
+        <div>
     
-        Download the plant file [here](/lsystem/examples/fig-1.24-5.plant).
-
+            This is plant 5, from figure 1.24 on page 25. 
+        
+            Download the plant file [here](/lsystem/examples/fig-1.24-5.plant).
+    
+        </div>
+    </div>
+    
+    
+    <div class="example">
+        <figure>
+            <img src="{{'./lsystem/examples/fig-1.6-c.plant' | derive | base }}">
+        </figure>
+    
+        <div>
+    
+            From figure 1.6c on page 8.
+        
+            Download the plant file [here](/lsystem/examples/fig-1.6-c.plant).
+    
+        </div>
+    </div>
+    
+    <div class="example">
+        <figure>
+            <img src="{{'./lsystem/examples/fig-1.8.plant' | derive | base }}">
+        </figure>
+    
+        <div>
+    
+            From figure 1.8, page 9. 
+        
+            Download the plant file [here](/lsystem/examples/fig-1.8.plant).
+    
+        </div>
     </div>
 </div>
 
-
-<div>
-    <figure>
-        <img src="{{'./lsystem/examples/fig-1.6-c.plant' | derive | base }}">
-    </figure>
-
-    <div>
-
-        This L-system is from figure 1.6c on page 8 of [ABOP][abop].
-    
-        Download the plant file [here](/lsystem/examples/fig-1.6-c.plant).
-
-    </div>
-</div>
-
-<div>
-    <figure>
-        <img src="{{'./lsystem/examples/fig-1.8.plant' | derive | base }}">
-    </figure>
-
-    <div>
-
-        This is the L-system from figure 1.8, page 9, of [ABOP][abop]. 
-    
-        Download the plant file [here](/lsystem/examples/fig-1.8.plant).
-
-    </div>
-</div>
 
 
 [abop]: http://algorithmicbotany.org/papers/#abop
