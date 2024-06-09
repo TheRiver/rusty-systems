@@ -1,0 +1,10 @@
+# This describes plant 5 in fig 1.24 of ABOP (pg 25)
+
+n = 6
+delta = 22.5
+
+initial: X
+
+# The productions
+Forward -> Forward Forward
+X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X

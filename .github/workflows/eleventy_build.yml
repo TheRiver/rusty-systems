@@ -47,6 +47,9 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      - name: Install lsystem command line tool
+        run: cargo install rusty-systems --features="lsystem"
+
       - run: pnpm install
       - run: pnpm build
 

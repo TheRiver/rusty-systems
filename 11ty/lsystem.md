@@ -54,7 +54,51 @@ Example of the plant file format understood by {% name "lsystem" %}
 
 </figure>
 
+## Other examples
 
+<div>
+    <figure>
+        <img src="{{'./lsystem/examples/fig-1.24-5.plant' | derive | base }}">
+    </figure>
+
+    <div>
+
+        This is plant 5, from figure 1.24 on page 25. 
+    
+        Download the plant file [here](/lsystem/examples/fig-1.24-5.plant).
+
+    </div>
+</div>
+
+<!--
+<div>
+    <figure>
+        <img src="{{'./lsystem/examples/abop2.plant' | derive | base }}">
+    </figure>
+
+    <div>
+
+        This is plant 5, from figure 1.24 on page 25. 
+    
+        Download the plant file [here](/lsystem/examples/abop2.plant).
+
+    </div>
+</div>
+
+<div>
+    <figure>
+        <img src="{{'./lsystem/examples/abop3.plant' | derive | base }}">
+    </figure>
+
+    <div>
+
+        This is plant 5, from figure 1.24 on page 25. 
+    
+        Download the plant file [here](/lsystem/examples/abop3.plant).
+
+    </div>
+</div>
+-->
 
 [abop]: http://algorithmicbotany.org/papers/#abop
 [turtle]: https://en.wikipedia.org/wiki/Turtle_graphics
