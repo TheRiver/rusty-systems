@@ -9,12 +9,13 @@
 //! Rusty-Systems does not keep track of, or enforce, these kinds.
 //!
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::sync::{OnceLock, RwLock};
 use std::sync::atomic::{AtomicU32, Ordering};
 use crate::error::Error;
+use crate::tokens;
 
 type CodeStoreType = RwLock<HashMap<String, u32>>;
 type NameStoreType = RwLock<HashMap<u32, String>>;
@@ -127,26 +128,23 @@ pub trait TokenStore {
     fn get_token(&self, name: &str) -> Option<Token>;
 }
 
-impl TokenStore for RefCell<HashMap<String, Token>> {
+impl TokenStore for RefCell<HashSet<u32>> {
     fn add_token(&self, name: &str) -> crate::Result<Token> {
+        let code = tokens::get_code(name)?;
+
         let mut map = self.borrow_mut();
+        map.insert(code);
 
-        let name = name.to_string();
-
-        // If it already exists, return it.
-        if let Some(value) = map.get(&name) {
-            return Ok(value.clone());
-        }
-
-        let token = Token::new(get_code(name.as_str())?);
-
-        map.insert(name, token.clone());
-        Ok(token)
+        Ok(Token::new(code))
     }
 
     fn get_token(&self, name: &str) -> Option<Token> {
-        let map = self.borrow();
-        map.get(&name.to_string()).cloned()
+        let code = get_code(name).ok()?;
+        let tokens = self.borrow();
+
+        tokens.get(&code)
+            .cloned()
+            .map(Token::new)
     }
 }
 

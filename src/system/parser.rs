@@ -135,7 +135,7 @@ fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Opt
 ///
 /// ```
 /// use std::cell::RefCell;
-/// use std::collections::HashMap;
+/// use std::collections::{HashMap, HashSet};
 /// use std::sync::Arc;
 /// use rusty_systems::productions::Production;
 /// use rusty_systems::system::parser::parse_production;
@@ -143,7 +143,7 @@ fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Opt
 ///
 /// // Create your token and production collections at some point
 /// // in your code.
-/// let tokens : HashMap<String, Token> = HashMap::new();
+/// let tokens : HashSet<u32> = HashSet::new();
 /// let productions : Vec<Production> = Vec::new();
 ///
 /// // ... Do a lot of other stuff. Call functions. Have fun!
