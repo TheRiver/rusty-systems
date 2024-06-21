@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Display tokens, strings, productions, and so on, is now substantially easier. They all implement 
   Display.
 * TokenKind has been removed. 
+* Simplified how tokens are stored in a system. Only the code is now stored.
 
 ### Removed
 
