@@ -49,7 +49,7 @@
 //! * [`ProductionString`]
 //! * [`SystemFamily`]
 
-use std::collections::HashMap;
+use std::collections::{HashSet};
 use std::ops::Deref;
 use std::sync::{RwLock};
 
@@ -57,7 +57,7 @@ use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
-use crate::tokens::{TokenStore};
+use crate::tokens::{get_code, TokenStore};
 
 use super::{Result, tokens};
 
@@ -78,14 +78,14 @@ pub mod family;
 /// This is thread safe, and is [`Sync`] and [`Send`].
 #[derive(Debug)]
 pub struct System {
-    tokens: RwLock<HashMap<String, Token>>,
+    tokens: RwLock<HashSet<u32>>,
     productions: RwLock<Vec<Production>>
 }
 
 impl System {
     pub fn new() -> Self {
         System {
-            tokens: RwLock::new(HashMap::new()),
+            tokens: RwLock::new(HashSet::new()),
             productions: RwLock::new(Vec::new())
         }
     }
@@ -171,31 +171,24 @@ impl System {
 
 impl TokenStore for System {
     fn add_token(&self, name: &str) -> Result<Token> {
-        if name.is_empty() {
-            return Err(Error::general("name should not be an empty string"));
-        }
-
+        let code = tokens::get_code(name)?;
+        
         let mut map = self.tokens.write()?;
-        let name = name.to_string();
-
-        // If it already exists, return it.
-        if let Some(value) = map.get(&name).cloned() {
-            return Ok(value);
-        }
-
-        // Safely create a new token.
-        let atomic = tokens::get_code(name.as_str())?;
-        let token = Token::new(atomic);
-        map.insert(name, token);
-        Ok(token)
+        map.insert(code);
+        
+        Ok(Token::new(code))
     }
     
     /// Return the token that represents the given term, if it exists.
     ///
     /// Note that this does not create any new tokens to the system.
     fn get_token(&self, name: &str) -> Option<Token> {
+        let code = get_code(name).ok()?;
         let tokens = self.tokens.read().ok()?;
-        return tokens.get(&name.to_string()).cloned();
+        
+        tokens.get(&code)
+            .cloned()
+            .map(Token::new)
     }
 }
 
