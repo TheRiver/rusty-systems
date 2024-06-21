@@ -51,8 +51,7 @@
 
 use std::collections::HashMap;
 use std::ops::Deref;
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::{RwLock};
 
 use parser::determine_kind;
 
@@ -62,7 +61,7 @@ use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
 use crate::tokens::{TokenKind, TokenStore};
 
-use super::{Result};
+use super::{Result, tokens};
 
 pub mod parser;
 pub mod family;
@@ -81,17 +80,15 @@ pub mod family;
 /// This is thread safe, and is [`Sync`] and [`Send`].
 #[derive(Debug)]
 pub struct System {
-    tokens: RwLock<HashMap<Arc<String>, Token>>,
-    productions: RwLock<Vec<Production>>,
-    token_id: AtomicU32
+    tokens: RwLock<HashMap<String, Token>>,
+    productions: RwLock<Vec<Production>>
 }
 
 impl System {
     pub fn new() -> Self {
         System {
             tokens: RwLock::new(HashMap::new()),
-            productions: RwLock::new(Vec::new()),
-            token_id: AtomicU32::new(100)
+            productions: RwLock::new(Vec::new())
         }
     }
 
@@ -207,9 +204,8 @@ impl TokenStore for System {
         }
 
         // Safely create a new token.
-        let atomic = self.token_id.fetch_add(1, Ordering::SeqCst);
-        let name = Arc::new(name);
-        let token = Token::new(kind, atomic, Arc::downgrade(&name));
+        let atomic = tokens::get_code(name.as_str())?;
+        let token = Token::new(kind, atomic);
         map.insert(name, token.clone());
         Ok(token)
     }

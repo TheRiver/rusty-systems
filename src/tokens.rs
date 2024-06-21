@@ -12,7 +12,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
-use std::sync::{Arc, OnceLock, RwLock, Weak};
+use std::sync::{OnceLock, RwLock};
 use std::sync::atomic::{AtomicU32, Ordering};
 use crate::error::Error;
 
@@ -24,18 +24,18 @@ static NAME_REGISTER: OnceLock<NameStoreType> = OnceLock::new();
 static TOKEN_ID: AtomicU32 = AtomicU32::new(100);
 
 /// Attempts to return a token code for a string.
-/// 
+///
 /// If the `name` was previously seen, it will return the same code.
-/// 
+///
 /// Errors are return in the following cases:
-/// * The `name` is empty, or only white space. 
-/// * The locks this function uses are poisoned. 
-/// 
-/// This is a thread safe call. 
+/// * The `name` is empty, or only white space.
+/// * The locks this function uses are poisoned.
+///
+/// This is a thread safe call.
 pub fn get_code(name: &str) -> Result<u32, Error> {
     let mut register = get_code_register().write()?;
     let name = name.trim().to_string();
-    
+
     if name.is_empty() {
         return Err(Error::general("name should not be an empty string"))
     }
@@ -106,8 +106,7 @@ impl Display for TokenKind {
 pub struct Token {
     // todo remove TokenKind
     kind: TokenKind,
-    code: u32,
-    image: Weak<String>
+    code: u32
 }
 
 impl PartialEq for Token {
@@ -126,9 +125,9 @@ impl Hash for Token {
 }
 
 impl Token {
-    pub fn new(kind: TokenKind, code: u32, name: Weak<String>) -> Self {
+    pub fn new(kind: TokenKind, code: u32) -> Self {
         Token {
-            kind, code, image: name
+            kind, code
         }
     }
 
@@ -145,23 +144,6 @@ impl Token {
         self.code
     }
 
-    /// The name of the string, if it has been stored.
-    ///
-    /// To access it, do this:
-    ///
-    /// ```
-    /// use std::sync::Weak;
-    /// use rusty_systems::tokens::{Token, TokenKind};
-    /// let token = Token::new(TokenKind::Terminal, 100, Weak::default());
-    ///
-    /// if let Some(name) = token.name().upgrade() {
-    ///     println!("The name is {name}");
-    /// }
-    /// ```
-    pub fn name(&self) -> &Weak<String> {
-        &self.image
-    }
-
     #[inline]
     pub fn is_terminal(&self) -> bool {
         self.kind.is_terminal()
@@ -175,7 +157,7 @@ impl Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if let Some(name) = self.name().upgrade() {
+        if let Some(name) = get_name(self.code) {
             return f.write_str(name.as_str());
         }
 
@@ -188,7 +170,7 @@ pub trait TokenStore {
     fn get_token(&self, name: &str) -> Option<Token>;
 }
 
-impl TokenStore for RefCell<HashMap<Arc<String>, Token>> {
+impl TokenStore for RefCell<HashMap<String, Token>> {
     fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token> {
         let mut map = self.borrow_mut();
 
@@ -199,9 +181,7 @@ impl TokenStore for RefCell<HashMap<Arc<String>, Token>> {
             return Ok(value.clone());
         }
 
-        let name = Arc::new(name);
-        let max = map.values().map(|t| t.code).max().unwrap_or(0);
-        let token = Token::new(kind, max + 1, Arc::downgrade(&name));
+        let token = Token::new(kind, get_code(name.as_str())?);
 
         map.insert(name, token.clone());
         Ok(token)
@@ -230,7 +210,7 @@ mod tests {
     fn register_records_names() {
         let hello = "hello";
         let hcode = get_code(hello).unwrap();
-     
+
         assert_eq!(hello, get_name(hcode).unwrap());
     }
 
@@ -243,7 +223,7 @@ mod tests {
     fn empty_string_is_error() {
         assert!(get_code("").is_err());
         assert!(get_code("  ").is_err());
-        
+
         assert!(get_code("  d").is_ok());
     }
 
@@ -252,7 +232,7 @@ mod tests {
         let code = get_code("  d  ").unwrap();
         let code2 = get_code("d").unwrap();
         assert_eq!(code, code2);
-        
+
         assert_eq!(get_name(code).unwrap(), "d");
         assert_eq!(get_name(code2).unwrap(), "d");
     }
