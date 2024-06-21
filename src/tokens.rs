@@ -12,7 +12,68 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
-use std::sync::{Arc, Weak};
+use std::sync::{Arc, OnceLock, RwLock, Weak};
+use std::sync::atomic::{AtomicU32, Ordering};
+use crate::error::Error;
+
+type CodeStoreType = RwLock<HashMap<String, u32>>;
+type NameStoreType = RwLock<HashMap<u32, String>>;
+
+static TOKEN_REGISTER: OnceLock<CodeStoreType> = OnceLock::new();
+static NAME_REGISTER: OnceLock<NameStoreType> = OnceLock::new();
+static TOKEN_ID: AtomicU32 = AtomicU32::new(100);
+
+/// Attempts to return a token code for a string.
+/// 
+/// If the `name` was previously seen, it will return the same code.
+/// 
+/// Errors are return in the following cases:
+/// * The `name` is empty, or only white space. 
+/// * The locks this function uses are poisoned. 
+/// 
+/// This is a thread safe call. 
+pub fn get_code(name: &str) -> Result<u32, Error> {
+    let mut register = get_code_register().write()?;
+    let name = name.trim().to_string();
+    
+    if name.is_empty() {
+        return Err(Error::general("name should not be an empty string"))
+    }
+
+    if let Some(code) = register.get(&name) {
+        return Ok(*code);
+    }
+
+    let code = TOKEN_ID.fetch_add(1, Ordering::SeqCst);
+    register.insert(name.clone(), code);
+    drop(register);
+
+    let mut register = get_name_register().write()?;
+    register.insert(code, name);
+    drop(register);
+
+    Ok(code)
+}
+
+/// If a code was previously returned for a token name, this returns
+/// that name.
+pub fn get_name(code: u32) -> Option<String> {
+    let register = get_name_register().read().ok()?;
+    register.get(&code).cloned()
+}
+
+fn get_code_register() -> &'static CodeStoreType {
+    TOKEN_REGISTER.get_or_init(|| {
+        RwLock::new(HashMap::new())
+    })
+}
+
+fn get_name_register() -> &'static NameStoreType {
+    NAME_REGISTER.get_or_init(|| {
+        RwLock::new(HashMap::new())
+    })
+}
+
 
 /// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
@@ -43,6 +104,7 @@ impl Display for TokenKind {
 
 #[derive(Debug, Clone)]
 pub struct Token {
+    // todo remove TokenKind
     kind: TokenKind,
     code: u32,
     image: Weak<String>
@@ -151,3 +213,47 @@ impl TokenStore for RefCell<HashMap<Arc<String>, Token>> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn register_is_idempotent() {
+        let hello = get_code("Hello").unwrap();
+        let bye = get_code("bye").unwrap();
+
+        assert_eq!(get_code("Hello").unwrap(), hello);
+        assert_ne!(get_code("Hello").unwrap(), bye);
+    }
+
+    #[test]
+    fn register_records_names() {
+        let hello = "hello";
+        let hcode = get_code(hello).unwrap();
+     
+        assert_eq!(hello, get_name(hcode).unwrap());
+    }
+
+    #[test]
+    fn no_name() {
+        assert!(get_name(43_432_444).is_none());
+    }
+
+    #[test]
+    fn empty_string_is_error() {
+        assert!(get_code("").is_err());
+        assert!(get_code("  ").is_err());
+        
+        assert!(get_code("  d").is_ok());
+    }
+
+    #[test]
+    fn names_are_trimmed() {
+        let code = get_code("  d  ").unwrap();
+        let code2 = get_code("d").unwrap();
+        assert_eq!(code, code2);
+        
+        assert_eq!(get_name(code).unwrap(), "d");
+        assert_eq!(get_name(code2).unwrap(), "d");
+    }
+}
