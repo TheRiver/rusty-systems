@@ -88,10 +88,6 @@ impl ProductionHead {
     ///
     /// This will return [`Err`] if the given target token is not a [`crate::tokens::TokenKind::Production`]
     pub fn build(pre: Option<ProductionString>, target: Token, post: Option<ProductionString>) -> Result<Self> {
-        if !target.is_production() {
-            return Err(Error::general("token should be a Production"));
-        }
-
         Ok(ProductionHead {
             pre,
             target,

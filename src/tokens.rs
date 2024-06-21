@@ -2,12 +2,12 @@
 //!
 //! Tokens can be of various kinds:
 //!
-//! * [`TokenKind::Terminal`] are the strict endpoints of the L-System. No production rule can target them.
-//! * [`TokenKind::Production`] are those that can be handled by a production rule.
+//! * Terminals / Constants, which are the strict endpoints of the L-System. They are not rewritten by
+//!   production rules.
+//! * Variable / Production tokens, are those that can be rewritten by production rules.
 //!
-//! Production rules ([`crate::productions::Production`]) will enforce that the target of a
-//! production is a token of kind [`TokenKind::Production`].
-
+//! Rusty-Systems does not keep track of, or enforce, these kinds.
+//!
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
@@ -75,43 +75,14 @@ fn get_name_register() -> &'static NameStoreType {
 }
 
 
-/// The various kinds of tokens that can make up a [`crate::strings::ProductionString`].
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd)]
-pub enum TokenKind {
-    /// Terminals are never transformed by production rules. 
-    Terminal,
-    /// Production tokens may be targets for [`crate::productions::Production`] rules.
-    Production
-}
-
-impl TokenKind {
-    pub fn is_terminal(&self) -> bool {
-        matches!(self, TokenKind::Terminal)
-    }
-    pub fn is_production(&self) -> bool {
-        matches!(self, TokenKind::Production)
-    }
-}
-
-impl Display for TokenKind {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TokenKind::Terminal => f.write_str("Terminal"),
-            TokenKind::Production => f.write_str("Production")
-        }
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 pub struct Token {
-    // todo remove TokenKind
-    kind: TokenKind,
     code: u32
 }
 
 impl PartialEq for Token {
     fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind && self.code == other.code
+        self.code == other.code
     }
 }
 
@@ -119,20 +90,16 @@ impl Eq for Token {}
 
 impl Hash for Token {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.kind.hash(state);
         self.code.hash(state);
     }
 }
 
 impl Token {
-    pub fn new(kind: TokenKind, code: u32) -> Self {
+    #[inline]
+    pub fn new(code: u32) -> Self {
         Token {
-            kind, code
+            code
         }
-    }
-
-    pub fn kind(&self) -> TokenKind {
-        self.kind
     }
 
     /// A unique identifier for the token.
@@ -143,16 +110,6 @@ impl Token {
     pub fn code(&self) -> u32 {
         self.code
     }
-
-    #[inline]
-    pub fn is_terminal(&self) -> bool {
-        self.kind.is_terminal()
-    }
-
-    #[inline]
-    pub fn is_production(&self) -> bool {
-        self.kind.is_production()
-    }
 }
 
 impl Display for Token {
@@ -161,17 +118,17 @@ impl Display for Token {
             return f.write_str(name.as_str());
         }
 
-        write!(f, "{}[{}]", self.kind, self.code)
+        write!(f, "code:{}", self.code)
     }
 }
 
 pub trait TokenStore {
-    fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token>;
+    fn add_token(&self, name: &str) -> crate::Result<Token>;
     fn get_token(&self, name: &str) -> Option<Token>;
 }
 
 impl TokenStore for RefCell<HashMap<String, Token>> {
-    fn add_token(&self, name: &str, kind: TokenKind) -> crate::Result<Token> {
+    fn add_token(&self, name: &str) -> crate::Result<Token> {
         let mut map = self.borrow_mut();
 
         let name = name.to_string();
@@ -181,7 +138,7 @@ impl TokenStore for RefCell<HashMap<String, Token>> {
             return Ok(value.clone());
         }
 
-        let token = Token::new(kind, get_code(name.as_str())?);
+        let token = Token::new(get_code(name.as_str())?);
 
         map.insert(name, token.clone());
         Ok(token)

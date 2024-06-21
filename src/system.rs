@@ -53,13 +53,11 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::{RwLock};
 
-use parser::determine_kind;
-
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
-use crate::tokens::{TokenKind, TokenStore};
+use crate::tokens::{TokenStore};
 
 use super::{Result, tokens};
 
@@ -107,7 +105,7 @@ impl System {
         let system = System::default();
 
         for token in family.tokens() {
-            system.add_token(token.name.as_str(), token.kind)?;
+            system.add_token(token.name.as_str())?;
         }
 
         Ok(system)
@@ -154,9 +152,7 @@ impl System {
         let items = string.trim().split_ascii_whitespace();
 
         for term in items {
-            let kind = determine_kind(term)
-                .ok_or_else(|| Error::new(ErrorKind::Parse, "Unable to determine token kind"))?;
-            result.push_token(self.add_token(term, kind)?);
+            result.push_token(self.add_token(term)?);
         }
 
         Ok(result)
@@ -171,26 +167,10 @@ impl System {
     pub fn token_len(&self) -> usize {
         self.tokens.read().unwrap().len()
     }
-
-    /// Returns the number of terminal tokens registered with the system
-    pub fn terminal_tokens_len(&self) -> usize {
-        self.tokens.read().unwrap()
-            .values()
-            .filter(|t| t.is_terminal())
-            .count()
-    }
-
-    /// Returns the number of terminal tokens registered with the system
-    pub fn prod_tokens_len(&self) -> usize {
-        self.tokens.read().unwrap()
-            .values()
-            .filter(|t| t.is_production())
-            .count()
-    }
 }
 
 impl TokenStore for System {
-    fn add_token(&self, name: &str, kind: TokenKind) -> Result<Token> {
+    fn add_token(&self, name: &str) -> Result<Token> {
         if name.is_empty() {
             return Err(Error::general("name should not be an empty string"));
         }
@@ -205,8 +185,8 @@ impl TokenStore for System {
 
         // Safely create a new token.
         let atomic = tokens::get_code(name.as_str())?;
-        let token = Token::new(kind, atomic);
-        map.insert(name, token.clone());
+        let token = Token::new(atomic);
+        map.insert(name, token);
         Ok(token)
     }
     
@@ -301,11 +281,6 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
     let mut result = ProductionString::default();
 
     for (index, token) in string.tokens().iter().enumerate() {
-        if token.is_terminal() {
-            result.push_token(token.clone());
-            continue;
-        }
-
         if let Some(production) = find_matching(productions, &string, index) {
             let body = production.body()?;
 
@@ -318,7 +293,7 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
                 .for_each(|token| result.push_token(token));
             continue;
         } else {
-            result.push_token(token.clone());
+            result.push_token(*token);
         }
 
 
@@ -380,8 +355,8 @@ mod tests {
     #[test]
     fn increments_for_distinct_names() {
         let system = System::new();
-        let token1 = system.add_token("one", TokenKind::Terminal).unwrap();
-        let token2 = system.add_token("two", TokenKind::Terminal).unwrap();
+        let token1 = system.add_token("one").unwrap();
+        let token2 = system.add_token("two").unwrap();
 
         assert_ne!(token1.code(), token2.code());
     }
@@ -389,8 +364,8 @@ mod tests {
     #[test]
     fn no_increments_for_equal_names() {
         let system = System::new();
-        let token1 = system.add_token("one", TokenKind::Terminal).unwrap();
-        let token2 = system.add_token("one", TokenKind::Terminal).unwrap();
+        let token1 = system.add_token("one").unwrap();
+        let token2 = system.add_token("one").unwrap();
 
         assert_eq!(token1.code(), token2.code());
     }
@@ -404,11 +379,11 @@ mod tests {
 
         thread::scope(|s| {
             s.spawn(|| {
-                token1 = Some(system.add_token("one", TokenKind::Terminal).unwrap());
+                token1 = Some(system.add_token("one").unwrap());
             });
 
             s.spawn(|| {
-                token2 = Some(system.add_token("two", TokenKind::Terminal).unwrap());
+                token2 = Some(system.add_token("two").unwrap());
             });
         });
 
@@ -442,7 +417,7 @@ mod tests {
     fn test_format() {
         let system = System::default();
 
-        let token = system.add_token("a", TokenKind::Terminal).unwrap();
+        let token = system.add_token("a").unwrap();
         assert_eq!(token.to_string(), "a");
 
         let string = system.parse_prod_string("a b c").unwrap();
@@ -454,23 +429,19 @@ mod tests {
         let system = System::default();
         assert_eq!(system.token_len(), 0);
         
-        system.add_token("a", TokenKind::Terminal).unwrap();
+        system.add_token("a").unwrap();
         assert_eq!(system.token_len(), 1);
-        assert_eq!(system.prod_tokens_len(), 0);
-        assert_eq!(system.terminal_tokens_len(), 1);
         assert_eq!(system.production_len(), 0);
 
         // Nothing should change
-        system.add_token("a", TokenKind::Terminal).unwrap();
+        system.add_token("a").unwrap();
         assert_eq!(system.token_len(), 1);
 
-        system.add_token("b", TokenKind::Terminal).unwrap();
+        system.add_token("b").unwrap();
         assert_eq!(system.token_len(), 2);
 
-        system.add_token("c", TokenKind::Production).unwrap();
+        system.add_token("c").unwrap();
         assert_eq!(system.token_len(), 3);
-        assert_eq!(system.prod_tokens_len(), 1);
-        assert_eq!(system.terminal_tokens_len(), 2);
         assert_eq!(system.production_len(), 0);
     }
 
@@ -482,8 +453,6 @@ mod tests {
 
         system.parse_production("F -> F F").unwrap();
         assert_eq!(system.token_len(), 1);
-        assert_eq!(system.prod_tokens_len(), 1);
-        assert_eq!(system.terminal_tokens_len(), 0);
         assert_eq!(system.production_len(), 1);
     }
 

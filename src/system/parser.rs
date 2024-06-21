@@ -7,7 +7,7 @@
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
-use crate::tokens::{TokenKind, TokenStore};
+use crate::tokens::{TokenStore};
 use crate::Result;
 
 /// Parse the body of a production rule.
@@ -34,8 +34,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
             }
         }
 
-        let kind = determine_kind(term).ok_or_else(|| Error::new(ErrorKind::Parse,"unable to determine token type"))?;
-        body_tokens.push(store.add_token(term, kind)?);
+        body_tokens.push(store.add_token(term)?);
     }
 
     match chance {
@@ -80,17 +79,7 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     }
 
     let center = remains[0];
-
-    let is_production = determine_kind(center)
-        .map(|kind| kind.is_production())
-        .unwrap_or(false);
-
-    if !is_production {
-        return Err(Error::new(ErrorKind::Parse,
-                              String::from("production tokens should start with a capitalised letter: ") + head));
-    }
-
-    let head_token = store.add_token(center, TokenKind::Production)?;
+    let head_token = store.add_token(center)?;
 
     let left = parse_head_context(store, left);
     if let Some(Err(e)) = left {
@@ -114,15 +103,7 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
 
 fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
     strings.map(|strings| {
-        let iter = strings.iter()
-            .map(|s| (s, determine_kind(s)));
-
-        let all_known = iter.clone().all(|(_, k)| k.is_some());
-        if !all_known {
-            return Err(Error::new(ErrorKind::Parse, "Unable to parse left context"));
-        }
-
-        let iter = iter.map(|(s, k)| store.add_token(s, k.unwrap()));
+        let iter = strings.iter().map(|s| store.add_token(*s));
         let error = iter.clone().find(|t| t.is_err());
 
         if let Some(Err(e)) = error {
@@ -209,39 +190,13 @@ pub fn parse_production<T, P>(token_store: &T,
 }
 
 
-/// For the default string parser, this determines the kind
-/// of [`Token`] it should be parsed as.
-///
-/// Please note that the rules this function uses for
-/// differentiating between terminals and productions
-///
-pub fn determine_kind(string: &str) -> Option<TokenKind> {
-    let string = string.trim();
-    if string.is_empty() { return None }
-
-    if string.contains('(') || string.contains(')') || string.contains(' ') {
-        return None;
-    }
-
-    if string.parse::<f32>().is_ok() {
-        return None;
-    }
-
-    let first = string.chars().next()?;
-    if first.is_ascii_uppercase() {
-        return Some(TokenKind::Production)
-    }
-
-    Some(TokenKind::Terminal)
-}
-
 
 
 #[cfg(test)]
 mod test {
-    use crate::system::parser::{determine_kind, parse_production_body, parse_production_head};
+    use crate::system::parser::{parse_production_body, parse_production_head};
     use crate::system::System;
-    use crate::tokens::{TokenKind, TokenStore};
+    use crate::tokens::{TokenStore};
 
     #[test]
     fn can_parse_empty_body() {
@@ -268,14 +223,6 @@ mod test {
         assert_eq!(body.len(), 2);
         assert!(body.chance().is_user_set());
         assert_eq!(body.chance().unwrap(), 0.3);
-    }
-
-    #[test]
-    fn can_determine_token_kind() {
-        assert_eq!(determine_kind("bob").unwrap(), TokenKind::Terminal);
-        assert_eq!(determine_kind("Bob").unwrap(), TokenKind::Production);
-        assert!(determine_kind("Bo b").is_none());
-        assert!(determine_kind("Bo(b)").is_none());
     }
 
     #[test]

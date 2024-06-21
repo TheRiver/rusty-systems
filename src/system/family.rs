@@ -4,7 +4,6 @@ use std::sync::{Arc, OnceLock, RwLock};
 
 use crate::error::{Error, ErrorKind};
 use crate::Result;
-use crate::tokens::{TokenKind};
 
 pub struct Builder {
     terminals: Vec<TokenDescription>,
@@ -26,7 +25,6 @@ impl Builder {
     /// ```
     pub fn with_terminal<S: AsRef<str>>(mut self, name: S, description: Option<S>) -> Self {
         let token = TokenDescription {
-            kind: TokenKind::Terminal,
             name: name.as_ref().to_string(),
             description: description.map(|s| s.as_ref().to_string())
         };
@@ -48,7 +46,6 @@ impl Builder {
     /// ```
     pub fn with_production<S: AsRef<str>>(mut self, name: S, description: Option<S>) -> Self {
         let token = TokenDescription {
-            kind: TokenKind::Production,
             name: name.as_ref().to_string(),
             description: description.map(|s| s.as_ref().to_string())
         };
@@ -228,8 +225,6 @@ impl TryIntoFamily for String {
 
 #[derive(Debug, Clone)]
 pub struct TokenDescription {
-    /// Indicates the kind of token this [`TokenDescription`] represents
-    pub kind: TokenKind,
     /// The token's name
     pub name: String,
     /// What this token represents.
