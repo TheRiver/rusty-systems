@@ -102,7 +102,7 @@ impl Display for TokenKind {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token {
     // todo remove TokenKind
     kind: TokenKind,

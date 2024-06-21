@@ -14,10 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* Token no longer implements Copy
-* The Token copy change now allows us to keep a weak pointer to a name for display purposes
 * Display tokens, strings, productions, and so on, is now substantially easier. They all implement 
-  Display.  
+  Display.
 
 ### Removed
 
