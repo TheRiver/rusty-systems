@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* `tokens::get_code` and related functions that return the a token code 
+* `symbols::get_code` and related functions that return the a token code 
   for a string, or the string / name associated with a code.
+* `Symbol::name` returns the name of a symbol. 
 
 ### Changed
 
