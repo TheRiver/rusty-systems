@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* `symbols::get_code` and related functions that return the a token code 
+* `symbols::get_code` and related functions that return a symbol code 
   for a string, or the string / name associated with a code.
 * `Symbol::name` returns the name of a symbol. 
 
@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0]
 
 ### Added
-* Productions are now context sensitive. 
+* Productions are now context-sensitive. 
 
 ### Changed
 * the --output flag in `lsystem` now has a default value of `out.svg`.
