@@ -23,7 +23,7 @@ use crate::error::Error;
 
 use crate::geometry::{Bounds, Path, Point, Vector};
 use crate::prelude::{Interpretation, ProductionString, RunSettings, System};
-use crate::tokens::TokenStore;
+use crate::symbols::SymbolStore;
 
 #[derive(Debug, Clone)]
 pub struct SvgPathInterpretation<T>
@@ -86,7 +86,7 @@ impl<T> Interpretation for SvgPathInterpretation<T>
         T::system()
     }
 
-    fn interpret<S: TokenStore>(&self, tokens: &S, string: &ProductionString) -> crate::Result<Self::Item> {
+    fn interpret<S: SymbolStore>(&self, tokens: &S, string: &ProductionString) -> crate::Result<Self::Item> {
         let paths = self.initial.interpret(tokens, string)?;
         let bounds = paths.bounds();
 

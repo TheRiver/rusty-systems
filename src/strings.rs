@@ -1,4 +1,4 @@
-//! The string of [`Token`] instances which are rewritten using [`crate::productions::Production`]
+//! The string of [`Symbol`] instances which are rewritten using [`crate::productions::Production`]
 //! rules of a [`System`].
 
 use std::fmt::{Display, Formatter, Write};
@@ -8,17 +8,17 @@ use std::slice::Iter;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
-/// are made up of a list of [`Token`] objects. 
+/// are made up of a list of [`Symbol`] objects. 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionString {
-    tokens: Vec<Token>
+    symbols: Vec<Symbol>
 }
 
 impl ProductionString {
     /// Create an empty string
     pub fn new() -> Self {
         ProductionString {
-            tokens: Vec::new()
+            symbols: Vec::new()
         }
     }
 
@@ -33,31 +33,31 @@ impl ProductionString {
     /// the _empty_ string.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.tokens.is_empty()
+        self.symbols.is_empty()
     }
 
     /// Returns the length of the production string.
     #[inline]
     pub fn len(&self) -> usize {
-        self.tokens.len()
+        self.symbols.len()
     }
 
-    /// Access the tokens of this production string.
+    /// Access the symbols of this production string.
     #[inline]
-    pub fn tokens(&self) -> &Vec<Token> {
-        &self.tokens
+    pub fn symbols(&self) -> &Vec<Symbol> {
+        &self.symbols
     }
 
-    /// Add another token to the end of the string.
+    /// Add another symbol to the end of the string.
     #[inline]
-    pub fn push_token(&mut self, token: Token) {
-        self.tokens.push(token);
+    pub fn push_symbol(&mut self, symbol: Symbol) {
+        self.symbols.push(symbol);
     }
 
-    /// Iterate over the tokens.
+    /// Iterate over the symbols.
     #[inline]
-    pub fn iter(&self) -> Iter<'_, Token> {
-        self.tokens.iter()
+    pub fn iter(&self) -> Iter<'_, Symbol> {
+        self.symbols.iter()
     }
 }
 
@@ -67,59 +67,59 @@ impl Default for ProductionString {
     }
 }
 
-impl From<Vec<Token>> for ProductionString {
-    fn from(value: Vec<Token>) -> Self {
+impl From<Vec<Symbol>> for ProductionString {
+    fn from(value: Vec<Symbol>) -> Self {
         ProductionString {
-            tokens: value
+            symbols: value
         }
     }
 }
 
 impl Index<usize> for ProductionString {
-    type Output = Token;
+    type Output = Symbol;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.tokens[index]
+        &self.symbols[index]
     }
 }
 
 
-impl From<Token> for ProductionString {
-    fn from(value: Token) -> Self {
+impl From<Symbol> for ProductionString {
+    fn from(value: Symbol) -> Self {
         ProductionString {
-            tokens: vec![value]
+            symbols: vec![value]
         }
     }
 }
 
 impl IntoIterator for ProductionString {
-    type Item = Token;
+    type Item = Symbol;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.tokens.into_iter()
+        self.symbols.into_iter()
     }
 }
 
 impl<'a> IntoIterator for &'a ProductionString {
-    type Item = Token;
+    type Item = Symbol;
     type IntoIter = Cloned<Iter<'a, Self::Item>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.tokens.iter().cloned()
+        self.symbols.iter().cloned()
     }
 }
 
 impl Display for ProductionString {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut first = true;
-        for token in self.tokens() {
+        for symbol in self.symbols() {
             if !first {
                 f.write_char(' ')?;
             } else {
                 first = false;
             }
-            f.write_str(token.to_string().as_str())?;
+            f.write_str(symbol.to_string().as_str())?;
         }
         
         Ok(())

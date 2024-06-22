@@ -59,7 +59,7 @@
 //!
 //! * [Vector graphics plant][skia-plant]
 //!
-//!   This example uses two rules to produce a small plant. The tokens
+//!   This example uses two rules to produce a small plant. The symbols
 //!   are interpreted using a classic [logo turtle][logo-turtle] interpretation
 //!   to produce vector graphics. While the example uses [tiny skia][tiny-skia],
 //!   this can be replaced with any vector graphic library.
@@ -97,7 +97,7 @@
 //! [lsystem-tool]: https://theriver.github.io/rusty-systems/lsystem/
 
 pub mod error;
-pub mod tokens;
+pub mod symbols;
 pub mod productions;
 pub mod strings;
 pub mod system;
@@ -115,7 +115,7 @@ pub mod interpretation;
 pub mod prelude {
     pub use super::error::Error;
     pub use super::strings::ProductionString;
-    pub use super::tokens::Token;
+    pub use super::symbols::Symbol;
     pub use super::system::System;
     pub use super::system::RunSettings;
     pub use super::system::family::SystemFamily;

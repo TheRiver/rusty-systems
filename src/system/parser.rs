@@ -7,7 +7,7 @@
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
-use crate::tokens::{TokenStore};
+use crate::symbols::{SymbolStore};
 use crate::Result;
 
 /// Parse the body of a production rule.
@@ -15,7 +15,8 @@ use crate::Result;
 /// For example, in the string `A -> B C`, the `B C` after the arrow
 /// is the rule's body.
 pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
-    where S: TokenStore {
+    where S: SymbolStore
+{
     let body = body.trim();
     if body.is_empty() {
         return Ok(ProductionBody::empty());
@@ -34,7 +35,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
             }
         }
 
-        body_tokens.push(store.add_token(term)?);
+        body_tokens.push(store.add_symbol(term)?);
     }
 
     match chance {
@@ -44,7 +45,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
 }
 
 pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
-    where S: TokenStore
+    where S: SymbolStore
 {
     let head = head.trim();
 
@@ -79,7 +80,7 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     }
 
     let center = remains[0];
-    let head_token = store.add_token(center)?;
+    let head_token = store.add_symbol(center)?;
 
     let left = parse_head_context(store, left);
     if let Some(Err(e)) = left {
@@ -101,9 +102,9 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
         right)
 }
 
-fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
+fn parse_head_context<S: SymbolStore>(store: &S, strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
     strings.map(|strings| {
-        let iter = strings.iter().map(|s| store.add_token(*s));
+        let iter = strings.iter().map(|s| store.add_symbol(*s));
         let error = iter.clone().find(|t| t.is_err());
 
         if let Some(Err(e)) = error {
@@ -123,12 +124,12 @@ fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Opt
 /// you can do so using your own implementations of:
 ///
 /// * [`ProductionStore`], which stores productions.
-/// * [`TokenStore`], which stores and generates unique tokens.
+/// * [`SymbolStore`], which stores and generates unique tokens.
 ///
 /// Default implementations exist for
 ///
 /// * [`std::cell::RefCell<Vec<Production>>`] implements [`ProductionStore`].
-/// * [`std::cell::RefCell<std::collections::HashMap<String, prelude::Token>>`] implements [`TokenStore`].
+/// * [`std::cell::RefCell<std::collections::HashMap<String, prelude::Token>>`] implements [`SymbolStore`].
 ///
 /// These are easy to use by just wrapping your collections in RefCell. Please note that doing this
 /// is not thread safe:
@@ -139,7 +140,7 @@ fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Opt
 /// use std::sync::Arc;
 /// use rusty_systems::productions::Production;
 /// use rusty_systems::system::parser::parse_production;
-/// use rusty_systems::tokens::Token;
+/// use rusty_systems::symbols::Symbol;
 ///
 /// // Create your token and production collections at some point
 /// // in your code.
@@ -166,7 +167,7 @@ fn parse_head_context<S: TokenStore>(store: &S, strings: Option<&[&str]>) -> Opt
 pub fn parse_production<T, P>(token_store: &T,
                               prod_store: &P,
                               production: &str) -> Result<Production>
-    where   T: TokenStore,
+    where   T: SymbolStore,
             P: ProductionStore
 {
     let production = production.trim();
@@ -196,7 +197,7 @@ pub fn parse_production<T, P>(token_store: &T,
 mod test {
     use crate::system::parser::{parse_production_body, parse_production_head};
     use crate::system::System;
-    use crate::tokens::{TokenStore};
+    use crate::symbols::{SymbolStore};
 
     #[test]
     fn can_parse_empty_body() {
@@ -229,18 +230,18 @@ mod test {
     fn parsing_production_head() {
         let store = System::default();
         let head = parse_production_head(&store, "A").unwrap();
-        assert_eq!(store.get_token("A").unwrap().code(), head.target().code());
+        assert_eq!(store.get_symbol("A").unwrap().code(), head.target().code());
 
         let head = parse_production_head(&store, "Pre < A > Post").unwrap();
-        assert_eq!(store.get_token("A").unwrap().code(), head.target().code());
+        assert_eq!(store.get_symbol("A").unwrap().code(), head.target().code());
 
         let left = head.pre_context().unwrap();
         assert_eq!(left.len(), 1);
-        assert_eq!(store.get_token("Pre").unwrap().code(), left[0].code());
+        assert_eq!(store.get_symbol("Pre").unwrap().code(), left[0].code());
 
         let right = head.post_context().unwrap();
         assert_eq!(right.len(), 1);
-        assert_eq!(store.get_token("Post").unwrap().code(), right[0].code());
+        assert_eq!(store.get_symbol("Post").unwrap().code(), right[0].code());
     }
 }
 

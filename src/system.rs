@@ -1,5 +1,5 @@
 //! Collection of tools for defining a group of [`Production`] rules on strings
-//! of tokens.
+//! of symbols.
 //!
 //! # Creating systems
 //!
@@ -31,9 +31,9 @@
 //! 
 //! * todo discuss stochastic rules
 //!
-//! ## Collections of [`Token`] and [`Production`]
+//! ## Collections of [`Symbol`] and [`Production`]
 //!
-//! TODO talk about collections of tokens and productions.
+//! TODO talk about collections of symbols and productions.
 //!
 //! # Families
 //!
@@ -44,7 +44,7 @@
 //! TODO Talk about thread safety
 //!
 //! # See also
-//! * [`Token`]
+//! * [`Symbol`]
 //! * [`Production`]
 //! * [`ProductionString`]
 //! * [`SystemFamily`]
@@ -57,9 +57,9 @@ use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
-use crate::tokens::{get_code, TokenStore};
+use crate::symbols::{get_code, SymbolStore};
 
-use super::{Result, tokens};
+use super::{Result, symbols};
 
 pub mod parser;
 pub mod family;
@@ -67,7 +67,7 @@ pub mod family;
 /// Represents an L-system. This is the base for running the
 /// production rules.
 ///
-/// This struct is convenient for defining and storing tokens
+/// This struct is convenient for defining and storing symbols
 /// and productions without having to create your own collections.
 ///
 /// See the [system namespace](crate::system) to for information more broadly.
@@ -78,20 +78,20 @@ pub mod family;
 /// This is thread safe, and is [`Sync`] and [`Send`].
 #[derive(Debug)]
 pub struct System {
-    tokens: RwLock<HashSet<u32>>,
+    symbols: RwLock<HashSet<u32>>,
     productions: RwLock<Vec<Production>>
 }
 
 impl System {
     pub fn new() -> Self {
         System {
-            tokens: RwLock::new(HashSet::new()),
+            symbols: RwLock::new(HashSet::new()),
             productions: RwLock::new(Vec::new())
         }
     }
 
     /// Given a previously defined family, this returns a new system
-    /// using the defined tokens / alphabet / words of that family of systems.
+    /// using the defined symbols / alphabet / words of that family of systems.
     ///
     /// ```
     /// use rusty_systems::system::{family, System};
@@ -104,8 +104,8 @@ impl System {
         let family = family.into_family()?;
         let system = System::default();
 
-        for token in family.tokens() {
-            system.add_token(token.name.as_str())?;
+        for symbol in family.symbols() {
+            system.add_symbol(symbol.name.as_str())?;
         }
 
         Ok(system)
@@ -152,7 +152,7 @@ impl System {
         let items = string.trim().split_ascii_whitespace();
 
         for term in items {
-            result.push_token(self.add_token(term)?);
+            result.push_symbol(self.add_symbol(term)?);
         }
 
         Ok(result)
@@ -163,32 +163,32 @@ impl System {
         self.productions.read().unwrap().len()
     }
 
-    /// Returns the number of tokens (terminal and production tokens) registered with the system
-    pub fn token_len(&self) -> usize {
-        self.tokens.read().unwrap().len()
+    /// Returns the number of symbols registered with the system
+    pub fn symbol_len(&self) -> usize {
+        self.symbols.read().unwrap().len()
     }
 }
 
-impl TokenStore for System {
-    fn add_token(&self, name: &str) -> Result<Token> {
-        let code = tokens::get_code(name)?;
+impl SymbolStore for System {
+    fn add_symbol(&self, name: &str) -> Result<Symbol> {
+        let code = symbols::get_code(name)?;
         
-        let mut map = self.tokens.write()?;
+        let mut map = self.symbols.write()?;
         map.insert(code);
         
-        Ok(Token::new(code))
+        Ok(Symbol::new(code))
     }
     
-    /// Return the token that represents the given term, if it exists.
+    /// Return the symbol that represents the given term, if it exists.
     ///
-    /// Note that this does not create any new tokens to the system.
-    fn get_token(&self, name: &str) -> Option<Token> {
+    /// Note that this does not create any new symbols to the system.
+    fn get_symbol(&self, name: &str) -> Option<Symbol> {
         let code = get_code(name).ok()?;
-        let tokens = self.tokens.read().ok()?;
+        let symbols = self.symbols.read().ok()?;
         
-        tokens.get(&code)
+        symbols.get(&code)
             .cloned()
-            .map(Token::new)
+            .map(Symbol::new)
     }
 }
 
@@ -273,20 +273,20 @@ pub fn derive_once(string: ProductionString, productions: &[Production]) -> Resu
 
     let mut result = ProductionString::default();
 
-    for (index, token) in string.tokens().iter().enumerate() {
+    for (index, symbol) in string.symbols().iter().enumerate() {
         if let Some(production) = find_matching(productions, &string, index) {
             let body = production.body()?;
 
             // println!("body match: {index}: {:?}", body.string().iter().map(|t| t.code()).collect::<Vec<_>>());
 
             body.string()
-                .tokens()
+                .symbols()
                 .iter()
                 .cloned()
-                .for_each(|token| result.push_token(token));
+                .for_each(|symbol| result.push_symbol(symbol));
             continue;
         } else {
-            result.push_token(*token);
+            result.push_symbol(*symbol);
         }
 
 
@@ -348,42 +348,42 @@ mod tests {
     #[test]
     fn increments_for_distinct_names() {
         let system = System::new();
-        let token1 = system.add_token("one").unwrap();
-        let token2 = system.add_token("two").unwrap();
+        let symbol1 = system.add_symbol("one").unwrap();
+        let symbol2 = system.add_symbol("two").unwrap();
 
-        assert_ne!(token1.code(), token2.code());
+        assert_ne!(symbol1.code(), symbol2.code());
     }
 
     #[test]
     fn no_increments_for_equal_names() {
         let system = System::new();
-        let token1 = system.add_token("one").unwrap();
-        let token2 = system.add_token("one").unwrap();
+        let symbol1 = system.add_symbol("one").unwrap();
+        let symbol2 = system.add_symbol("one").unwrap();
 
-        assert_eq!(token1.code(), token2.code());
+        assert_eq!(symbol1.code(), symbol2.code());
     }
 
     #[test]
     fn sync_and_send() {
-        let mut token1 : Option<Token> = None;
-        let mut token2 : Option<Token> = None;
+        let mut symbol1 : Option<Symbol> = None;
+        let mut symbol2: Option<Symbol> = None;
 
         let system = System::new();
 
         thread::scope(|s| {
             s.spawn(|| {
-                token1 = Some(system.add_token("one").unwrap());
+                symbol1 = Some(system.add_symbol("one").unwrap());
             });
 
             s.spawn(|| {
-                token2 = Some(system.add_token("two").unwrap());
+                symbol2 = Some(system.add_symbol("two").unwrap());
             });
         });
 
-        let token1 = token1.unwrap();
-        let token2 = token2.unwrap();
+        let symbol1 = symbol1.unwrap();
+        let symbol2 = symbol2.unwrap();
 
-        assert_ne!(token1.code(), token2.code());
+        assert_ne!(symbol1.code(), symbol2.code());
     }
 
     #[test]
@@ -410,42 +410,42 @@ mod tests {
     fn test_format() {
         let system = System::default();
 
-        let token = system.add_token("a").unwrap();
-        assert_eq!(token.to_string(), "a");
+        let symbol = system.add_symbol("a").unwrap();
+        assert_eq!(symbol.to_string(), "a");
 
         let string = system.parse_prod_string("a b c").unwrap();
         assert_eq!(string.to_string(), "a b c");
     }
     
     #[test]
-    fn test_counting_tokens() {
+    fn test_counting_symbols() {
         let system = System::default();
-        assert_eq!(system.token_len(), 0);
+        assert_eq!(system.symbol_len(), 0);
         
-        system.add_token("a").unwrap();
-        assert_eq!(system.token_len(), 1);
+        system.add_symbol("a").unwrap();
+        assert_eq!(system.symbol_len(), 1);
         assert_eq!(system.production_len(), 0);
 
         // Nothing should change
-        system.add_token("a").unwrap();
-        assert_eq!(system.token_len(), 1);
+        system.add_symbol("a").unwrap();
+        assert_eq!(system.symbol_len(), 1);
 
-        system.add_token("b").unwrap();
-        assert_eq!(system.token_len(), 2);
+        system.add_symbol("b").unwrap();
+        assert_eq!(system.symbol_len(), 2);
 
-        system.add_token("c").unwrap();
-        assert_eq!(system.token_len(), 3);
+        system.add_symbol("c").unwrap();
+        assert_eq!(system.symbol_len(), 3);
         assert_eq!(system.production_len(), 0);
     }
 
     #[test]
     fn test_counting_productions() {
         let system = System::default();
-        assert_eq!(system.token_len(), 0);
+        assert_eq!(system.symbol_len(), 0);
         assert_eq!(system.production_len(), 0);
 
         system.parse_production("F -> F F").unwrap();
-        assert_eq!(system.token_len(), 1);
+        assert_eq!(system.symbol_len(), 1);
         assert_eq!(system.production_len(), 1);
     }
 

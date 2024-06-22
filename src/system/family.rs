@@ -6,15 +6,15 @@ use crate::error::{Error, ErrorKind};
 use crate::Result;
 
 pub struct Builder {
-    terminals: Vec<TokenDescription>,
-    productions: Vec<TokenDescription>
+    terminals: Vec<SymbolDescription>,
+    productions: Vec<SymbolDescription>
 }
 
 impl Builder {
     /// Register a terminal, with an optional description of what that terminal represents.
     ///
     /// This does *not* create terminals (see, for instance, [`System`](crate::prelude::System)),
-    /// it just defines what tokens are allowed.
+    /// it just defines what symbols are allowed.
     ///
     /// For example:
     /// ```
@@ -24,18 +24,18 @@ impl Builder {
     ///     .with_terminal("hyphen", None);
     /// ```
     pub fn with_terminal<S: AsRef<str>>(mut self, name: S, description: Option<S>) -> Self {
-        let token = TokenDescription {
+        let symbol = SymbolDescription {
             name: name.as_ref().to_string(),
             description: description.map(|s| s.as_ref().to_string())
         };
-        self.terminals.push(token);
+        self.terminals.push(symbol);
         self
     }
 
     /// Register a production, with an optional description of the kind of action that production represents.
     ///
     /// This does *not* create terminals (see, for instance, [`System`](crate::prelude::System)),
-    /// it just defines what tokens are allowed.
+    /// it just defines what symbols are allowed.
     ///
     /// For example:
     /// ```
@@ -45,11 +45,11 @@ impl Builder {
     ///     .with_production("+", None);
     /// ```
     pub fn with_production<S: AsRef<str>>(mut self, name: S, description: Option<S>) -> Self {
-        let token = TokenDescription {
+        let symbols = SymbolDescription {
             name: name.as_ref().to_string(),
             description: description.map(|s| s.as_ref().to_string())
         };
-        self.productions.push(token);
+        self.productions.push(symbols);
         self
     }
 
@@ -93,8 +93,8 @@ impl Builder {
 #[derive(Debug, Clone)]
 pub struct SystemFamily {
     name: String,
-    terminals: HashMap<String, TokenDescription>,
-    productions: HashMap<String, TokenDescription>
+    terminals: HashMap<String, SymbolDescription>,
+    productions: HashMap<String, SymbolDescription>
 }
 
 impl SystemFamily {
@@ -109,17 +109,17 @@ impl SystemFamily {
     }
 
     /// Returns an iterator over all of the terminals registered for this family.
-    pub fn terminals(&self) -> impl Iterator<Item=&TokenDescription> {
+    pub fn terminals(&self) -> impl Iterator<Item=&SymbolDescription> {
         self.terminals.values()
     }
 
     /// Returns an iterator over all of the Productions registered for this family.
-    pub fn productions(&self) -> impl Iterator<Item=&TokenDescription> {
+    pub fn productions(&self) -> impl Iterator<Item=&SymbolDescription> {
         self.productions.values()
     }
 
     /// Returns an iterator over all terminals and productions of this family.
-    pub fn tokens(&self) -> impl Iterator<Item=&TokenDescription> {
+    pub fn symbols(&self) -> impl Iterator<Item=&SymbolDescription> {
         self.terminals().chain(self.productions())
     }
 }
@@ -224,15 +224,15 @@ impl TryIntoFamily for String {
 }
 
 #[derive(Debug, Clone)]
-pub struct TokenDescription {
-    /// The token's name
+pub struct SymbolDescription {
+    /// The symbol's name
     pub name: String,
-    /// What this token represents.
+    /// What this symbol represents.
     pub description: Option<String>
 }
 
-impl FromIterator<TokenDescription> for HashMap<String, TokenDescription> {
-    fn from_iter<T: IntoIterator<Item=TokenDescription>>(iter: T) -> Self {
+impl FromIterator<SymbolDescription> for HashMap<String, SymbolDescription> {
+    fn from_iter<T: IntoIterator<Item=SymbolDescription>>(iter: T) -> Self {
         let mut result = HashMap::new();
 
         for i in iter {

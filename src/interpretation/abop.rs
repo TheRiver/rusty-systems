@@ -7,7 +7,7 @@ use crate::prelude::*;
 use crate::system::family::get_or_init_family;
 use crate::interpretation::Interpretation;
 use crate::interpretation::svg::SvgPathInterpretation;
-use crate::tokens::TokenStore;
+use crate::symbols::SymbolStore;
 
 pub mod parser;
 
@@ -79,16 +79,16 @@ impl Interpretation for AbopTurtleInterpretation {
         System::of_family(family)
     }
 
-    fn interpret<S: TokenStore>(&self,
-                                tokens: &S,
-                                string: &ProductionString) -> crate::Result<Self::Item> {
+    fn interpret<S: SymbolStore>(&self,
+                                 tokens: &S,
+                                 string: &ProductionString) -> crate::Result<Self::Item> {
         // We need token values to interpret the strings.
-        let forward = tokens.get_token("Forward").unwrap();
-        let space = tokens.get_token("Move").unwrap();
-        let right = tokens.get_token("+").unwrap();
-        let left = tokens.get_token("-").unwrap();
-        let push = tokens.get_token("[").unwrap();
-        let pop = tokens.get_token("]").unwrap();
+        let forward = tokens.get_symbol("Forward").unwrap();
+        let space = tokens.get_symbol("Move").unwrap();
+        let right = tokens.get_symbol("+").unwrap();
+        let left = tokens.get_symbol("-").unwrap();
+        let push = tokens.get_symbol("[").unwrap();
+        let pop = tokens.get_symbol("]").unwrap();
 
         // We will interpret the tokens as instructions to a LOGO turtle. The following
         // variables keep track of the position that we're at and the direction we're facing.

@@ -3,7 +3,7 @@ use tiny_skia::*;
 use rusty_systems::geometry::{Point, Vector};
 use rusty_systems::strings::ProductionString;
 use rusty_systems::system::{RunSettings, System};
-use rusty_systems::tokens::TokenStore;
+use rusty_systems::symbols::SymbolStore;
 
 fn main() {
     let plant = System::default();
@@ -11,14 +11,14 @@ fn main() {
     // For a "forward" production, every iteration we just extend it.
     plant.parse_production("Forward -> Forward Forward").expect("Unable to parse production");
 
-    // X is our apex / growth token.
-    // Every iteration of our derivation we replace the X tokens with some forward growth,
-    // as well as branches (represented by our push and pop tokens, [ and ] respectively), with
+    // X is our apex / growth symbol.
+    // Every iteration of our derivation we replace the X symbols with some forward growth,
+    // as well as branches (represented by our push and pop symbols, [ and ] respectively), with
     // forward growth sometimes being modified by fixed size angle changes (+ and -).
     plant.parse_production("X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X")
         .expect("Unable to parse production");
 
-    // We start off with just a single apex token, and iterate for only 6 times.
+    // We start off with just a single apex symbol, and iterate for only 6 times.
     let start = plant.parse_prod_string("X").unwrap();
     let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap();
     
@@ -26,19 +26,19 @@ fn main() {
     pixmap.save_png("target/skia-plant.png").unwrap();
 }
 
-fn interpret<T: TokenStore>(system: &T, string: &ProductionString) -> Pixmap {
+fn interpret<T: SymbolStore>(system: &T, string: &ProductionString) -> Pixmap {
     const WIDTH : u32 = 500;
 
-    // We need token values to interpret the strings.
-    let forward = system.get_token("Forward").unwrap();
-    let right = system.get_token("+").unwrap();
-    let left = system.get_token("-").unwrap();
-    let push = system.get_token("[").unwrap();
-    let pop = system.get_token("]").unwrap();
+    // We need symbol values to interpret the strings.
+    let forward = system.get_symbol("Forward").unwrap();
+    let right = system.get_symbol("+").unwrap();
+    let left = system.get_symbol("-").unwrap();
+    let push = system.get_symbol("[").unwrap();
+    let pop = system.get_symbol("]").unwrap();
 
-    // We will interpret the tokens as instructions to a LOGO turtle. The following
+    // We will interpret the symbols as instructions to a LOGO turtle. The following
     // variables keep track of the position that we're at and the direction we're facing.
-    // the stack is for the push / pop tokens.
+    // the stack is for the push / pop symbols.
     let mut pos_stack : Vec<(Point, Vector)> = Vec::new();
     let mut pos = Point::new(WIDTH as f64 / 2.0, WIDTH as f64);
     let mut dir = Vector::new(0.0, -3.0);
@@ -56,13 +56,13 @@ fn interpret<T: TokenStore>(system: &T, string: &ProductionString) -> Pixmap {
     let mut pb = PathBuilder::new();
     pb.move_to(pos.x() as f32, pos.y() as f32);
 
-    for token in string {
-        if token == forward {                   // interpret forward tokens.
+    for symbol in string {
+        if symbol == forward {                   // interpret forward symbols.
             pos = pos + dir;
             pb.line_to(pos.x() as f32, pos.y() as f32);
-        } else if token == push {               // interpret push tokens. This starts "a branch" of the plant.
+        } else if symbol == push {               // interpret push symbols. This starts "a branch" of the plant.
             pos_stack.push((pos, dir));
-        } else if token == pop {                // interpret pop tokens. This ends "a branch", returning to where the branch started.
+        } else if symbol == pop {                // interpret pop symbols. This ends "a branch", returning to where the branch started.
             (pos, dir) = pos_stack.pop().expect("Nothing to pop");
             if !pb.is_empty() {
                 match pb.finish() {
@@ -72,9 +72,9 @@ fn interpret<T: TokenStore>(system: &T, string: &ProductionString) -> Pixmap {
             }
             pb = PathBuilder::new();
             pb.move_to(pos.x() as f32, pos.y() as f32);
-        } else if token == left {               // Rotate a bit
+        } else if symbol == left {               // Rotate a bit
             dir = dir.rotate(-angle);
-        } else if token == right {              // Rotate in the other direction.
+        } else if symbol == right {              // Rotate in the other direction.
             dir = dir.rotate(angle);
         }
     }

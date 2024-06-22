@@ -8,7 +8,7 @@ use rand::{Rng, thread_rng};
 use crate::{Result};
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::Token;
+use crate::Symbol;
 
 #[derive(Debug, Copy, Clone)]
 pub enum ChanceKind {
@@ -79,15 +79,13 @@ impl Chance {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionHead {
     pre: Option<ProductionString>,
-    target: Token,
+    target: Symbol,
     post: Option<ProductionString>
 }
 
 impl ProductionHead {
     /// Create a new production head.
-    ///
-    /// This will return [`Err`] if the given target token is not a [`crate::tokens::TokenKind::Production`]
-    pub fn build(pre: Option<ProductionString>, target: Token, post: Option<ProductionString>) -> Result<Self> {
+    pub fn build(pre: Option<ProductionString>, target: Symbol, post: Option<ProductionString>) -> Result<Self> {
         Ok(ProductionHead {
             pre,
             target,
@@ -95,9 +93,9 @@ impl ProductionHead {
         })
     }
 
-    /// Returns the token that this production is a target of.
+    /// Returns the symbol that this production is a target of.
     #[inline]
-    pub fn target(&self) -> &Token {
+    pub fn target(&self) -> &Symbol {
         &self.target
     }
 
@@ -116,9 +114,9 @@ impl ProductionHead {
     pub fn matches(&self, string: &ProductionString, index: usize) -> bool {
         self.pre_matches(string, index) &&
         self.post_matches(string, index) &&
-            string.tokens()
+            string.symbols()
                 .get(index)
-                .map(|token| self.target == *token)
+                .map(|symbol| self.target == *symbol)
                 .unwrap_or(false)
     }
 
@@ -133,12 +131,12 @@ impl ProductionHead {
             return left.is_empty();
         }
 
-        let tokens : Vec<_> = string.tokens()[0..index].iter().rev().collect();
-        if tokens.len() < left.len() {
+        let symbols: Vec<_> = string.symbols()[0..index].iter().rev().collect();
+        if symbols.len() < left.len() {
             return false;
         }
 
-        return left.iter().rev().enumerate().all(|(i, t)| t == tokens[i]);
+        return left.iter().rev().enumerate().all(|(i, t)| t == symbols[i]);
     }
 
     pub fn post_matches(&self, string: &ProductionString, index: usize) -> bool {
@@ -152,12 +150,12 @@ impl ProductionHead {
             return right.is_empty();
         }
 
-        let tokens = string.tokens()[index + 1 ..].to_vec();
-        if tokens.len() < right.len() {
+        let symbols = string.symbols()[index + 1 ..].to_vec();
+        if symbols.len() < right.len() {
             return false;
         }
 
-        return right.iter().enumerate().all(|(i, t)| *t == tokens[i]);
+        return right.iter().enumerate().all(|(i, t)| *t == symbols[i]);
     }
 
 }
@@ -225,10 +223,10 @@ impl ProductionBody {
 ///
 /// These are rules
 /// that may be represented in the form `A -> B`, where
-/// A (called here the [`ProductionHead`]) is the token
-/// that will be matched again, and the tokens after
+/// A (called here the [`ProductionHead`]) is the symbol
+/// that will be matched again, and the symbols after
 /// the arrow (in this case the `B`, called here the [`ProductionBody`] is what
-/// the tokens matching the head in the input string / axiom will be replaced with.
+/// the symbols matching the head in the input string / axiom will be replaced with.
 ///
 /// See:
 /// * [`Production::head`]
@@ -253,7 +251,6 @@ impl Production {
         &self.head
     }
 
-    #[inline]
     pub fn body(&self) -> Result<&ProductionBody> {
         if self.body.is_empty() {
             return Err(Error::execution("Production has no bodies set"))

@@ -190,7 +190,7 @@ X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
         assert_eq!(system.production_len(), 2);
 
         // The test data does not add any more tokens to the system than the family does.
-        assert_eq!(system.token_len(), AbopTurtleInterpretation::system().unwrap().token_len());
+        assert_eq!(system.symbol_len(), AbopTurtleInterpretation::system().unwrap().symbol_len());
 
     }
 }

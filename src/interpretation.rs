@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use crate::prelude::{ProductionString, RunSettings, System};
-use crate::tokens::TokenStore;
+use crate::symbols::SymbolStore;
 
 pub mod abop;
 pub mod svg;
@@ -8,7 +8,7 @@ pub mod svg;
 pub trait Interpretation: Debug + Sync + Send + Default {
     type Item;
 
-    /// Returns a default system that can handle tokens that this Interpretation
+    /// Returns a default system that can handle symbols that this Interpretation
     /// understands.
     ///
     /// Note that an interpretation can [`Interpretation::interpret`] other
@@ -16,15 +16,15 @@ pub trait Interpretation: Debug + Sync + Send + Default {
     /// FUNCTION.
     fn system() -> crate::Result<System>;
 
-    fn interpret<S: TokenStore>(&self,
-                                tokens: &S,
-                                string: &ProductionString) -> crate::Result<Self::Item>;
+    fn interpret<S: SymbolStore>(&self,
+                                 symbols: &S,
+                                 string: &ProductionString) -> crate::Result<Self::Item>;
 
 
-    fn default_interpret<S: TokenStore>(tokens: &S,
-                                        string: &ProductionString) -> crate::Result<Self::Item> {
+    fn default_interpret<S: SymbolStore>(symbols: &S,
+                                         string: &ProductionString) -> crate::Result<Self::Item> {
         let instance = Self::default();
-        instance.interpret(tokens, string)
+        instance.interpret(symbols, string)
     }
 
     /// Returns default run settings for this interpretation.
@@ -53,7 +53,7 @@ impl Interpretation for NullInterpretation {
     }
 
     #[inline]
-    fn interpret<S: TokenStore>(&self, _: &S, _: &ProductionString) -> crate::Result<Self::Item> {
+    fn interpret<S: SymbolStore>(&self, _: &S, _: &ProductionString) -> crate::Result<Self::Item> {
         Ok(())
     }
 }
