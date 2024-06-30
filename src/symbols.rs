@@ -151,58 +151,53 @@ impl Display for Symbol {
     }
 }
 
-/// Allows for easily accepting an argument that can be converted 
-/// to a symbol.
-/// 
-/// Some types that implement this trait:
-/// * `str`
-/// * [`String`]
-/// * [`Symbol`] itself
-pub trait AsSymbol {
-    /// Convert this type to a [`Symbol`]
-    fn as_symbol(&self) -> Result<Symbol, Error>;
-}
+impl TryFrom<u32> for Symbol {
+    type Error = Error;
 
-impl AsSymbol for &str {
-    fn as_symbol(&self) -> Result<Symbol, Error> {
-        let code = get_code(self)?;
-        Ok(Symbol::from_code(code))
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        if get_name(value).is_none() {
+            return Err(Error::general(format!("Unable to find symbol for code {value}")));
+        }
+
+        Ok(Symbol::from_code(value))
     }
 }
 
-impl AsSymbol for String {
-    fn as_symbol(&self) -> Result<Symbol, Error> {
-        let code = get_code(self)?;
-        Ok(Symbol::from_code(code))
-    }
-}
+impl TryFrom<&str> for Symbol {
+    type Error = Error;
 
-impl AsSymbol for Symbol {
     #[inline]
-    fn as_symbol(&self) -> Result<Symbol, Error> {
-        Ok(*self)
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Symbol::build(value)
     }
 }
 
-impl AsSymbol for u32 {
+impl TryFrom<String> for Symbol {
+    type Error = Error;
+
     #[inline]
-    fn as_symbol(&self) -> Result<Symbol, Error> {
-        get_name(*self)
-            .ok_or(Error::general(format!("The supplied code [{self}] is not a known symbol")))?;
-        Ok(Symbol::from_code(*self))
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Symbol::build(value)
     }
 }
+
 
 
 // todo document symbol store.
 pub trait SymbolStore {
-    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> crate::Result<Symbol>;
+    fn add_symbol<S>(&self, symbol: S) -> crate::Result<Symbol>
+        where S: TryInto<Symbol>,
+              S::Error: Into<Error>;
     fn get_symbol(&self, name: &str) -> Option<Symbol>;
 }
 
 impl SymbolStore for RefCell<HashSet<u32>> {
-    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> crate::Result<Symbol> {
-        let symbol = symbol.as_symbol()?;
+    fn add_symbol<S>(&self, symbol: S) -> crate::Result<Symbol>
+    where
+        S: TryInto<Symbol>,
+        S::Error: Into<Error>,
+    {
+        let symbol = symbol.try_into().map_err(Into::into)?;
 
         let mut map = self.borrow_mut();
         map.insert(symbol.code);

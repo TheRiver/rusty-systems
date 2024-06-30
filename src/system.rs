@@ -60,7 +60,7 @@ use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
-use crate::symbols::{AsSymbol, get_code, SymbolStore};
+use crate::symbols::{get_code, SymbolStore};
 use crate::symbols::iterator::SymbolIterable;
 use super::{Result};
 
@@ -151,8 +151,12 @@ impl System {
 }
 
 impl SymbolStore for System {
-    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> Result<Symbol> {
-        let symbol= symbol.as_symbol()?;
+    fn add_symbol<S>(&self, symbol: S) -> Result<Symbol>
+    where
+        S: TryInto<Symbol>,
+        S::Error: Into<Error>,
+    {
+        let symbol= symbol.try_into().map_err(Into::into)?;
 
         let mut map = self.symbols.write()?;
         map.insert(symbol.code());
