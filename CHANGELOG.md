@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `symbols::get_code` and related functions that return a symbol code 
   for a string, or the string / name associated with a code.
 * `Symbol::name` returns the name of a symbol. 
+* Added trait `SymbolIterable` for collections of `Symbol` instances
 
 ### Changed
 
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * The `parser` module is now a top level module
 
 ### Removed
-
+a
 * DisplaySystem trait has been removed
  
 

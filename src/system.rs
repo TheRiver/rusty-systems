@@ -59,7 +59,7 @@ use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
 use crate::symbols::{get_code, SymbolStore};
-
+use crate::symbols::iterator::SymbolIterable;
 use super::{parser, Result, symbols};
 
 pub mod family;
@@ -115,8 +115,15 @@ impl System {
     ///
     /// * Empty bodies are allowed. This is how to write productions that lead
     ///   to the empty string.
+    /// todo fix this function.
     pub fn parse_production(&self, production: &str) -> Result<Production> {
-        parser::parse_production(self, self, production)
+        let prod = parser::parse_production(production)?;
+        
+        let mut map = self.symbols.write()?;
+        prod.all_symbols_iter().for_each(|s| {
+            map.insert(s.code());
+        });
+        self.add_production(prod)
     }
     
 

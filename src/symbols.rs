@@ -17,6 +17,8 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use crate::error::Error;
 use crate::symbols;
 
+pub mod iterator;
+
 type CodeStoreType = RwLock<HashMap<String, u32>>;
 type NameStoreType = RwLock<HashMap<u32, String>>;
 
@@ -108,7 +110,7 @@ impl Hash for Symbol {
 }
 
 impl Symbol {
-    /// Creates a new symbol from the given code. 
+    /// Creates a new symbol from the given code.
     #[inline]
     pub fn from_code(code: u32) -> Self {
         Symbol {
@@ -117,9 +119,9 @@ impl Symbol {
     }
 
     /// Attempts to create a Symbol from the given string.
-    /// 
-    /// This uses [`get_code`] to determine the Symbol's code. This 
-    /// function returns the same errors. 
+    ///
+    /// This uses [`get_code`] to determine the Symbol's code. This
+    /// function returns the same errors.
     pub fn build<S: AsRef<str>>(name: S) -> Result<Symbol, Error>{
         let name = name.as_ref();
         Ok(Self::from_code(get_code(name)?))
@@ -175,6 +177,7 @@ impl SymbolStore for RefCell<HashSet<u32>> {
             .map(Symbol::from_code)
     }
 }
+
 
 #[cfg(test)]
 mod tests {

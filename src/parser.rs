@@ -6,17 +6,14 @@
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
-use crate::symbols::{SymbolStore};
+use crate::productions::{Production, ProductionBody, ProductionHead};
 use crate::Result;
 
 /// Parse the body of a production rule.
 ///
 /// For example, in the string `A -> B C`, the `B C` after the arrow
 /// is the rule's body.
-pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
-    where S: SymbolStore
-{
+pub fn parse_production_body(body: &str) -> Result<ProductionBody> {
     let body = body.trim();
     if body.is_empty() {
         return Ok(ProductionBody::empty());
@@ -35,7 +32,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
             }
         }
 
-        body_tokens.push(store.add_symbol(term)?);
+        body_tokens.push(Symbol::build(term)?);
     }
 
     match chance {
@@ -45,9 +42,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
 }
 
 /// Parse the head of a production rule.
-pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
-    where S: SymbolStore
-{
+pub fn parse_production_head(head: &str) -> Result<ProductionHead> {
     let head = head.trim();
 
     if head.is_empty() {
@@ -81,16 +76,16 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     }
 
     let center = remains[0];
-    let head_token = store.add_symbol(center)?;
+    let head_token = Symbol::build(center)?;
 
-    let left = parse_head_context(store, left);
+    let left = parse_head_context(left);
     if let Some(Err(e)) = left {
         return Err(e);
     }
 
     let left = left.map(|d| d.unwrap());
 
-    let right = parse_head_context(store, right);
+    let right = parse_head_context(right);
     if let Some(Err(e)) = right {
         return Err(e);
     }
@@ -103,9 +98,9 @@ pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
         right)
 }
 
-fn parse_head_context<S: SymbolStore>(store: &S, strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
+fn parse_head_context(strings: Option<&[&str]>) -> Option<Result<ProductionString>> {
     strings.map(|strings| {
-        let iter = strings.iter().map(|s| store.add_symbol(*s));
+        let iter = strings.iter().map(|s| Symbol::build(*s));
         let error = iter.clone().find(|t| t.is_err());
 
         if let Some(Err(e)) = error {
@@ -118,59 +113,55 @@ fn parse_head_context<S: SymbolStore>(store: &S, strings: Option<&[&str]>) -> Op
     })
 }
 
-/// Parse a production string.
-///
-/// Most of the time you likely want to do this using [`System::parse_production`],
-/// which is also thread safe. If you want to use this (note that this is not thread safe),
-/// you can do so using your own implementations of:
-///
-/// * [`ProductionStore`], which stores productions.
-/// * [`SymbolStore`], which stores and generates unique tokens.
-///
-/// Default implementations exist for
-///
-/// * [`std::cell::RefCell<Vec<Production>>`] implements [`ProductionStore`].
-/// * [`std::cell::RefCell<std::collections::HashMap<String, prelude::Token>>`] implements [`SymbolStore`].
-///
-/// These are easy to use by just wrapping your collections in RefCell. Please note that doing this
-/// is not thread safe:
-///
-/// ```
-/// use std::cell::RefCell;
-/// use std::collections::{HashMap, HashSet};
-/// use std::sync::Arc;
-/// use rusty_systems::productions::Production;
-/// use rusty_systems::parser::parse_production;
-/// use rusty_systems::symbols::Symbol;
-///
-/// // Create your token and production collections at some point
-/// // in your code.
-/// let tokens : HashSet<u32> = HashSet::new();
-/// let productions : Vec<Production> = Vec::new();
-///
-/// // ... Do a lot of other stuff. Call functions. Have fun!
-///
-/// // Borrow your collections.
-/// let token_cell = RefCell::new(tokens);
-/// let production_cell = RefCell::new(productions);
-///
-/// // Now we can parse a production. Note that because of the underlying
-/// // stores, this is not thread safe.
-/// let result = parse_production(&token_cell, &production_cell, "Name -> first surname");
-/// // Check for errors, etc: result.is_err(), and so on.
-///
-/// // Get your collections back from the cells.
-/// // You can now look at the added tokens and productions in these collections.
-/// let tokens = token_cell.take();
-/// let productions = production_cell.take();
-///
-/// ```
-pub fn parse_production<T, P>(token_store: &T,
-                              prod_store: &P,
-                              production: &str) -> Result<Production>
-    where   T: SymbolStore,
-            P: ProductionStore
-{
+
+// Parse a production string.
+//
+// Most of the time you likely want to do this using [`System::parse_production`],
+// which is also thread safe. If you want to use this (note that this is not thread safe),
+// you can do so using your own implementations of:
+//
+// * [`ProductionStore`], which stores productions.
+// * [`SymbolStore`], which stores and generates unique tokens.
+//
+// Default implementations exist for
+//
+// * [`std::cell::RefCell<Vec<Production>>`] implements [`ProductionStore`].
+// * [`std::cell::RefCell<std::collections::HashMap<String, prelude::Token>>`] implements [`SymbolStore`].
+//
+// These are easy to use by just wrapping your collections in RefCell. Please note that doing this
+// is not thread safe:
+//
+// ```
+// use std::cell::RefCell;
+// use std::collections::{HashMap, HashSet};
+// use std::sync::Arc;
+// use rusty_systems::productions::Production;
+// use rusty_systems::parser::parse_production;
+// use rusty_systems::symbols::Symbol;
+//
+// // Create your token and production collections at some point
+// // in your code.
+// let tokens : HashSet<u32> = HashSet::new();
+// let productions : Vec<Production> = Vec::new();
+//
+// // ... Do a lot of other stuff. Call functions. Have fun!
+//
+// // Borrow your collections.
+// let token_cell = RefCell::new(tokens);
+// let production_cell = RefCell::new(productions);
+//
+// // Now we can parse a production. Note that because of the underlying
+// // stores, this is not thread safe.
+// let result = parse_production(&token_cell, &production_cell, "Name -> first surname");
+// // Check for errors, etc: result.is_err(), and so on.
+//
+// // Get your collections back from the cells.
+// // You can now look at the added tokens and productions in these collections.
+// let tokens = token_cell.take();
+// let productions = production_cell.take();
+//
+// ```
+pub fn parse_production(production: &str) -> Result<Production> {
     let production = production.trim();
     if production.is_empty() {
         return Err(Error::new(ErrorKind::Parse,
@@ -185,11 +176,12 @@ pub fn parse_production<T, P>(token_store: &T,
     let head_str = &production[0..index];
     let body_str = &production[index + 2..];
 
-    let head = parse_production_head(token_store, head_str)?;
-    let body = parse_production_body(token_store, body_str)?;
+    let head = parse_production_head(head_str)?;
+    let body = parse_production_body(body_str)?;
 
-    prod_store.add_production(Production::new(head, body))
+    Ok(Production::new(head, body))
 }
+
 
 
 /// Allows you to parse a text string into a string of [`Symbol`] objects
@@ -213,21 +205,18 @@ pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
 #[cfg(test)]
 mod test {
     use crate::parser::{parse_production_body, parse_production_head};
-    use crate::system::System;
-    use crate::symbols::{SymbolStore};
+    use crate::symbols::{get_code};
 
     #[test]
     fn can_parse_empty_body() {
-        let mut store = System::default();
-        let body = parse_production_body(&mut store, "");
+        let body = parse_production_body("");
 
         assert!(body.unwrap().is_empty());
     }
 
     #[test]
     fn can_parse_body_without_chance() {
-        let mut store = System::default();
-        let body = parse_production_body(&mut store, "A B").unwrap();
+        let body = parse_production_body("A B").unwrap();
 
         assert_eq!(body.len(), 2);
         assert!(body.chance().is_derived());
@@ -235,8 +224,7 @@ mod test {
 
     #[test]
     fn can_parse_body_with_chance() {
-        let mut store = System::default();
-        let body = parse_production_body(&mut store, "0.3 A B").unwrap();
+        let body = parse_production_body("0.3 A B").unwrap();
 
         assert_eq!(body.len(), 2);
         assert!(body.chance().is_user_set());
@@ -245,20 +233,19 @@ mod test {
 
     #[test]
     fn parsing_production_head() {
-        let store = System::default();
-        let head = parse_production_head(&store, "A").unwrap();
-        assert_eq!(store.get_symbol("A").unwrap().code(), head.target().code());
+        let head = parse_production_head("A").unwrap();
+        assert_eq!(get_code("A").unwrap(), head.target().code());
 
-        let head = parse_production_head(&store, "Pre < A > Post").unwrap();
-        assert_eq!(store.get_symbol("A").unwrap().code(), head.target().code());
+        let head = parse_production_head("Pre < A > Post").unwrap();
+        assert_eq!(get_code("A").unwrap(), head.target().code());
 
         let left = head.pre_context().unwrap();
         assert_eq!(left.len(), 1);
-        assert_eq!(store.get_symbol("Pre").unwrap().code(), left[0].code());
+        assert_eq!(get_code("Pre").unwrap(), left[0].code());
 
         let right = head.post_context().unwrap();
         assert_eq!(right.len(), 1);
-        assert_eq!(store.get_symbol("Post").unwrap().code(), right[0].code());
+        assert_eq!(get_code("Post").unwrap(), right[0].code());
     }
 }
 

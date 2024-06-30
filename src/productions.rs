@@ -160,6 +160,7 @@ impl ProductionHead {
 
 }
 
+
 #[derive(Debug, Clone)]
 pub struct ProductionBody {
     string: ProductionString,
@@ -308,6 +309,11 @@ impl Production {
     /// Adds all of the body elements from `other` into `self`.
     pub fn merge(&mut self, other: Self) {
         other.body.into_iter().for_each(|b| self.add_body(b));
+    }
+    
+    /// Returns a reference to all of the bodies that this production contains
+    pub fn all_bodies(&self) -> &Vec<ProductionBody> {
+        &self.body
     }
 }
 
