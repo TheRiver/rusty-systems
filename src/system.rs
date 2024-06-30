@@ -112,10 +112,16 @@ impl System {
     }
 
     /// Parse a string as a production and add it to the system.
-    ///
-    /// * Empty bodies are allowed. This is how to write productions that lead
-    ///   to the empty string.
-    /// todo fix this function.
+    /// 
+    /// This is essentially equivalent to:
+    /// ```
+    /// # use rusty_systems::system::System;
+    /// # use rusty_systems::productions::ProductionStore;
+    /// # let system = System::default();
+    /// use rusty_systems::parser::parse_production;
+    /// let production = parse_production("A -> B C").unwrap();
+    /// system.add_production(production).unwrap();
+    /// ```
     pub fn parse_production(&self, production: &str) -> Result<Production> {
         let prod = parser::parse_production(production)?;
         
@@ -188,6 +194,12 @@ impl SymbolStore for System {
 }
 
 impl ProductionStore for System {
+    /// Adds a production to [`System`]
+    /// 
+    /// This is a thread safe operation. It registers the production and all of its
+    /// symbols with the [`System`] instance.
+    /// 
+    /// The only error this returns is a poison error.
     fn add_production(&self, production: Production) -> Result<Production> {
         let lock = self.productions.write();
         if let Ok(mut productions) = lock {

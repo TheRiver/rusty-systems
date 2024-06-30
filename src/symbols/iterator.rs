@@ -65,7 +65,7 @@ impl SymbolIterable for Production {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::parser::parse_prod_string;
+    use crate::parser::{parse_prod_string, parse_production};
 
     #[test]
     fn can_iterate_over_string() {
@@ -81,6 +81,28 @@ mod test {
 
         let b : Vec<_> = string.all_symbols();
         assert_eq!(b.len(), 5);
+    }
+
+
+    #[test]
+    fn can_iterate_over_production() {
+        let production = parse_production("Pre < Target > Post -> A B C C").unwrap();
+
+        let mut iter = production.all_symbols_iter();
+
+        assert_eq!(iter.next().unwrap().code, get_code("Pre").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("Target").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("Post").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("A").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("B").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("C").unwrap());
+        assert_eq!(iter.next().unwrap().code, get_code("C").unwrap());
+
+        let b : Vec<_> = production.all_symbols();
+        assert_eq!(b.len(), 7);
+
+        let b : HashSet<_> = production.all_symbols();
+        assert_eq!(b.len(), 6);
     }
 
 }
