@@ -347,6 +347,7 @@ impl ProductionStore for RefCell<Vec<Production>> {
 
 #[cfg(test)]
 mod tests {
+    use crate::system::parser::parse_prod_string;
     use super::*;
 
     #[test]
@@ -354,19 +355,19 @@ mod tests {
         let system = System::default();
         let production = system.parse_production("X -> F F").unwrap();
 
-        let string = system.parse_prod_string("X").unwrap();
+        let string = parse_prod_string("X").unwrap();
         assert!(production.matches(&string, 0));
 
         let production = system.parse_production("X < X -> F F").unwrap();
         assert!(!production.matches(&string, 0));
 
-        let string = system.parse_prod_string("X X").unwrap();
+        let string = parse_prod_string("X X").unwrap();
         assert!(!production.matches(&string, 0));
         assert!( production.matches(&string, 1));
 
 
         let production = system.parse_production("a b < X -> F F").unwrap();
-        let string = system.parse_prod_string("a b X").unwrap();
+        let string = parse_prod_string("a b X").unwrap();
         assert!(!production.matches(&string, 0));
         assert!(!production.matches(&string, 1));
         assert!( production.matches(&string, 2));
@@ -376,20 +377,20 @@ mod tests {
         let production = system.parse_production("X > X -> F F").unwrap();
         assert!(!production.matches(&string, 0));
 
-        let string = system.parse_prod_string("X X").unwrap();
+        let string = parse_prod_string("X X").unwrap();
         assert!( production.matches(&string, 0));
         assert!(!production.matches(&string, 1));
 
 
         let production = system.parse_production("X > a b -> F F").unwrap();
-        let string = system.parse_prod_string("a X a b").unwrap();
+        let string = parse_prod_string("a X a b").unwrap();
         assert!(!production.matches(&string, 0));
         assert!( production.matches(&string, 1));
         assert!(!production.matches(&string, 2));
         assert!(!production.matches(&string, 3));
 
         let system = System::default();
-        let string = system.parse_prod_string("G S S S X").unwrap();
+        let string = parse_prod_string("G S S S X").unwrap();
         // system.parse_production("G > S -> ").unwrap();
         let production = system.parse_production("G < S -> S G").unwrap();
 

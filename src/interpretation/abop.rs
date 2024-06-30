@@ -155,13 +155,14 @@ impl Interpretation for AbopTurtleInterpretation {
 mod tests {
     use super::*;
     use crate::interpretation::Interpretation;
+    use crate::system::parser::parse_prod_string;
 
     #[test]
     fn geometry_interpretation() {
         let system = AbopTurtleInterpretation::system().unwrap();
         system.parse_production("Forward -> Forward Forward").unwrap();
 
-        let string = system.parse_prod_string("Forward").unwrap();
+        let string = parse_prod_string("Forward").unwrap();
         let string = system.derive_once(string).unwrap();
         assert_eq!(string.len(), 2);
 

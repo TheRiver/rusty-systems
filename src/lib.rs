@@ -20,11 +20,12 @@
 //!
 //! ```
 //! use rusty_systems::prelude::*;
+//! use rusty_systems::system::parser;
 //!
 //! let system = System::new();
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();
 //!
-//! let starting_axiom = system.parse_prod_string("CompanyName").unwrap();
+//! let starting_axiom = parser::parse_prod_string("CompanyName").unwrap();
 //! let result = system.derive(starting_axiom, RunSettings::default()).unwrap();
 //!
 //! println!("The resulting string is:\n{result}");

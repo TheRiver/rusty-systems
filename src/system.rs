@@ -22,9 +22,10 @@
 //!
 //! ```
 //! # use rusty_systems::system::System;
+//! # use rusty_systems::system::parser;
 //! # let system = System::default();
 //! let production = system.parse_production("G < S -> S G").unwrap();
-//! let string = system.parse_prod_string("S G S").unwrap();
+//! let string = parser::parse_prod_string("S G S").unwrap();
 //! assert!(!production.matches(&string, 0));       // Does not match the first S
 //! assert!( production.matches(&string, 2));       // Matches the last S
 //! ``` 
@@ -146,18 +147,6 @@ impl System {
         Err(Error::general("Poisoned lock on production list"))
     }
 
-    pub fn parse_prod_string(&self, string: &str) -> Result<ProductionString> {
-        let mut result = ProductionString::default();
-
-        let items = string.trim().split_ascii_whitespace();
-
-        for term in items {
-            result.push_symbol(self.add_symbol(term)?);
-        }
-
-        Ok(result)
-    }
-    
     /// Returns the number of production rules in the system.
     pub fn production_len(&self) -> usize {
         self.productions.read().unwrap().len()
@@ -176,7 +165,7 @@ impl SymbolStore for System {
         let mut map = self.symbols.write()?;
         map.insert(code);
         
-        Ok(Symbol::new(code))
+        Ok(Symbol::from_code(code))
     }
     
     /// Return the symbol that represents the given term, if it exists.
@@ -188,7 +177,7 @@ impl SymbolStore for System {
         
         symbols.get(&code)
             .cloned()
-            .map(Symbol::new)
+            .map(Symbol::from_code)
     }
 }
 
@@ -318,7 +307,7 @@ pub fn derive(string: ProductionString, productions: &[Production], settings: Ru
 #[cfg(test)]
 mod tests {
     use std::thread;
-
+    use crate::system::parser::parse_prod_string;
     use super::*;
 
     #[test]
@@ -390,7 +379,7 @@ mod tests {
     fn can_derive_once() {
         let system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
-        let string = system.parse_prod_string("Company").expect("Unable to create string");
+        let string = parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive_once(string).unwrap();
 
         assert_eq!(result. len(), 2);
@@ -400,7 +389,7 @@ mod tests {
     fn can_derive_multiple_times() {
         let system = System::new();
         system.parse_production("Company -> surname Company").expect("Unable to add production");
-        let string = system.parse_prod_string("Company").expect("Unable to create string");
+        let string = parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
 
         assert_eq!(result.len(), 3);
@@ -413,7 +402,7 @@ mod tests {
         let symbol = system.add_symbol("a").unwrap();
         assert_eq!(symbol.to_string(), "a");
 
-        let string = system.parse_prod_string("a b c").unwrap();
+        let string = parse_prod_string("a b c").unwrap();
         assert_eq!(string.to_string(), "a b c");
     }
     
@@ -453,18 +442,18 @@ mod tests {
     #[test]
     fn testing_context_sensitive() {
         let system = System::default();
-        let string = system.parse_prod_string("G S S S X").unwrap();
+        let string = parse_prod_string("G S S S X").unwrap();
         system.parse_production("G > S -> ").unwrap();
         system.parse_production("G < S -> S G").unwrap();
         let string = system.derive_once(string).unwrap();
 
-        assert_eq!(string, system.parse_prod_string("S G S S X").unwrap());
+        assert_eq!(string, parse_prod_string("S G S S X").unwrap());
 
         let string = system.derive_once(string).unwrap();
-        assert_eq!(string, system.parse_prod_string("S S G S X").unwrap());
+        assert_eq!(string, parse_prod_string("S S G S X").unwrap());
 
         let string = system.derive_once(string).unwrap();
-        assert_eq!(string, system.parse_prod_string("S S S G X").unwrap());
+        assert_eq!(string, parse_prod_string("S S S G X").unwrap());
     }
 
 }

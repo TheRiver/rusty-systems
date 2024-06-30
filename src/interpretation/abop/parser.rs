@@ -36,6 +36,7 @@
 
 use crate::error::ErrorKind;
 use crate::interpretation::abop::*;
+use crate::system::parser::parse_prod_string;
 
 /// A tuple containing information parsed from a string or file containing an L-System
 /// specified in this library's "plant" format.
@@ -113,7 +114,7 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
         return Err(Error::new(ErrorKind::Parse, "No initial axiom has been supplied"));
     }
 
-    let initial = system.parse_prod_string(initial.unwrap())?;
+    let initial = parse_prod_string(initial.unwrap())?;
 
     let interpretation = AbopTurtleInterpretation::new(n, delta);
     Ok((interpretation, system, initial))

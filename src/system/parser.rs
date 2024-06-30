@@ -190,6 +190,19 @@ pub fn parse_production<T, P>(token_store: &T,
     prod_store.add_production(Production::new(head, body))
 }
 
+pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
+    let mut result = ProductionString::default();
+
+    let items = string.trim().split_ascii_whitespace();
+
+    
+    for term in items {
+        result.push_symbol(Symbol::build(term)?);
+    }
+
+    Ok(result)
+}
+
 
 
 

@@ -4,6 +4,7 @@ use rusty_systems::geometry::{Point, Vector};
 use rusty_systems::strings::ProductionString;
 use rusty_systems::system::{RunSettings, System};
 use rusty_systems::symbols::SymbolStore;
+use rusty_systems::system::parser::parse_prod_string;
 
 fn main() {
     let plant = System::default();
@@ -19,7 +20,7 @@ fn main() {
         .expect("Unable to parse production");
 
     // We start off with just a single apex symbol, and iterate for only 6 times.
-    let start = plant.parse_prod_string("X").unwrap();
+    let start = parse_prod_string("X").unwrap();
     let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap();
     
     let pixmap = interpret(&plant, &result);

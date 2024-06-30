@@ -1,5 +1,9 @@
-//! The string of [`Symbol`] instances which are rewritten using [`crate::productions::Production`]
+//! Provides tools for handling strings of  [`Symbol`] objects which are rewritten using [`crate::productions::Production`]
 //! rules of a [`System`].
+//! 
+//! The main struct is [`ProductionString`]. These can be parsed from a text string using
+//! [`parser::parse_prod_string`](crate::system::parser::parse_prod_string). See [`ProductionString`]
+//! for more details.
 
 use std::fmt::{Display, Formatter, Write};
 use std::iter::Cloned;
@@ -8,7 +12,16 @@ use std::slice::Iter;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
-/// are made up of a list of [`Symbol`] objects. 
+/// are made up of a list of [`Symbol`] objects.
+///
+/// If you would like to parse an instance of this struct
+/// from a string, you can use
+/// [`parser::parse_prod_string`](crate::system::parser::parse_prod_string), like so:
+///
+/// ```
+/// use rusty_systems::system::parser;
+/// let axiom = parser::parse_prod_string("Forward Forward Forward").unwrap();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProductionString {
     symbols: Vec<Symbol>
