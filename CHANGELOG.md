@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Simplified how tokens are stored in a system. Only the code is now stored.
 * The TokenStore implementation for HashMap has been changed to HashSet, and no longer needs arcs.
 * The `Token` struct has been renamed `Symbol`.
+* `parse_prod_string` moved to the parser namespace. 
 
 ### Removed
 
