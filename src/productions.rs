@@ -379,6 +379,7 @@ impl ProductionStore for RefCell<Vec<Production>> {
 #[cfg(test)]
 mod tests {
     use crate::parser::parse_prod_string;
+
     use super::*;
 
     #[test]
