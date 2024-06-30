@@ -23,7 +23,7 @@
 //! use rusty_systems::parser;
 //!
 //! let system = System::new();
-//! system.parse_production("CompanyName -> Surname Surname").unwrap();
+//! system.add_production("CompanyName -> Surname Surname").unwrap();
 //!
 //! let starting_axiom = parser::parse_prod_string("CompanyName").unwrap();
 //! let result = system.derive(starting_axiom, RunSettings::default()).unwrap();
@@ -121,6 +121,7 @@ pub mod prelude {
     pub use super::system::RunSettings;
     pub use super::system::family::SystemFamily;
     pub use crate::interpretation::Interpretation;
+    pub use crate::productions::ProductionStore;
 }
 
 use prelude::*;

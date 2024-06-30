@@ -37,6 +37,7 @@
 use crate::error::ErrorKind;
 use crate::interpretation::abop::*;
 use crate::parser::parse_prod_string;
+use crate::productions::ProductionStore;
 
 /// A tuple containing information parsed from a string or file containing an L-System
 /// specified in this library's "plant" format.
@@ -103,7 +104,7 @@ pub fn parse(string: &str) -> crate::Result<ParsedAbop> {
         }
 
         prod_count += 1;
-        system.parse_production(line)?;
+        system.add_production(line)?;
     }
 
     if prod_count == 0 {

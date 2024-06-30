@@ -14,7 +14,8 @@
 //! ```
 //! # use rusty_systems::system::System;
 //! # let system = System::default();
-//! let production = system.parse_production("X -> ").unwrap();
+//! use rusty_systems::productions::ProductionStore;
+//! let production = system.add_production("X -> ").unwrap();
 //! ```
 //! 
 //! Context sensitive productions.
@@ -22,9 +23,10 @@
 //!
 //! ```
 //! # use rusty_systems::system::System;
+//! # use rusty_systems::productions::ProductionStore;
 //! # use rusty_systems::parser;
 //! # let system = System::default();
-//! let production = system.parse_production("G < S -> S G").unwrap();
+//! let production = system.add_production("G < S -> S G").unwrap();
 //! let string = parser::parse_prod_string("S G S").unwrap();
 //! assert!(!production.matches(&string, 0));       // Does not match the first S
 //! assert!( production.matches(&string, 2));       // Matches the last S
@@ -58,9 +60,9 @@ use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
-use crate::symbols::{get_code, SymbolStore};
+use crate::symbols::{AsSymbol, get_code, SymbolStore};
 use crate::symbols::iterator::SymbolIterable;
-use super::{parser, Result, symbols};
+use super::{Result};
 
 pub mod family;
 
@@ -111,28 +113,6 @@ impl System {
         Ok(system)
     }
 
-    /// Parse a string as a production and add it to the system.
-    /// 
-    /// This is essentially equivalent to:
-    /// ```
-    /// # use rusty_systems::system::System;
-    /// # use rusty_systems::productions::ProductionStore;
-    /// # let system = System::default();
-    /// use rusty_systems::parser::parse_production;
-    /// let production = parse_production("A -> B C").unwrap();
-    /// system.add_production(production).unwrap();
-    /// ```
-    pub fn parse_production(&self, production: &str) -> Result<Production> {
-        let prod = parser::parse_production(production)?;
-        
-        let mut map = self.symbols.write()?;
-        prod.all_symbols_iter().for_each(|s| {
-            map.insert(s.code());
-        });
-        self.add_production(prod)
-    }
-    
-
     /// Run a single iteration of the productions on the given string.
     /// Returns [`None`] if an empty string is produced.
     pub fn derive_once(&self, string: ProductionString) -> Result<ProductionString> {
@@ -171,13 +151,13 @@ impl System {
 }
 
 impl SymbolStore for System {
-    fn add_symbol(&self, name: &str) -> Result<Symbol> {
-        let code = symbols::get_code(name)?;
-        
+    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> Result<Symbol> {
+        let symbol= symbol.as_symbol()?;
+
         let mut map = self.symbols.write()?;
-        map.insert(code);
+        map.insert(symbol.code());
         
-        Ok(Symbol::from_code(code))
+        Ok(symbol)
     }
     
     /// Return the symbol that represents the given term, if it exists.
@@ -195,15 +175,26 @@ impl SymbolStore for System {
 
 impl ProductionStore for System {
     /// Adds a production to [`System`]
-    /// 
+    ///
     /// This is a thread safe operation. It registers the production and all of its
     /// symbols with the [`System`] instance.
-    /// 
+    ///
     /// The only error this returns is a poison error.
-    fn add_production(&self, production: Production) -> Result<Production> {
+    fn add_production<P>(&self, production: P) -> Result<Production>
+    where
+        P: TryInto<Production>,
+        P::Error: Into<Error>
+    {
+        let production = production.try_into().map_err(Into::into)?;
         let lock = self.productions.write();
         if let Ok(mut productions) = lock {
             let head = production.head().clone();
+
+            //region Register symbols with the system
+            for symbol in production.all_symbols_iter() {
+                self.add_symbol(symbol)?;
+            }
+            //endregion 
 
             match productions.iter_mut().find(|p| (*p.head()).eq(&head)) {
                 None => productions.push(production),
@@ -331,25 +322,25 @@ mod tests {
     #[test]
     fn handles_empty_production() {
         let system = System::new();
-        assert!(system.parse_production("").is_err());
+        assert!(system.add_production("").is_err());
     }
 
     #[test]
     fn handles_no_head() {
         let system = System::new();
-        assert!(system.parse_production("-> surname surname").is_err());
+        assert!(system.add_production("-> surname surname").is_err());
     }
 
     #[test]
     fn handles_no_body() {
         let system = System::new();
-        assert!(system.parse_production("Company ->").is_ok());
+        assert!(system.add_production("Company ->").is_ok());
     }
 
     #[test]
     fn handles_correct() {
         let system = System::new();
-        assert!(system.parse_production("Company -> surname surname").is_ok());
+        assert!(system.add_production("Company -> surname surname").is_ok());
     }
 
     #[test]
@@ -396,7 +387,7 @@ mod tests {
     #[test]
     fn can_derive_once() {
         let system = System::new();
-        system.parse_production("Company -> surname Company").expect("Unable to add production");
+        system.add_production("Company -> surname Company").expect("Unable to add production");
         let string = parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive_once(string).unwrap();
 
@@ -406,7 +397,7 @@ mod tests {
     #[test]
     fn can_derive_multiple_times() {
         let system = System::new();
-        system.parse_production("Company -> surname Company").expect("Unable to add production");
+        system.add_production("Company -> surname Company").expect("Unable to add production");
         let string = parse_prod_string("Company").expect("Unable to create string");
         let result = system.derive(string, RunSettings::for_max_iterations(2)).expect("Unable to derive");
 
@@ -451,7 +442,7 @@ mod tests {
         assert_eq!(system.symbol_len(), 0);
         assert_eq!(system.production_len(), 0);
 
-        system.parse_production("F -> F F").unwrap();
+        system.add_production("F -> F F").unwrap();
         assert_eq!(system.symbol_len(), 1);
         assert_eq!(system.production_len(), 1);
     }
@@ -461,8 +452,8 @@ mod tests {
     fn testing_context_sensitive() {
         let system = System::default();
         let string = parse_prod_string("G S S S X").unwrap();
-        system.parse_production("G > S -> ").unwrap();
-        system.parse_production("G < S -> S G").unwrap();
+        system.add_production("G > S -> ").unwrap();
+        system.add_production("G < S -> S G").unwrap();
         let string = system.derive_once(string).unwrap();
 
         assert_eq!(string, parse_prod_string("S G S S X").unwrap());

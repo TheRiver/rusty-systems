@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 
 use rand::{Rng, thread_rng};
 
-use crate::{Result};
+use crate::{parser, Result};
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::Symbol;
@@ -232,7 +232,7 @@ impl ProductionBody {
 /// See:
 /// * [`Production::head`]
 /// * [`Production::body`]
-/// * [`System::parse_production`]
+/// * [`System::add_production`]
 #[derive(Debug, Clone)]
 pub struct Production {
     head: ProductionHead,
@@ -310,7 +310,7 @@ impl Production {
     pub fn merge(&mut self, other: Self) {
         other.body.into_iter().for_each(|b| self.add_body(b));
     }
-    
+
     /// Returns a reference to all of the bodies that this production contains
     pub fn all_bodies(&self) -> &Vec<ProductionBody> {
         &self.body
@@ -332,17 +332,42 @@ impl Hash for Production {
 }
 
 
+impl TryFrom<&str> for Production {
+    type Error = Error;
+
+    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
+        parser::parse_production(value)
+    }
+}
+
+impl TryFrom<String> for Production {
+    type Error = crate::error::Error;
+
+    fn try_from(value: String) -> std::result::Result<Self, Self::Error> {
+        parser::parse_production(value.as_str())
+    }
+}
+
+
 /// A trait for collections that accept and store productions.
 ///
 /// Design note: this does not use `&mut self` to allow greater
 /// flexibility with sharing [`System`] and other implementers of this
 /// trait across threads.
 pub trait ProductionStore {
-    fn add_production(&self, production: Production) -> Result<Production>;
+    fn add_production<P>(&self, production: P) -> Result<Production>
+        where P: TryInto<Production>,
+              P::Error: Into<Error>;
+
 }
 
 impl ProductionStore for RefCell<Vec<Production>> {
-    fn add_production(&self, production: Production) -> Result<Production> {
+    fn add_production<P>(&self, production: P) -> Result<Production>
+    where
+        P: TryInto<Production>,
+        P::Error: Into<Error>
+    {
+        let production = production.try_into().map_err(Into::into)?;
         let mut vec = self.borrow_mut();
         vec.push(production);
         vec.last().cloned().ok_or_else(|| Error::general("Unable to add production"))
@@ -359,12 +384,12 @@ mod tests {
     #[test]
     fn production_matches() {
         let system = System::default();
-        let production = system.parse_production("X -> F F").unwrap();
+        let production = system.add_production("X -> F F").unwrap();
 
         let string = parse_prod_string("X").unwrap();
         assert!(production.matches(&string, 0));
 
-        let production = system.parse_production("X < X -> F F").unwrap();
+        let production = system.add_production("X < X -> F F").unwrap();
         assert!(!production.matches(&string, 0));
 
         let string = parse_prod_string("X X").unwrap();
@@ -372,7 +397,7 @@ mod tests {
         assert!( production.matches(&string, 1));
 
 
-        let production = system.parse_production("a b < X -> F F").unwrap();
+        let production = system.add_production("a b < X -> F F").unwrap();
         let string = parse_prod_string("a b X").unwrap();
         assert!(!production.matches(&string, 0));
         assert!(!production.matches(&string, 1));
@@ -380,7 +405,7 @@ mod tests {
 
 
 
-        let production = system.parse_production("X > X -> F F").unwrap();
+        let production = system.add_production("X > X -> F F").unwrap();
         assert!(!production.matches(&string, 0));
 
         let string = parse_prod_string("X X").unwrap();
@@ -388,7 +413,7 @@ mod tests {
         assert!(!production.matches(&string, 1));
 
 
-        let production = system.parse_production("X > a b -> F F").unwrap();
+        let production = system.add_production("X > a b -> F F").unwrap();
         let string = parse_prod_string("a X a b").unwrap();
         assert!(!production.matches(&string, 0));
         assert!( production.matches(&string, 1));
@@ -398,7 +423,7 @@ mod tests {
         let system = System::default();
         let string = parse_prod_string("G S S S X").unwrap();
         // system.parse_production("G > S -> ").unwrap();
-        let production = system.parse_production("G < S -> S G").unwrap();
+        let production = system.add_production("G < S -> S G").unwrap();
 
         assert!(!production.matches(&string, 0));
         assert!( production.matches(&string, 1));

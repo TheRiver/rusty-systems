@@ -6,8 +6,10 @@
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
-use crate::productions::{Production, ProductionBody, ProductionHead};
+use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
 use crate::Result;
+use crate::symbols::iterator::SymbolIterable;
+use crate::symbols::SymbolStore;
 
 /// Parse the body of a production rule.
 ///
@@ -198,6 +200,34 @@ pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
 
     Ok(result)
 }
+
+
+/// Parse a string as a production and add it to the system.
+///
+/// This is essentially equivalent to:
+/// ```
+/// # use rusty_systems::system::System;
+/// # use rusty_systems::productions::ProductionStore;
+/// # let system = System::default();
+/// use rusty_systems::parser::parse_production;
+/// let production = parse_production("A -> B C").unwrap();
+/// system.add_production(production).unwrap();
+/// ```
+pub fn parse_and_add_production<S, P>(symbols: &S,
+                                      productions: &P,
+                                      production: &str) -> Result<Production> 
+    where S: SymbolStore,
+          P: ProductionStore
+{
+    let prod = parse_production(production)?;
+
+    for symbol in prod.all_symbols_iter() {
+        symbols.add_symbol(symbol)?;
+    }
+    
+    productions.add_production(prod)
+}
+
 
 
 

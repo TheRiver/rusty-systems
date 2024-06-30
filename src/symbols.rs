@@ -15,7 +15,6 @@ use std::hash::{Hash, Hasher};
 use std::sync::{OnceLock, RwLock};
 use std::sync::atomic::{AtomicU32, Ordering};
 use crate::error::Error;
-use crate::symbols;
 
 pub mod iterator;
 
@@ -152,20 +151,63 @@ impl Display for Symbol {
     }
 }
 
+/// Allows for easily accepting an argument that can be converted 
+/// to a symbol.
+/// 
+/// Some types that implement this trait:
+/// * `str`
+/// * [`String`]
+/// * [`Symbol`] itself
+pub trait AsSymbol {
+    /// Convert this type to a [`Symbol`]
+    fn as_symbol(&self) -> Result<Symbol, Error>;
+}
+
+impl AsSymbol for &str {
+    fn as_symbol(&self) -> Result<Symbol, Error> {
+        let code = get_code(self)?;
+        Ok(Symbol::from_code(code))
+    }
+}
+
+impl AsSymbol for String {
+    fn as_symbol(&self) -> Result<Symbol, Error> {
+        let code = get_code(self)?;
+        Ok(Symbol::from_code(code))
+    }
+}
+
+impl AsSymbol for Symbol {
+    #[inline]
+    fn as_symbol(&self) -> Result<Symbol, Error> {
+        Ok(*self)
+    }
+}
+
+impl AsSymbol for u32 {
+    #[inline]
+    fn as_symbol(&self) -> Result<Symbol, Error> {
+        get_name(*self)
+            .ok_or(Error::general(format!("The supplied code [{self}] is not a known symbol")))?;
+        Ok(Symbol::from_code(*self))
+    }
+}
+
+
 // todo document symbol store.
 pub trait SymbolStore {
-    fn add_symbol(&self, name: &str) -> crate::Result<Symbol>;
+    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> crate::Result<Symbol>;
     fn get_symbol(&self, name: &str) -> Option<Symbol>;
 }
 
 impl SymbolStore for RefCell<HashSet<u32>> {
-    fn add_symbol(&self, name: &str) -> crate::Result<Symbol> {
-        let code = symbols::get_code(name)?;
+    fn add_symbol<S: AsSymbol>(&self, symbol: S) -> crate::Result<Symbol> {
+        let symbol = symbol.as_symbol()?;
 
         let mut map = self.borrow_mut();
-        map.insert(code);
+        map.insert(symbol.code);
 
-        Ok(Symbol::from_code(code))
+        Ok(symbol)
     }
 
     fn get_symbol(&self, name: &str) -> Option<Symbol> {

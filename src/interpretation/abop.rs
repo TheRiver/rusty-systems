@@ -156,11 +156,12 @@ mod tests {
     use super::*;
     use crate::interpretation::Interpretation;
     use crate::parser::parse_prod_string;
+    use crate::productions::ProductionStore;
 
     #[test]
     fn geometry_interpretation() {
         let system = AbopTurtleInterpretation::system().unwrap();
-        system.parse_production("Forward -> Forward Forward").unwrap();
+        system.add_production("Forward -> Forward Forward").unwrap();
 
         let string = parse_prod_string("Forward").unwrap();
         let string = system.derive_once(string).unwrap();

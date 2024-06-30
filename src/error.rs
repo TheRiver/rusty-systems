@@ -1,5 +1,6 @@
 //! General error handling tools and utilities
 
+use std::convert::Infallible;
 use std::fmt::{Display, Formatter};
 use std::sync::PoisonError;
 
@@ -113,5 +114,11 @@ impl From<std::num::ParseFloatError> for Error {
             message: error.to_string(),
             source: Some(Box::new(error)),
         }
+    }
+}
+
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
+        panic!("Should never have to create an Error from std::convert::Infallible");
     }
 }
