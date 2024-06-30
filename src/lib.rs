@@ -20,7 +20,7 @@
 //!
 //! ```
 //! use rusty_systems::prelude::*;
-//! use rusty_systems::system::parser;
+//! use rusty_systems::parser;
 //!
 //! let system = System::new();
 //! system.parse_production("CompanyName -> Surname Surname").unwrap();
@@ -35,9 +35,9 @@
 //! If you would like to parse without using a [`System`] instance,
 //! you can use the following underlying functions:
 //!
-//! * [`system::parser::parse_production`] to parse individual productions.
+//! * [`parser::parse_production`] to parse individual productions.
 //! 
-//! See [`system::parser`] for more information, and for generic parsing
+//! See [`parser`] for more information, and for generic parsing
 //! functions that do not need you to use [`System`].
 //!
 //! # Features
@@ -104,9 +104,9 @@ pub mod strings;
 pub mod system;
 pub mod geometry;
 pub mod interpretation;
+pub mod parser;
 
-
-/// Some commonly used members of the crate re-exported for easy access. 
+/// Some commonly used members of the crate re-exported for easy access.
 /// 
 /// Use it like so:
 /// 

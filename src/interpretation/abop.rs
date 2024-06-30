@@ -155,7 +155,7 @@ impl Interpretation for AbopTurtleInterpretation {
 mod tests {
     use super::*;
     use crate::interpretation::Interpretation;
-    use crate::system::parser::parse_prod_string;
+    use crate::parser::parse_prod_string;
 
     #[test]
     fn geometry_interpretation() {

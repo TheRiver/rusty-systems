@@ -36,7 +36,7 @@
 
 use crate::error::ErrorKind;
 use crate::interpretation::abop::*;
-use crate::system::parser::parse_prod_string;
+use crate::parser::parse_prod_string;
 
 /// A tuple containing information parsed from a string or file containing an L-System
 /// specified in this library's "plant" format.

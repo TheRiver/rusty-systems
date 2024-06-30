@@ -1,8 +1,8 @@
-//! Tools for parsing simple L-Systems
+//! Tools for parsing L-Systems from text strings.
 //!
-//! These are the functions that [`crate::prelude::System`] itself uses, but they
-//! are generic enough that you can make use of them yourself and if you wish to
-//! avoid using [`crate::prelude::System`].
+//! Important functions:
+//! * [`parse_prod_string`]
+//! * [`parse_production`]
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
@@ -44,6 +44,7 @@ pub fn parse_production_body<S>(store: &S, body: &str) -> Result<ProductionBody>
     }
 }
 
+/// Parse the head of a production rule.
 pub fn parse_production_head<S>(store: &S, head: &str) -> Result<ProductionHead>
     where S: SymbolStore
 {
@@ -139,7 +140,7 @@ fn parse_head_context<S: SymbolStore>(store: &S, strings: Option<&[&str]>) -> Op
 /// use std::collections::{HashMap, HashSet};
 /// use std::sync::Arc;
 /// use rusty_systems::productions::Production;
-/// use rusty_systems::system::parser::parse_production;
+/// use rusty_systems::parser::parse_production;
 /// use rusty_systems::symbols::Symbol;
 ///
 /// // Create your token and production collections at some point
@@ -190,12 +191,15 @@ pub fn parse_production<T, P>(token_store: &T,
     prod_store.add_production(Production::new(head, body))
 }
 
+
+/// Allows you to parse a text string into a string of [`Symbol`] objects
+/// to then rewrite using a [`System`]
 pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
     let mut result = ProductionString::default();
 
     let items = string.trim().split_ascii_whitespace();
 
-    
+
     for term in items {
         result.push_symbol(Symbol::build(term)?);
     }
@@ -208,7 +212,7 @@ pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
 
 #[cfg(test)]
 mod test {
-    use crate::system::parser::{parse_production_body, parse_production_head};
+    use crate::parser::{parse_production_body, parse_production_head};
     use crate::system::System;
     use crate::symbols::{SymbolStore};
 

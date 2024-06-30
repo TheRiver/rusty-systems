@@ -22,7 +22,7 @@
 //!
 //! ```
 //! # use rusty_systems::system::System;
-//! # use rusty_systems::system::parser;
+//! # use rusty_systems::parser;
 //! # let system = System::default();
 //! let production = system.parse_production("G < S -> S G").unwrap();
 //! let string = parser::parse_prod_string("S G S").unwrap();
@@ -50,9 +50,9 @@
 //! * [`ProductionString`]
 //! * [`SystemFamily`]
 
-use std::collections::{HashSet};
+use std::collections::HashSet;
 use std::ops::Deref;
-use std::sync::{RwLock};
+use std::sync::RwLock;
 
 use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
@@ -60,9 +60,8 @@ use crate::productions::{Production, ProductionStore};
 use crate::system::family::TryIntoFamily;
 use crate::symbols::{get_code, SymbolStore};
 
-use super::{Result, symbols};
+use super::{parser, Result, symbols};
 
-pub mod parser;
 pub mod family;
 
 /// Represents an L-system. This is the base for running the
@@ -307,7 +306,7 @@ pub fn derive(string: ProductionString, productions: &[Production], settings: Ru
 #[cfg(test)]
 mod tests {
     use std::thread;
-    use crate::system::parser::parse_prod_string;
+    use crate::parser::parse_prod_string;
     use super::*;
 
     #[test]

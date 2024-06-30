@@ -4,7 +4,7 @@ use rusty_systems::geometry::{Point, Vector};
 use rusty_systems::strings::ProductionString;
 use rusty_systems::system::{RunSettings, System};
 use rusty_systems::symbols::SymbolStore;
-use rusty_systems::system::parser::parse_prod_string;
+use rusty_systems::parser::parse_prod_string;
 
 fn main() {
     let plant = System::default();
