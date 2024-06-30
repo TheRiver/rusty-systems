@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Changed
+### Removed
+
+## [5.0.0]
+
+### Added
 
 * `symbols::get_code` and related functions that return a symbol code 
   for a string, or the string / name associated with a code.
