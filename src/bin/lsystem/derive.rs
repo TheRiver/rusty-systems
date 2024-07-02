@@ -5,9 +5,9 @@ use rusty_systems::interpretation::abop::parser;
 use rusty_systems::interpretation::svg::SvgPathInterpretation;
 
 use crate::{error_style, green};
-use crate::cli::{Cli, DeriveArgs};
+use crate::cli::{Cli, InterpretationArgs};
 
-pub fn handle_derive(args: &Cli, derive: &DeriveArgs) -> ExitCode {
+pub fn handle_derive(args: &Cli, derive: &InterpretationArgs) -> ExitCode {
     if args.verbose {
         print!("Reading {} ", derive.file.to_str().unwrap());
     }

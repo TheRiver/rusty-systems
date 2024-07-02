@@ -16,20 +16,8 @@ pub struct Cli {
 }
 
 #[derive(Debug, Args)]
-pub struct DeriveArgs {
-    /// A plant file
-    /// 
-    /// It should have the format
-    /// 
-    /// ```
-    /// n = 6
-    /// delta = 22.5
-    /// 
-    /// initial: X
-    /// 
-    /// Forward -> Forward Forward
-    /// X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X
-    /// ```
+pub struct InterpretationArgs {
+    /// The input file, eg: a plant file
     pub file: Box<std::path::Path>, 
     /// Where the SVG file should be saved 
     #[arg(short, long, default_value = "out.svg")]
@@ -44,8 +32,8 @@ pub struct DeriveArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Derive an SVG of a production string
-    Derive(DeriveArgs),
+    /// Derive and interpret an SVG of a production string
+    Interpret(InterpretationArgs),
     /// Describe the tokens available for use
     Describe,
 }

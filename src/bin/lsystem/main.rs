@@ -17,7 +17,7 @@ fn main() -> ExitCode {
 
 
     match &args.command {
-        cli::Command::Derive(derive) => {
+        cli::Command::Interpret(derive) => {
             handle_derive(&args, derive)
         },
         cli::Command::Describe => {
