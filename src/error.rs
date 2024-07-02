@@ -18,7 +18,9 @@ pub enum ErrorKind {
     /// Indicates an error with locks, such as a [`PoisonError`].
     Locking,
     /// An IO Error. 
-    Io
+    Io,
+    /// Represents an error that cannot happen, as with [`Infallible`]
+    Infallible
 }
 
 
@@ -119,6 +121,7 @@ impl From<std::num::ParseFloatError> for Error {
 
 impl From<Infallible> for Error {
     fn from(_: Infallible) -> Self {
-        panic!("Should never have to create an Error from std::convert::Infallible");
+        Error::new(ErrorKind::Infallible, 
+                   "Should never have to create an Error from std::convert::Infallible")
     }
 }

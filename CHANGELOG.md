@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * `System::parse_production` has been removed, and now `System::add_production` is used instead.
+* Better handling of `Infallible` by `Error`.
 
 ### Removed
 
