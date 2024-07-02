@@ -7,25 +7,26 @@ use rusty_systems::symbols::SymbolStore;
 use rusty_systems::parser::parse_prod_string;
 use rusty_systems::productions::ProductionStore;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>>{
     let plant = System::default();
 
     // For a "forward" production, every iteration we just extend it.
-    plant.add_production("Forward -> Forward Forward").expect("Unable to parse production");
+    plant.add_production("Forward -> Forward Forward")?;
 
     // X is our apex / growth symbol.
     // Every iteration of our derivation we replace the X symbols with some forward growth,
     // as well as branches (represented by our push and pop symbols, [ and ] respectively), with
     // forward growth sometimes being modified by fixed size angle changes (+ and -).
-    plant.add_production("X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X")
-        .expect("Unable to parse production");
+    plant.add_production("X -> Forward + [ [ X ] - X ] - Forward [ - Forward X ] + X")?;
 
     // We start off with just a single apex symbol, and iterate for only 6 times.
-    let start = parse_prod_string("X").unwrap();
-    let result = plant.derive(start, RunSettings::for_max_iterations(6)).unwrap();
+    let start = parse_prod_string("X")?;
+    let result = plant.derive(start, RunSettings::for_max_iterations(6))?;
     
     let pixmap = interpret(&plant, &result);
-    pixmap.save_png("target/skia-plant.png").unwrap();
+    pixmap.save_png("target/skia-plant.png")?;
+    
+    Ok(())
 }
 
 fn interpret<T: SymbolStore>(system: &T, string: &ProductionString) -> Pixmap {
