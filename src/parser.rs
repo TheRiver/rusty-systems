@@ -11,6 +11,9 @@ use crate::Result;
 use crate::symbols::iterator::SymbolIterable;
 use crate::symbols::SymbolStore;
 
+
+pub mod iterator;
+
 /// Parse the body of a production rule.
 ///
 /// For example, in the string `A -> B C`, the `B C` after the arrow
@@ -236,6 +239,10 @@ pub fn parse_and_add_production<S, P>(symbols: &S,
     
     productions.add_production(prod)
 }
+
+
+
+
 
 
 
