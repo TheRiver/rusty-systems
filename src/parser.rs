@@ -5,6 +5,7 @@
 //! * [`parse_production`]
 
 use crate::error::{Error, ErrorKind};
+use crate::parser::iterator::{TokenIterator, TokenKind};
 use crate::prelude::*;
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
 use crate::Result;
@@ -170,21 +171,21 @@ pub fn parse_production(production: &str) -> Result<Production> {
 }
 
 
-
 /// Allows you to parse a text string into a string of [`Symbol`] objects
 /// to then rewrite using a [`System`]
 pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
-    let mut result = ProductionString::default();
+    let mut prod_string = ProductionString::new();
 
-    let items = string.trim().split_ascii_whitespace();
-
-
-    for term in items {
-        result.push_symbol(Symbol::build(term)?);
+    for token in TokenIterator::new(string) {
+        if token.kind != TokenKind::Symbol {
+            return Err(Error::new(ErrorKind::Parse, format!("Expected a symbol, but found {token} instead")))
+        }
+        prod_string.push_symbol(token.text.try_into()?);
     }
 
-    Ok(result)
+    Ok(prod_string)
 }
+
 
 
 /// Parse a string as a production and add it to your own stores of symbols and productions.
@@ -241,17 +242,10 @@ pub fn parse_and_add_production<S, P>(symbols: &S,
 }
 
 
-
-
-
-
-
-
-
 #[cfg(test)]
 mod test {
-    use crate::parser::{parse_production_body, parse_production_head};
     use crate::symbols::{get_code};
+    use super::*;
 
     #[test]
     fn can_parse_empty_body() {
@@ -292,6 +286,17 @@ mod test {
         let right = head.post_context().unwrap();
         assert_eq!(right.len(), 1);
         assert_eq!(get_code("Post").unwrap(), right[0].code());
+    }
+
+    #[test]
+    fn parsing_strings() {
+        let s = parse_prod_string("A B C").unwrap();
+        let mut iterator = s.iter().copied();
+
+        assert_eq!(iterator.next().unwrap().code(), get_code("A").unwrap());
+        assert_eq!(iterator.next().unwrap().code(), get_code("B").unwrap());
+        assert_eq!(iterator.next().unwrap().code(), get_code("C").unwrap());
+        assert!(iterator.next().is_none());
     }
 }
 
