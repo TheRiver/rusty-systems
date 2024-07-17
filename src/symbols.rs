@@ -8,10 +8,22 @@
 //!
 //! Rusty-Systems does not keep track of, or enforce, these kinds.
 //!
+//! # Creating a symbol
+//!
+//! ```
+//! use rusty_systems::prelude::Symbol;
+//! let symbol: Symbol = "Forward".parse().expect("Unable to parse");
+//! ```
+//!
+//! todo mention [`get_code`] and [`get_name`]
+
+
+
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
 use std::sync::atomic::{AtomicU32, Ordering};
 use crate::error::Error;
@@ -178,6 +190,14 @@ impl TryFrom<String> for Symbol {
     #[inline]
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Symbol::build(value)
+    }
+}
+
+impl FromStr for Symbol {
+    type Err = Error;
+
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        string.try_into()
     }
 }
 
