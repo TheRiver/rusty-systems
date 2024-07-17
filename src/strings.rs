@@ -4,11 +4,33 @@
 //! The main struct is [`ProductionString`]. These can be parsed from a text string using
 //! [`parser::parse_prod_string`](crate::parser::parse_prod_string). See [`ProductionString`]
 //! for more details.
+//! 
+//! # Creating production strings
+//! 
+//! The simplest way to create a [`ProductionString`] instance is using
+//! [`str::parse`]:
+//! 
+//! ```
+//! use rusty_systems::prelude::ProductionString;
+//! let string: ProductionString = "F F F F".parse().expect("Unable to parse");
+//! ```
+//! 
+//! This is the same as the following parse function:
+//! 
+//! ```
+//! use rusty_systems::parser;
+//! use rusty_systems::prelude::ProductionString;
+//! let string = parser::parse_prod_string("F F F F").expect("Unable to parse");
+//! ```
+//!
 
 use std::fmt::{Display, Formatter, Write};
 use std::iter::Cloned;
 use std::ops::Index;
 use std::slice::Iter;
+use std::str::FromStr;
+
+use crate::parser::parse_prod_string;
 use crate::prelude::*;
 
 /// Represents strings in our L-system. Strings
@@ -137,6 +159,15 @@ impl Display for ProductionString {
         
         Ok(())
         
+    }
+}
+
+impl FromStr for ProductionString {
+    type Err = Error;
+
+    #[inline]
+    fn from_str(string: &str) -> Result<Self, Self::Err> {
+        parse_prod_string(string)
     }
 }
 
