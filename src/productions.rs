@@ -1,8 +1,17 @@
 //! Utilities for creating rewrite rules for a [`System`].
+//!
+//! # Creating a production
+//!
+//! ```
+//! use rusty_systems::productions::Production;
+//! let production: Production = "X -> F F F".parse().expect("Unable to parse");
+//! ```
+//! 
+//! todo add more detail
 
 use std::cell::RefCell;
 use std::hash::{Hash, Hasher};
-
+use std::str::FromStr;
 use rand::{Rng, thread_rng};
 
 use crate::{parser, Result};
@@ -345,6 +354,14 @@ impl TryFrom<String> for Production {
 
     fn try_from(value: String) -> std::result::Result<Self, Self::Error> {
         parser::parse_production(value.as_str())
+    }
+}
+
+impl FromStr for Production {
+    type Err = Error;
+
+    fn from_str(string: &str) -> std::result::Result<Self, Self::Err> {
+        string.try_into()
     }
 }
 
