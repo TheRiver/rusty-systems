@@ -4,8 +4,9 @@
 //! * [`parse_prod_string`]
 //! * [`parse_production`]
 
+pub use token::{TokenKind, Token};
 use crate::error::{Error, ErrorKind};
-use crate::parser::iterator::{TokenIterator, TokenKind};
+use crate::parser::iterator::TokenIterator;
 use crate::prelude::*;
 use crate::productions::{Production, ProductionBody, ProductionHead, ProductionStore};
 use crate::Result;
@@ -14,6 +15,7 @@ use crate::symbols::SymbolStore;
 
 
 pub mod iterator;
+pub mod token;
 
 /// Parse the body of a production rule.
 ///
@@ -244,7 +246,7 @@ pub fn parse_and_add_production<S, P>(symbols: &S,
 
 #[cfg(test)]
 mod test {
-    use crate::symbols::{get_code};
+    use crate::symbols::get_code;
     use super::*;
 
     #[test]
