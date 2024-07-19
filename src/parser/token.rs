@@ -1,4 +1,6 @@
 use std::fmt::{Display, Formatter};
+use crate::error::Error;
+use crate::prelude::Symbol;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum TokenKind {
@@ -56,5 +58,17 @@ impl Display for Token<'_> {
 impl<'a> AsRef<str> for Token<'a> {
     fn as_ref(&self) -> &str {
         self.text
+    }
+}
+
+impl<'a> TryFrom<Token<'a>> for Symbol {
+    type Error = Error;
+
+    fn try_from(token: Token) -> Result<Self, Self::Error> {
+        if token.kind != TokenKind::Symbol {
+            return Err(Error::parse_error("token is not a Symbol"));
+        }
+
+        token.text.try_into()
     }
 }

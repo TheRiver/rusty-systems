@@ -16,6 +16,7 @@ use crate::symbols::SymbolStore;
 
 pub mod iterator;
 pub mod token;
+mod statement;
 
 /// Parse the body of a production rule.
 ///
