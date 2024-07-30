@@ -1,6 +1,7 @@
 use crate::error::{Error, ErrorKind};
 use crate::parser::token::Token;
 
+#[derive(Debug, Clone)]
 pub struct TokenIterator<'a> {
     pub text: &'a str,
     current: usize
@@ -140,7 +141,7 @@ fn is_break(char: char) -> bool {
         return true;
     }
 
-    matches!(char, '<' | '>' | '-' | '+' | '(' | ')')
+    matches!(char, '<' | '>' | '-' | '+' | '(' | ')' | ';')
 
 }
 

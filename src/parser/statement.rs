@@ -1,8 +1,10 @@
 use std::fmt::{Display, Formatter};
 use crate::Error;
-use crate::parser::Token;
+use crate::parser::iterator::TokenIterator;
+use crate::parser::{Token, TokenKind};
 use crate::prelude::ProductionString;
 use crate::symbols::Symbol;
+use self::Match::*;
 
 #[derive(Debug, Default)]
 pub struct Statement<'a> {
@@ -23,7 +25,6 @@ impl From<Error> for Statement<'_> {
 
 
 impl<'a> Statement<'a> {
-
     #[inline]
     pub fn new(kind: StatementKind, tokens: Vec<Token<'a>>) -> Self {
         Statement {
@@ -102,9 +103,55 @@ impl<'a, 'b> CheckedStatement<'a, 'b> {
     }
 }
 
+
+#[derive(Debug)]
+pub struct ParseStack<'a> {
+    stack: Vec<Statement<'a>>,
+    iterator: TokenIterator<'a>
+}
+
+impl<'a> ParseStack<'a> {
+    pub fn new(iterator: TokenIterator<'a>) -> Self {
+        ParseStack {
+            stack: Vec::new(),
+            iterator
+        }
+    }
+
+    pub fn parse(&mut self) {
+        if let Matches(n) = ProductionString::matches(self.iterator.clone()) {
+            self.stack.push(Statement::new(StatementKind::ProductionString, self.iterator.clone().take(n).collect()));
+            if n > 0 {
+                self.iterator.nth(n - 1);
+            }
+        }
+    }
+}
+
+impl From<&'static str> for ParseStack<'_> {
+    fn from(string: &'static str) -> Self {
+        ParseStack::new(TokenIterator::new(string))
+    }
+}
+
+
+/// Records how something we wanted to parse matches
+/// against the input tokens ([`TokenIterator`]).
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Match {
+    /// This is a match, with how many tokens it matched.
+    Matches(usize),
+    /// This isn't a match, and returns the number of tokens it did match.
+    No(usize)
+}
+
+
+
+
 pub trait ParsableType: Sized {
     fn kind() -> StatementKind;
     fn compile(statement: CheckedStatement<'_, '_>) -> Result<Self, Error>;
+    fn matches(iterator: TokenIterator) -> Match;
 }
 
 impl ParsableType for ProductionString {
@@ -116,9 +163,22 @@ impl ParsableType for ProductionString {
     fn compile(statement: CheckedStatement<'_, '_>) -> Result<Self, Error> {
         let statement = statement.expect(Self::kind())?;
         let symbols: Result<Vec<Symbol>, _> = statement.tokens_iter()
+            .take_while(|t| !t.is_terminal())
             .map(Token::try_into)
             .collect();
         Ok(ProductionString::from(symbols?))
+    }
+
+    fn matches(iterator: TokenIterator) -> Match {
+        for (i, token) in iterator.enumerate() {
+            match token.kind {
+                TokenKind::Symbol => continue,
+                TokenKind::Terminator => return Matches(i + 1),
+                _ => return No(i)
+            }
+        }
+
+        No(0)
     }
 }
 
@@ -138,11 +198,35 @@ mod tests {
                 Token::new("b", 1, 2),
                 Token::new("c", 2, 3),
             ]);
-
+        
         let result : Result<ProductionString> = statement.compile();
         assert!(result.is_ok());
 
         let result = result.unwrap();
         assert_eq!(result, parse_prod_string("a b c").unwrap());
+    }
+
+
+    #[test]
+    fn matches_production_string() {
+        assert_eq!(ProductionString::matches(TokenIterator::new("")), No(0));
+        assert_eq!(ProductionString::matches(TokenIterator::new("->")), No(0));
+        assert_eq!(ProductionString::matches(TokenIterator::new("A B C;")), Matches(4));
+        assert_eq!(ProductionString::matches(TokenIterator::new("A B C; A B;")), Matches(4));
+        assert_eq!(ProductionString::matches(TokenIterator::new("A;")), Matches(2));
+        assert_eq!(ProductionString::matches(TokenIterator::new(";")), Matches(1));
+        assert_eq!(ProductionString::matches(TokenIterator::new("A -> B")), No(1));
+    }
+
+    #[test]
+    fn parse_stack() {
+        let mut stack = ParseStack::from("A B C;");
+        
+        stack.parse();
+        assert_eq!(stack.stack.len(), 1);
+
+        let compiled: Result<ProductionString> = stack.stack[0].compile();
+        assert!(compiled.is_ok());
+        assert_eq!(compiled.unwrap(), "A B C".parse().unwrap());
     }
 }

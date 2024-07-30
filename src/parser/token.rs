@@ -7,7 +7,8 @@ pub enum TokenKind {
     Symbol,
     Arrow,
     ContextLeft,
-    ContextRight
+    ContextRight,
+    Terminator
 }
 
 impl From<&str> for TokenKind {
@@ -16,6 +17,7 @@ impl From<&str> for TokenKind {
             "->" => TokenKind::Arrow,
             ">" => TokenKind::ContextRight,
             "<" => TokenKind::ContextLeft,
+            ";" => TokenKind::Terminator,
             _ => TokenKind::Symbol
         }
     }
@@ -27,7 +29,8 @@ impl Display for TokenKind {
             TokenKind::Symbol => f.write_str("Symbol"),
             TokenKind::Arrow => f.write_str("->"),
             TokenKind::ContextLeft => f.write_str("<"),
-            TokenKind::ContextRight => f.write_str(">")
+            TokenKind::ContextRight => f.write_str(">"),
+            TokenKind::Terminator => f.write_str(";"),
         }
     }
 }
@@ -46,6 +49,11 @@ impl<'a> Token<'a> {
             text, start, end,
             kind: TokenKind::from(text)
         }
+    }
+
+    #[inline]
+    pub fn is_terminal(&self) -> bool {
+        matches!(self.kind, TokenKind::Terminator)
     }
 }
 
