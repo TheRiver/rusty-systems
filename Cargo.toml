@@ -11,12 +11,17 @@ keywords = ["grammar", "l-systems", "procedural", "generation"]
 
 exclude = ["docs", "11ty", ".*"]
 
+[lib]
+crate-type = ["rlib", "dylib"]
+
 [[bin]]
 name = "lsystem"
 required-features = ["lsystem"]
 
-[lib]
-crate-type = ["rlib", "dylib"]
+
+[[bench]]
+name = "parsing"
+harness = false
 
 [dependencies]
 rand = "0.8"
@@ -25,6 +30,7 @@ clap = { version = "4.5", features = ["derive"], optional = true }
 
 [dev-dependencies]
 tiny-skia = "0.11"
+criterion = { version = "0.5", features = ["html_reports"] }
 
 
 [features]
