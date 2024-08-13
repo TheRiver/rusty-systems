@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Using criterion for benchmarking support. 
 * Added implements of `TryInto<Symbol>` and `TryInto<Production>` to ease parsing.
 * Added an implementation of `FromStr` for `ProductionString`. 
 * Added an implementation of `FromStr` for `Symbol`. 

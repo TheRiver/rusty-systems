@@ -51,6 +51,20 @@ rusty-systems = {git = "https://github.com/TheRiver/rusty-systems.git", tag = "2
 
 ```
 
+## Development
+
+You can run the tests using
+
+```shell
+cargo test
+```
+
+We use [criterion][criterion] for benchmarking:
+
+```shell
+cargo bench
+```
+
 ## License
 
 This code is licensed under the MIT license. See the [LICENSE][license]
@@ -59,3 +73,4 @@ file for more details.
 [docs]: https://docs.rs/rusty-systems/latest/rusty_systems/
 [license]: https://github.com/TheRiver/rusty-systems/blob/main/LICENSE
 [changelog]: https://github.com/TheRiver/rusty-systems/blob/main/CHANGELOG.md
+[criterion]: https://github.com/bheisler/criterion.rs
