@@ -118,12 +118,23 @@ impl<'a> ParseStack<'a> {
         }
     }
 
-    pub fn parse(&mut self) {
-        if let Matches(n) = ProductionString::matches(self.iterator.clone()) {
-            self.stack.push(Statement::new(StatementKind::ProductionString, self.iterator.clone().take(n).collect()));
-            if n > 0 {
-                self.iterator.nth(n - 1);
+    pub fn parse(&mut self) -> Result<(), Error> {
+        loop {
+            if let Matches(n) = ProductionString::matches(self.iterator.clone()) {
+                self.stack.push(Statement::new(StatementKind::ProductionString, self.iterator.clone().take(n).collect()));
+                if n > 0 {
+                    self.iterator.nth(n - 1);
+                }
+
+                continue;
             }
+
+            break;
+        }
+
+        match self.iterator.clone().next() {
+            None => Ok(()),
+            Some(t) => Err(Error::parse_error(format!("Expected end of string, but found [{t}] instead"))) // todo Needs better error message.
         }
     }
 }
@@ -222,11 +233,24 @@ mod tests {
     fn parse_stack() {
         let mut stack = ParseStack::from("A B C;");
         
-        stack.parse();
+        stack.parse().expect("Unable to parse");
         assert_eq!(stack.stack.len(), 1);
 
         let compiled: Result<ProductionString> = stack.stack[0].compile();
         assert!(compiled.is_ok());
         assert_eq!(compiled.unwrap(), "A B C".parse().unwrap());
+
+        let mut stack = ParseStack::from("A B C; D E F;");
+
+        stack.parse().expect("Unable to parse");
+        assert_eq!(stack.stack.len(), 2);
+
+        let compiled: Result<ProductionString> = stack.stack[0].compile();
+        assert!(compiled.is_ok());
+        assert_eq!(compiled.unwrap(), "A B C".parse().unwrap());
+
+        let compiled: Result<ProductionString> = stack.stack[1].compile();
+        assert!(compiled.is_ok());
+        assert_eq!(compiled.unwrap(), "D E F".parse().unwrap());
     }
 }
