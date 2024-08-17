@@ -65,6 +65,7 @@ impl Display for Token<'_> {
 }
 
 impl<'a> AsRef<str> for Token<'a> {
+    #[inline]
     fn as_ref(&self) -> &str {
         self.text
     }
