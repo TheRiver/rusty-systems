@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Write};
 use crate::error::Error;
 use crate::prelude::Symbol;
 
@@ -14,11 +14,11 @@ pub enum TokenKind {
 impl From<&str> for TokenKind {
     fn from(value: &str) -> Self {
         match value {
-            "->" => TokenKind::Arrow,
-            ">" => TokenKind::ContextRight,
-            "<" => TokenKind::ContextLeft,
-            ";" => TokenKind::Terminator,
-            _ => TokenKind::Symbol
+            ";" | ""    => TokenKind::Terminator,
+            "->"        => TokenKind::Arrow,
+            ">"         => TokenKind::ContextRight,
+            "<"         => TokenKind::ContextLeft,
+            _           => TokenKind::Symbol
         }
     }
 }
@@ -30,7 +30,7 @@ impl Display for TokenKind {
             TokenKind::Arrow => f.write_str("->"),
             TokenKind::ContextLeft => f.write_str("<"),
             TokenKind::ContextRight => f.write_str(">"),
-            TokenKind::Terminator => f.write_str(";"),
+            TokenKind::Terminator => f.write_char(';'),
         }
     }
 }
@@ -59,7 +59,8 @@ impl<'a> Token<'a> {
 
 impl Display for Token<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.text)
+        let text = if self.text.is_empty() { "EOS" } else { self.text };
+        f.write_str(text)
     }
 }
 

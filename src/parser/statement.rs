@@ -118,6 +118,7 @@ impl<'a> ParseStack<'a> {
         }
     }
 
+    
     pub fn parse(&mut self) -> Result<(), Error> {
         loop {
             if let Matches(n) = ProductionString::matches(self.iterator.clone()) {

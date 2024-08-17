@@ -180,12 +180,13 @@ pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
     let mut prod_string = ProductionString::new();
 
     for token in TokenIterator::new(string) {
+        if token.kind == TokenKind::Terminator { break }
         if token.kind != TokenKind::Symbol {
-            return Err(Error::new(ErrorKind::Parse, format!("Expected a symbol, but found {token} instead")))
+            return Err(Error::new(ErrorKind::Parse, format!("Expected a symbol, but found [{token}] instead")))
         }
         prod_string.push_symbol(token.text.try_into()?);
     }
-
+    
     Ok(prod_string)
 }
 

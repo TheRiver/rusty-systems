@@ -4,12 +4,13 @@ use crate::parser::token::Token;
 #[derive(Debug, Clone)]
 pub struct TokenIterator<'a> {
     pub text: &'a str,
-    current: usize
+    current: usize,
+    signal_end: bool
 }
 
 impl<'a> TokenIterator<'a> {
     pub fn new(text: &'a str) -> TokenIterator<'a> {
-        TokenIterator { text, current: 0 }
+        TokenIterator { text, current: 0, signal_end: false }
     }
 }
 
@@ -17,6 +18,11 @@ impl<'a> Iterator for TokenIterator<'a> {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.signal_end {
+            self.signal_end = false;
+            return Some(Token::new("", self.text.len() - 1, self.text.len()));
+        }
+        
         if self.current >= self.text.len() {
             return None;
         }
@@ -57,7 +63,9 @@ impl<'a> Iterator for TokenIterator<'a> {
 
             if brk.is_end() {
                 self.current = self.text.len();
-                return Some(Token::new(&text[index..brk.index()], index_start, index_end));
+                let token = Token::new(&text[index..brk.index()], index_start, index_end);
+                self.signal_end = !token.is_terminal();
+                return Some(token);
             }
 
             return Some(Token::new(&text[index .. brk.index()], index_start, index_end));
@@ -171,6 +179,7 @@ mod tests {
         assert_eq!(iter.next().unwrap().as_ref(), "hello");
         assert_eq!(iter.next().unwrap().as_ref(), "Rüther");
         assert_eq!(iter.next().unwrap().as_ref(), "friend");
+        assert!(iter.next().unwrap().is_terminal());
         assert!(iter.next().is_none());
 
 
@@ -190,24 +199,28 @@ mod tests {
         assert_eq!(iter.next().unwrap().as_ref(), "Two");
         assert_eq!(iter.next().unwrap().as_ref(), ">");
         assert_eq!(iter.next().unwrap().as_ref(), "Three");
+        assert!(iter.next().unwrap().is_terminal());
         assert!(iter.next().is_none());
 
         let mut iter = TokenIterator::new("One-Two");
         assert_eq!(iter.next().unwrap().as_ref(), "One");
         assert_eq!(iter.next().unwrap().as_ref(), "-");
         assert_eq!(iter.next().unwrap().as_ref(), "Two");
+        assert!(iter.next().unwrap().is_terminal());
         assert!(iter.next().is_none());
 
         let mut iter = TokenIterator::new("One+Two");
         assert_eq!(iter.next().unwrap().as_ref(), "One");
         assert_eq!(iter.next().unwrap().as_ref(), "+");
         assert_eq!(iter.next().unwrap().as_ref(), "Two");
+        assert!(iter.next().unwrap().is_terminal());
         assert!(iter.next().is_none());
 
         let mut iter = TokenIterator::new("A->B");
         assert_eq!(iter.next().unwrap().as_ref(), "A");
         assert_eq!(iter.next().unwrap().as_ref(), "->");
         assert_eq!(iter.next().unwrap().as_ref(), "B");
+        assert!(iter.next().unwrap().is_terminal());
         assert!(iter.next().is_none());
     }
 
@@ -238,6 +251,6 @@ mod tests {
         let tokens : Vec<_> = iter.collect();
         let text : Vec<_> = tokens.iter().map(|t| t.text).collect();
 
-        assert_eq!(text, ["F", "->", "F", "F"])
+        assert_eq!(text, ["F", "->", "F", "F", ""])
     }
 }
