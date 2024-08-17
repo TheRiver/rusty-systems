@@ -12,6 +12,7 @@ use crate::productions::{Production, ProductionBody, ProductionHead, ProductionS
 use crate::Result;
 use crate::symbols::iterator::SymbolIterable;
 use crate::symbols::SymbolStore;
+use crate::parser::statement::ParsableType;
 
 
 pub mod iterator;
@@ -178,17 +179,7 @@ pub fn parse_production(production: &str) -> Result<Production> {
 /// Allows you to parse a text string into a string of [`Symbol`] objects
 /// to then rewrite using a [`System`]
 pub fn parse_prod_string(string: &str) -> Result<ProductionString> {
-    let mut prod_string = ProductionString::new();
-
-    for token in TokenIterator::new(string) {
-        if token.kind == TokenKind::Terminator { break }
-        if token.kind != TokenKind::Symbol {
-            return Err(Error::new(ErrorKind::Parse, format!("Expected a symbol, but found [{token}] instead")))
-        }
-        prod_string.push_symbol(token.text.try_into()?);
-    }
-    
-    Ok(prod_string)
+    ProductionString::compile_from(TokenIterator::new(string))
 }
 
 

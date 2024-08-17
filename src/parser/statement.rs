@@ -125,23 +125,21 @@ pub enum Match {
 
 pub trait ParsableType: Sized {
     fn kind() -> StatementKind;
-    fn compile(statement: CheckedStatement<'_, '_>) -> Result<Self, Error>;
     fn matches(iterator: TokenIterator) -> Match;
+    
+    fn compile_from<'a, I>(iterator: I) -> Result<Self, Error> 
+        where I: Iterator<Item=Token<'a>>;
+
+    fn compile(statement: CheckedStatement<'_, '_>) -> Result<Self, Error> {
+        let statement = statement.expect(Self::kind())?;
+        Self::compile_from(statement.tokens_iter())
+    }
 }
 
 impl ParsableType for ProductionString {
     #[inline]
     fn kind() -> StatementKind {
         StatementKind::ProductionString
-    }
-
-    fn compile(statement: CheckedStatement<'_, '_>) -> Result<Self, Error> {
-        let statement = statement.expect(Self::kind())?;
-        let symbols: Result<Vec<Symbol>, _> = statement.tokens_iter()
-            .take_while(|t| !t.is_terminal())
-            .map(Token::try_into)
-            .collect();
-        Ok(ProductionString::from(symbols?))
     }
 
     fn matches(iterator: TokenIterator) -> Match {
@@ -155,8 +153,18 @@ impl ParsableType for ProductionString {
 
         No(0)
     }
-}
 
+    fn compile_from<'a, I>(iterator: I) -> Result<Self, Error>
+    where
+        I: Iterator<Item=Token<'a>>
+    {
+        let symbols: Result<Vec<Symbol>, _> = iterator
+            .take_while(|t| !t.is_terminal())
+            .map(Token::try_into)
+            .collect();
+        Ok(ProductionString::from(symbols?))
+    }
+}
 
 #[cfg(test)]
 mod tests {
