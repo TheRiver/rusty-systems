@@ -2,6 +2,7 @@
 
 use std::convert::Infallible;
 use std::fmt::{Display, Formatter};
+use std::rc::Rc;
 use std::sync::PoisonError;
 
 #[derive(Debug, Clone)]
@@ -26,11 +27,11 @@ pub enum ErrorKind {
 
 /// Errors that might be thrown when using this library. They will be
 /// of kind [`ErrorKind`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     kind: ErrorKind,
     message: String,
-    source: Option<Box<dyn std::error::Error>>
+    source: Option<Rc<dyn std::error::Error>>
 }
 
 impl Default for Error {
@@ -98,7 +99,7 @@ impl From<std::io::Error> for Error {
         Error {
             kind: ErrorKind::Io,
             message: error.to_string(),
-            source: Some(Box::new(error)),
+            source: Some(Rc::new(error)),
         }
     }
 }
@@ -108,7 +109,7 @@ impl From<std::num::ParseIntError> for Error {
         Error {
             kind: ErrorKind::Parse,
             message: error.to_string(),
-            source: Some(Box::new(error)),
+            source: Some(Rc::new(error)),
         }
     }
 }
@@ -118,7 +119,7 @@ impl From<std::num::ParseFloatError> for Error {
         Error {
             kind: ErrorKind::Parse,
             message: error.to_string(),
-            source: Some(Box::new(error)),
+            source: Some(Rc::new(error)),
         }
     }
 }

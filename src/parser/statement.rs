@@ -37,7 +37,11 @@ impl<'a> Statement<'a> {
     pub fn compile<T>(&self) -> Result<T, Error>
     where T: ParsableType
     {
-        T::compile(CheckedStatement::new(self))
+        self.error.clone()
+            .map_or_else(
+                || T::compile(CheckedStatement::new(self)), 
+                |e| Err(e)
+            )
     }
 
     #[inline]
